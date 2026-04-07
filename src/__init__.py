@@ -53,15 +53,8 @@ def create_app(config_name=None) -> Flask:
 
     database_url = os.environ.get("DATABASE_URL")
     if not database_url:
-        railway_db_url = _build_database_url_from_railway_vars()
-        if railway_db_url:
-            database_url = railway_db_url
-            logger.info("DATABASE_URL not set; constructed PostgreSQL URL from PG* variables")
-        else:
-            database_url = "sqlite:///app.db"
-            logger.warning(
-                "DATABASE_URL and PG* variables not set; using sqlite fallback for local execution"
-            )
+        logger.error("ERROR: DATABASE_URL not set. Refusing to start without a real database.")
+        raise RuntimeError("DATABASE_URL is required and must point to PostgreSQL.")
     # Railway can provide postgres://, but SQLAlchemy expects postgresql://
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)

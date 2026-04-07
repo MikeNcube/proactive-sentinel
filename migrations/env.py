@@ -2,6 +2,8 @@ import logging
 from logging.config import fileConfig
 
 from flask import current_app
+from sqlalchemy import CHAR
+from sqlalchemy.types import TypeDecorator
 
 from alembic import context
 
@@ -93,6 +95,17 @@ def run_migrations_online():
     conf_args = current_app.extensions['migrate'].configure_args
     if conf_args.get("process_revision_directives") is None:
         conf_args["process_revision_directives"] = process_revision_directives
+    if conf_args.get("compare_type") is None:
+        def compare_type(context, inspected_column, metadata_column, inspected_type, metadata_type):
+            # Avoid false positives for our cross-database UUID type on SQLite.
+            if context.dialect.name == "sqlite":
+                metadata_impl = getattr(metadata_type, "impl", None)
+                if isinstance(metadata_type, TypeDecorator) and isinstance(metadata_impl, CHAR):
+                    inspected_name = inspected_type.__class__.__name__.lower()
+                    if inspected_name in {"char", "string", "varchar"}:
+                        return False
+            return None
+        conf_args["compare_type"] = compare_type
 
     connectable = get_engine()
 
@@ -100,6 +113,7 @@ def run_migrations_online():
         context.configure(
             connection=connection,
             target_metadata=get_metadata(),
+            compare_type=True,
             **conf_args
         )
 

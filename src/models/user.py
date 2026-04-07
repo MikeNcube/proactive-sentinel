@@ -2,9 +2,9 @@
 User model with encrypted PII fields
 """
 
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import String, DateTime, Boolean, Enum
 from src.extensions import db
+from src.models.types import UUID
 from src.utils.encryption import field_encryption
 import bcrypt
 import uuid
@@ -13,8 +13,8 @@ from datetime import datetime
 class User(db.Model):
     __tablename__ = 'users'
     
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    tenant_id = db.Column(UUID(as_uuid=True), db.ForeignKey('tenants.id'), nullable=False)
+    id = db.Column(UUID(), primary_key=True, default=uuid.uuid4)
+    tenant_id = db.Column(UUID(), db.ForeignKey('tenants.id'), nullable=False)
     
     email = db.Column(String(255), nullable=False, unique=True)
     role = db.Column(Enum('admin', 'analyst', 'viewer', name='user_roles'), default='analyst')
