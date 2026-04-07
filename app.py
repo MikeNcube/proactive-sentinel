@@ -1,17 +1,16 @@
-import os
-from src import create_app, db
+#!/usr/bin/env python
+"""
+Proactive Sentinel - Production entry point for Gunicorn
+"""
 
+import os
+
+from src import create_app
+
+# Create the application instance for Gunicorn
 app = create_app()
 
-
-@app.route("/")
-def home():
-    return """
-    <h1>Proactive Sentinel SOC Platform</h1>
-    <p>✅ System is running successfully.</p>
-    <p><a href="/login">Go to Login</a> | <a href="/dashboard">Go to Dashboard</a></p>
-    """
-
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001, debug=False)
+if __name__ == "__main__":
+    # Run locally for development
+    port = int(os.environ.get("PORT", 5001))
+    app.run(host="0.0.0.0", port=port, debug=False)

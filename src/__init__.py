@@ -59,7 +59,7 @@ def create_app(config_name=None):
 
     allowed_origins = os.environ.get(
         "ALLOWED_ORIGINS",
-        "http://localhost:5000,http://localhost:5001",
+        "https://*.railway.app,http://localhost:5000,http://localhost:5001",
     ).split(",")
     FlaskCORS(
         app,
@@ -140,6 +140,21 @@ def create_app(config_name=None):
             app.logger.warning(f"Redis health check failed: {exc}")
 
         return jsonify(health_status), 200 if health_status["status"] == "healthy" else 503
+
+    @app.route("/", methods=["GET"])
+    def home():
+        return jsonify(
+            {
+                "status": "online",
+                "service": "Proactive Sentinel SOC",
+                "version": "1.0.0",
+                "endpoints": {
+                    "health": "/api/health",
+                    "login": "/api/auth/login",
+                    "alerts": "/api/alerts",
+                },
+            }
+        ), 200
 
     from src.api.routes import api_bp
     from src.auth.routes import auth_bp

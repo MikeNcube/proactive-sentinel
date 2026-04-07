@@ -2,22 +2,27 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies including bcrypt build deps
-RUN apt-get update && apt-get install -y \
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     libpq-dev \
-    python3-dev \
-    libffi-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and install requirements as root (critical -- not as appuser)
+# Copy requirements first (better caching)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install gunicorn
 
-# Create non-root user AFTER pip install
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
-USER appuser
+# Copy application code
+COPY . .
 
-COPY --chown=appuser:appuser . .
+# Create non-root user
+RUN useradd -m -u 1000 sentinel && chown -R sentinel:sentinel /app
+USER sentinel
 
-CMD ["sh", "-c", "python -m flask db upgrade && python seed.py && python -m flask run --host=0.0.0.0 --port=5001"]
+# Expose port (Railway provides PORT env variable)
+EXPOSE $PORT
+
+# Run with gunicorn
+CMD gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120 --log-level debug wsgi:app
