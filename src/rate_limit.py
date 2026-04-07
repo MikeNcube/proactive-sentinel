@@ -1,41 +1,5 @@
-"""
-Rate limiting configuration for API endpoints.
-Uses Redis backend for distributed rate limiting.
-"""
-
-import os
-
 from flask import g
-try:
-    from flask_limiter import Limiter
-    from flask_limiter.util import get_remote_address
-except ImportError:  # pragma: no cover - fallback for local/test envs without limiter
-    class Limiter:  # type: ignore[override]
-        def __init__(self, *args, **kwargs):
-            pass
-
-        def init_app(self, app):
-            return None
-
-        def limit(self, *_args, **_kwargs):
-            def decorator(func):
-                return func
-
-            return decorator
-
-    def get_remote_address():  # type: ignore[return-value]
-        return "127.0.0.1"
-
-# Get Redis URL from environment, with fallback.
-REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
-
-
-limiter = Limiter(
-    key_func=get_remote_address,
-    default_limits=["30 per minute"],
-    storage_uri=REDIS_URL,
-    strategy="fixed-window",
-)
+from src.extensions import get_remote_address, limiter
 
 
 RATE_LIMITS = {
