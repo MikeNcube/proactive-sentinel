@@ -141,10 +141,6 @@ def create_app(config_name=None):
     # Import models in app factory so metadata is fully registered.
     from src.models import Alert, AuditLog, Tenant, User  # noqa: F401
 
-    @app.route("/api/health", methods=["GET"])
-    def health():
-        return {"status": "ok"}, 200
-
     @app.route("/", methods=["GET"])
     def home():
         return jsonify(
