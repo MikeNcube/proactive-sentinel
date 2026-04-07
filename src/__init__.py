@@ -46,6 +46,13 @@ def create_app(config_name=None):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["MAX_CONTENT_LENGTH"] = int(os.environ.get("MAX_REQUEST_BYTES", "1048576"))
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,
+        "pool_recycle": 1800,
+        "pool_size": int(os.environ.get("DB_POOL_SIZE", "5")),
+        "max_overflow": int(os.environ.get("DB_MAX_OVERFLOW", "10")),
+    }
     jwt_secret = os.environ.get("JWT_SECRET_KEY", "")
     if not jwt_secret or "dev" in jwt_secret.lower() or "change" in jwt_secret.lower():
         logging.getLogger(__name__).warning(
@@ -111,6 +118,8 @@ def create_app(config_name=None):
     def before_request():
         g.correlation_id = request.headers.get("X-Correlation-ID", str(uuid.uuid4()))
         g.request_start_time = time.time()
+        if request.content_length and request.content_length > app.config["MAX_CONTENT_LENGTH"]:
+            return jsonify({"error": "Payload too large"}), 413
 
     @app.after_request
     def after_request(response):
@@ -160,10 +169,12 @@ def create_app(config_name=None):
         from src.api.routes import api_bp
         from src.auth.routes import auth_bp
         from src.api.audit_routes import audit_bp
+        from src.api.units import units_bp
 
         app.register_blueprint(api_bp, url_prefix="/api")
         app.register_blueprint(auth_bp, url_prefix="/api/auth")
         app.register_blueprint(audit_bp)
+        app.register_blueprint(units_bp)
     except Exception as exc:
         print(f"ERROR: Could not register blueprints: {exc}", flush=True)
         raise

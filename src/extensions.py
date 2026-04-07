@@ -43,7 +43,7 @@ redis_url = os.environ.get("REDIS_URL", None)
 limiter = Limiter(
     key_func=get_remote_address,
     storage_uri=redis_url if redis_url else "memory://",
-    default_limits=["200 per day", "50 per hour"],
+    default_limits=["1000 per hour"],
 )
 
 # Redis client - initialize lazily
