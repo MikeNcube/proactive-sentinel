@@ -24,5 +24,5 @@ USER sentinel
 # Expose port (Railway provides PORT env variable)
 EXPOSE $PORT
 
-# Run with gunicorn
-CMD gunicorn --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120 --log-level debug wsgi:app
+# Run with migrations then gunicorn using Railway PORT (fallback 5001)
+CMD ["sh", "-c", "python -m flask db upgrade && gunicorn --bind 0.0.0.0:${PORT:-5001} --workers 2 --timeout 120 app:app"]

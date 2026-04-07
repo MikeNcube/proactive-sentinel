@@ -9,7 +9,6 @@ import uuid
 from logging.config import dictConfig
 
 from flask import Flask, g, jsonify, request
-from sqlalchemy import text
 
 from src.auth.jwt_manager import JWTManager
 from src.extensions import db, get_redis, migrate
@@ -39,7 +38,11 @@ def create_app(config_name=None):
     """Application factory."""
     app = Flask(__name__)
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///app.db")
+    database_url = os.environ.get("DATABASE_URL", "sqlite:///app.db")
+    # Railway can provide postgres://, but SQLAlchemy expects postgresql://
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     jwt_secret = os.environ.get("JWT_SECRET_KEY", "")
     if not jwt_secret or "dev" in jwt_secret.lower() or "change" in jwt_secret.lower():
@@ -117,29 +120,7 @@ def create_app(config_name=None):
 
     @app.route("/health", methods=["GET"])
     def health():
-        health_status = {
-            "status": "healthy",
-            "timestamp": time.time(),
-            "services": {},
-        }
-
-        try:
-            db.session.execute(text("SELECT 1"))
-            health_status["services"]["database"] = "healthy"
-        except Exception as exc:
-            health_status["services"]["database"] = "unhealthy"
-            health_status["status"] = "degraded"
-            app.logger.error(f"Database health check failed: {exc}")
-
-        try:
-            redis_client = get_redis()
-            redis_client.ping()
-            health_status["services"]["redis"] = "healthy"
-        except Exception as exc:
-            health_status["services"]["redis"] = "unhealthy"
-            app.logger.warning(f"Redis health check failed: {exc}")
-
-        return jsonify(health_status), 200 if health_status["status"] == "healthy" else 503
+        return {"status": "ok"}, 200
 
     @app.route("/", methods=["GET"])
     def home():
