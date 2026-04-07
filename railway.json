@@ -4,8 +4,7 @@
     "builder": "DOCKERFILE"
   },
   "deploy": {
-    "startCommand": "python -c \"import os, socket, time; [socket.create_connection(('localhost', int(os.getenv('DB_PORT', 5432))), timeout=2) or time.sleep(1) for _ in range(30)] or None; os.system('flask db upgrade'); os.system('python scripts/seed_data.py'); gunicorn --bind 0.0.0.0:\\$PORT app:app\"",
-    "restartPolicy": "ON_FAILURE",
-    "sleepApplication": false
+    "startCommand": "sh -c \"python -m flask db upgrade && python scripts/seed_data.py && gunicorn --bind 0.0.0.0:\\$PORT app:app\"",
+    "restartPolicy": "ON_FAILURE"
   }
 }
