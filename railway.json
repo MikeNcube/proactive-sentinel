@@ -4,7 +4,7 @@
     "builder": "DOCKERFILE"
   },
   "deploy": {
-    "startCommand": "sh -c \"gunicorn --bind 0.0.0.0:\\$PORT app:app\"",
+    "startCommand": "sh -c \"gunicorn --bind 0.0.0.0:\\$PORT --log-level debug app:app\"",
     "restartPolicy": "ON_FAILURE"
   }
 }
