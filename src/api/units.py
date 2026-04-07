@@ -1,9 +1,11 @@
 import hashlib
+import logging
 import os
 from datetime import datetime, timedelta
 from typing import Any
 
 from flask import Blueprint, jsonify, request
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 from src.api.rate_limits import RATE_LIMITS, limiter
 from src.extensions import db
@@ -13,6 +15,7 @@ from src.security.threat_detector import ThreatDetector
 
 units_bp = Blueprint("units", __name__, url_prefix="/api/units")
 threat_detector = ThreatDetector()
+logger = logging.getLogger(__name__)
 
 
 def _hash_value(value: str) -> str:
@@ -66,25 +69,38 @@ def register_unit():
     if whitelist_err:
         return whitelist_err
 
-    existing = Unit.query.filter_by(device_id=device_id).first()
     token_plain = os.urandom(24).hex()
-    if not existing:
-        unit = Unit(
-            tenant_id=tenant_id,
-            device_id=device_id,
-            name=data.get("name"),
-            token_hash=_hash_value(token_plain),
-            secret_key_hash=_hash_value(secret_key),
+    try:
+        existing = Unit.query.filter_by(device_id=device_id).first()
+        if not existing:
+            unit = Unit(
+                tenant_id=tenant_id,
+                device_id=device_id,
+                name=data.get("name"),
+                token_hash=_hash_value(token_plain),
+                secret_key_hash=_hash_value(secret_key),
+            )
+            db.session.add(unit)
+        else:
+            existing.token_hash = _hash_value(token_plain)
+            existing.secret_key_hash = _hash_value(secret_key)
+            existing.status = "online"
+            existing.last_seen_at = datetime.utcnow()
+            unit = existing
+
+        db.session.commit()
+        return jsonify({"device_id": unit.device_id, "unit_token": token_plain}), 201
+    except OperationalError as exc:
+        db.session.rollback()
+        logger.exception("Unit registration failed due to database schema issue: %s", exc)
+        return _json_error(
+            "Unit registration unavailable: database schema is not up to date. Run migrations.",
+            503,
         )
-        db.session.add(unit)
-    else:
-        existing.token_hash = _hash_value(token_plain)
-        existing.secret_key_hash = _hash_value(secret_key)
-        existing.status = "online"
-        existing.last_seen_at = datetime.utcnow()
-        unit = existing
-    db.session.commit()
-    return jsonify({"device_id": unit.device_id, "unit_token": token_plain}), 201
+    except SQLAlchemyError as exc:
+        db.session.rollback()
+        logger.exception("Unit registration database error: %s", exc)
+        return _json_error("Unit registration failed due to database error", 500)
 
 
 @units_bp.route("/heartbeat", methods=["POST"])
