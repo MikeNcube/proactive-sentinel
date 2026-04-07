@@ -39,6 +39,8 @@ def create_app(config_name=None):
     app = Flask(__name__)
 
     database_url = os.environ.get("DATABASE_URL", "sqlite:///app.db")
+    if not os.environ.get("DATABASE_URL"):
+        print("WARNING: DATABASE_URL not set; falling back to sqlite:///app.db", flush=True)
     # Railway can provide postgres://, but SQLAlchemy expects postgresql://
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
@@ -56,33 +58,54 @@ def create_app(config_name=None):
     if isinstance(config_name, dict):
         app.config.update(config_name)
 
-    db.init_app(app)
-    migrate.init_app(app, db)
+    try:
+        db.init_app(app)
+    except Exception as exc:
+        print(f"ERROR: Could not initialize database extension: {exc}", flush=True)
+        raise
+
+    try:
+        migrate.init_app(app, db)
+    except Exception as exc:
+        print(f"ERROR: Could not initialize migration extension: {exc}", flush=True)
+        raise
     from flask_cors import CORS as FlaskCORS
 
     allowed_origins = os.environ.get(
         "ALLOWED_ORIGINS",
         "https://*.railway.app,http://localhost:5000,http://localhost:5001",
     ).split(",")
-    FlaskCORS(
-        app,
-        resources={
-            r"/api/*": {
-                "origins": allowed_origins,
-                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-                "allow_headers": ["Authorization", "Content-Type"],
-                "supports_credentials": True,
+    try:
+        FlaskCORS(
+            app,
+            resources={
+                r"/api/*": {
+                    "origins": allowed_origins,
+                    "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+                    "allow_headers": ["Authorization", "Content-Type"],
+                    "supports_credentials": True,
+                }
             }
-        },
-    )
+        )
+    except Exception as exc:
+        print(f"ERROR: Could not initialize CORS: {exc}", flush=True)
+        raise
 
-    jwt = JWTManager()
-    jwt.init_app(app)
-    app.jwt = jwt
+    try:
+        jwt = JWTManager()
+        jwt.init_app(app)
+        app.jwt = jwt
+    except Exception as exc:
+        print(f"ERROR: Could not initialize JWT manager: {exc}", flush=True)
+        raise
 
     from src.api.rate_limits import limiter
 
-    limiter.init_app(app)
+    try:
+        limiter.init_app(app)
+    except Exception as exc:
+        print(f"ERROR: Could not initialize rate limiter: {exc}", flush=True)
+        raise
 
     @app.before_request
     def before_request():
@@ -118,7 +141,7 @@ def create_app(config_name=None):
     # Import models in app factory so metadata is fully registered.
     from src.models import Alert, AuditLog, Tenant, User  # noqa: F401
 
-    @app.route("/health", methods=["GET"])
+    @app.route("/api/health", methods=["GET"])
     def health():
         return {"status": "ok"}, 200
 
@@ -137,13 +160,17 @@ def create_app(config_name=None):
             }
         ), 200
 
-    from src.api.routes import api_bp
-    from src.auth.routes import auth_bp
-    from src.api.audit_routes import audit_bp
+    try:
+        from src.api.routes import api_bp
+        from src.auth.routes import auth_bp
+        from src.api.audit_routes import audit_bp
 
-    app.register_blueprint(api_bp, url_prefix="/api")
-    app.register_blueprint(auth_bp, url_prefix="/api/auth")
-    app.register_blueprint(audit_bp)
+        app.register_blueprint(api_bp, url_prefix="/api")
+        app.register_blueprint(auth_bp, url_prefix="/api/auth")
+        app.register_blueprint(audit_bp)
+    except Exception as exc:
+        print(f"ERROR: Could not register blueprints: {exc}", flush=True)
+        raise
 
     @app.errorhandler(404)
     def not_found(error):
