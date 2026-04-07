@@ -1,12 +1,11 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "DOCKERFILE",
-    "dockerfilePath": "Dockerfile"
+    "builder": "DOCKERFILE"
   },
   "deploy": {
-    "startCommand": "sh -c \"python - <<'PY'\n+import os, socket, time\n+\n+def wait_for(host, port, name, timeout=120):\n+    start = time.time()\n+    while time.time() - start < timeout:\n+        try:\n+            with socket.create_connection((host, port), timeout=2):\n+                print(f'{name} is reachable at {host}:{port}')\n+                return\n+        except OSError:\n+            time.sleep(2)\n+    raise RuntimeError(f'Timeout waiting for {name} at {host}:{port}')\n+\n+db_url = os.getenv('DATABASE_URL', '')\n+if db_url.startswith('postgres') and '@' in db_url:\n+    host_port = db_url.split('@', 1)[1].split('/', 1)[0]\n+    host = host_port.split(':', 1)[0]\n+    port = int(host_port.split(':', 1)[1]) if ':' in host_port else 5432\n+    wait_for(host, port, 'postgres')\n+\n+redis_url = os.getenv('REDIS_URL', '')\n+if redis_url.startswith('redis://'):\n+    host_port = redis_url.replace('redis://', '').split('/', 1)[0]\n+    host = host_port.split(':', 1)[0]\n+    port = int(host_port.split(':', 1)[1]) if ':' in host_port else 6379\n+    wait_for(host, port, 'redis')\n+PY\n+&& python -m flask db upgrade && python scripts/seed_data.py && python -m flask run --host=0.0.0.0 --port=${PORT:-5001}\"",
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10
+    "startCommand": "python -c \"import os, socket, time; [socket.create_connection(('localhost', int(os.getenv('DB_PORT', 5432))), timeout=2) or time.sleep(1) for _ in range(30)] or None; os.system('flask db upgrade'); os.system('python scripts/seed_data.py'); gunicorn --bind 0.0.0.0:\\$PORT app:app\"",
+    "restartPolicy": "ON_FAILURE",
+    "sleepApplication": false
   }
 }
