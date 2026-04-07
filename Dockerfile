@@ -17,4 +17,4 @@ COPY . .
 RUN useradd -m -u 1000 sentinel && chown -R sentinel:sentinel /app
 USER sentinel
 
-CMD ["/bin/sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --log-level debug app:app"]
+CMD ["/bin/sh", "-c", "if [ -z \"$DATABASE_URL\" ]; then echo 'FATAL: DATABASE_URL is not set' >&2; exit 1; fi && python -m flask db upgrade && gunicorn --bind 0.0.0.0:${PORT:-5001} --workers 2 --timeout 120 app:app"]
