@@ -26,3 +26,4 @@ EXPOSE $PORT
 
 # Run gunicorn in shell so ${PORT} expands correctly
 CMD ["/bin/sh", "-c", "gunicorn app:app --bind 0.0.0.0:${PORT} --workers 2"]
+ 
