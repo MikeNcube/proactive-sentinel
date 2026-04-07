@@ -37,7 +37,7 @@ def main():
     if result.returncode != 0:
         print("ERROR: Docker is not running. Please start Docker Desktop first.")
         sys.exit(1)
-    print("✓ Docker is running")
+    print("Docker is running")
 
     # Start services
     print("\n2. Starting services...")
@@ -94,7 +94,7 @@ def main():
     run_command(["docker-compose", "exec", "-T", "app", "python", "scripts/seed_data.py"])
 
     print("\n" + "=" * 50)
-    print("✓ Setup complete!")
+    print("Setup complete")
     print("=" * 50)
     print("\nNext steps:")
     print("  1. Run tests: docker-compose exec app pytest tests/ -v")

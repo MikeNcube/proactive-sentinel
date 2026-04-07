@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 import os
 import traceback
+import logging
 
 try:
     from src import create_app
     app = create_app()
-    print("SUCCESS: App created successfully", flush=True)
+    logging.getLogger(__name__).info("Application created successfully")
 except Exception as e:
-    print(f"FATAL ERROR: Could not create app: {e}", flush=True)
+    logging.getLogger(__name__).exception("Could not create application: %s", e)
     traceback.print_exc()
     raise
 

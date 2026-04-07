@@ -32,15 +32,16 @@ LOGGING_CONFIG = {
     },
 }
 dictConfig(LOGGING_CONFIG)
+logger = logging.getLogger(__name__)
 
 
-def create_app(config_name=None):
+def create_app(config_name=None) -> Flask:
     """Application factory."""
     app = Flask(__name__)
 
     database_url = os.environ.get("DATABASE_URL", "sqlite:///app.db")
     if not os.environ.get("DATABASE_URL"):
-        print("WARNING: DATABASE_URL not set; falling back to sqlite:///app.db", flush=True)
+        logger.warning("DATABASE_URL not set; using sqlite fallback for local execution")
     # Railway can provide postgres://, but SQLAlchemy expects postgresql://
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
@@ -55,7 +56,7 @@ def create_app(config_name=None):
     }
     jwt_secret = os.environ.get("JWT_SECRET_KEY", "")
     if not jwt_secret or "dev" in jwt_secret.lower() or "change" in jwt_secret.lower():
-        logging.getLogger(__name__).warning(
+        logger.warning(
             "SECURITY WARNING: JWT_SECRET_KEY is weak or not set. "
             "Set a strong random secret in production."
         )
@@ -68,13 +69,13 @@ def create_app(config_name=None):
     try:
         db.init_app(app)
     except Exception as exc:
-        print(f"ERROR: Could not initialize database extension: {exc}", flush=True)
+        logger.exception("Failed to initialize database extension: %s", exc)
         raise
 
     try:
         migrate.init_app(app, db)
     except Exception as exc:
-        print(f"ERROR: Could not initialize migration extension: {exc}", flush=True)
+        logger.exception("Failed to initialize migration extension: %s", exc)
         raise
     from flask_cors import CORS as FlaskCORS
 
@@ -95,7 +96,7 @@ def create_app(config_name=None):
             }
         )
     except Exception as exc:
-        print(f"ERROR: Could not initialize CORS: {exc}", flush=True)
+        logger.exception("Failed to initialize CORS: %s", exc)
         raise
 
     try:
@@ -103,7 +104,7 @@ def create_app(config_name=None):
         jwt.init_app(app)
         app.jwt = jwt
     except Exception as exc:
-        print(f"ERROR: Could not initialize JWT manager: {exc}", flush=True)
+        logger.exception("Failed to initialize JWT manager: %s", exc)
         raise
 
     from src.api.rate_limits import limiter
@@ -111,7 +112,7 @@ def create_app(config_name=None):
     try:
         limiter.init_app(app)
     except Exception as exc:
-        print(f"ERROR: Could not initialize rate limiter: {exc}", flush=True)
+        logger.exception("Failed to initialize rate limiter: %s", exc)
         raise
 
     @app.before_request
@@ -176,7 +177,7 @@ def create_app(config_name=None):
         app.register_blueprint(audit_bp)
         app.register_blueprint(units_bp)
     except Exception as exc:
-        print(f"ERROR: Could not register blueprints: {exc}", flush=True)
+        logger.exception("Failed to register blueprints: %s", exc)
         raise
 
     @app.errorhandler(404)

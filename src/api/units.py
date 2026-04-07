@@ -1,8 +1,9 @@
 import hashlib
 import os
 from datetime import datetime, timedelta
+from typing import Any
 
-from flask import Blueprint, g, jsonify, request
+from flask import Blueprint, jsonify, request
 
 from src.api.rate_limits import RATE_LIMITS, limiter
 from src.extensions import db
@@ -38,7 +39,7 @@ def _validate_unit_whitelist(device_id: str):
     return None
 
 
-def _authenticate_unit():
+def _authenticate_unit() -> tuple[Unit | None, Any]:
     token = request.headers.get("X-Unit-Token", "")
     device_id = request.headers.get("X-Unit-Id", "")
     if not token or not device_id:
@@ -117,10 +118,26 @@ def unit_report():
 
     rep = threat_detector.evaluate_ip_reputation(data.get("source_ip", ""))
     vel = threat_detector.evaluate_request_velocity(request.remote_addr or "unknown")
+    unit_vel = threat_detector.evaluate_unit_velocity(unit.device_id)
     if not rep.get("allowed"):
         return _json_error("Blocked source IP", 403)
     if not vel.get("allowed"):
         return _json_error("Rate anomaly detected", 429)
+    if not unit_vel.get("allowed"):
+        compromised_alert = Alert(
+            tenant_id=unit.tenant_id,
+            title=f"Unit Compromise Suspected: {unit.device_id}",
+            severity="critical",
+            status="open",
+            category="unit_compromise",
+            description="Unit exceeded velocity threshold and has been auto-quarantined.",
+            source=f"threat_detector:{unit.device_id}",
+            confidence=0.95,
+            raw_data={"reason": unit_vel.get("reason"), "unit_id": unit.device_id},
+        )
+        db.session.add(compromised_alert)
+        db.session.commit()
+        return _json_error("Unit quarantined due to suspicious velocity", 429)
 
     severity = "low"
     if data["event_type"] in {"malware", "ransomware"}:
