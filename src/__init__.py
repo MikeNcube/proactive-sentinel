@@ -35,13 +35,33 @@ dictConfig(LOGGING_CONFIG)
 logger = logging.getLogger(__name__)
 
 
+def _build_database_url_from_railway_vars() -> str | None:
+    """Construct PostgreSQL URL from Railway PG* variables when DATABASE_URL is absent."""
+    pg_user = os.environ.get("PGUSER")
+    pg_password = os.environ.get("PGPASSWORD")
+    pg_host = os.environ.get("PGHOST")
+    pg_port = os.environ.get("PGPORT")
+    pg_database = os.environ.get("PGDATABASE")
+    if all([pg_user, pg_password, pg_host, pg_port, pg_database]):
+        return f"postgresql://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_database}"
+    return None
+
+
 def create_app(config_name=None) -> Flask:
     """Application factory."""
     app = Flask(__name__)
 
-    database_url = os.environ.get("DATABASE_URL", "sqlite:///app.db")
-    if not os.environ.get("DATABASE_URL"):
-        logger.warning("DATABASE_URL not set; using sqlite fallback for local execution")
+    database_url = os.environ.get("DATABASE_URL")
+    if not database_url:
+        railway_db_url = _build_database_url_from_railway_vars()
+        if railway_db_url:
+            database_url = railway_db_url
+            logger.info("DATABASE_URL not set; constructed PostgreSQL URL from PG* variables")
+        else:
+            database_url = "sqlite:///app.db"
+            logger.warning(
+                "DATABASE_URL and PG* variables not set; using sqlite fallback for local execution"
+            )
     # Railway can provide postgres://, but SQLAlchemy expects postgresql://
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
