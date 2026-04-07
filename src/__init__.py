@@ -101,7 +101,7 @@ def create_app(config_name=None) -> Flask:
 
     allowed_origins = os.environ.get(
         "ALLOWED_ORIGINS",
-        "https://*.railway.app,http://localhost:5000,http://localhost:5001",
+        "https://proactive-sentinel-production.up.railway.app,https://*.railway.app,http://localhost:5000,http://localhost:5001",
     ).split(",")
     try:
         FlaskCORS(
@@ -185,6 +185,10 @@ def create_app(config_name=None) -> Flask:
                 },
             }
         ), 200
+
+    @app.route("/health", methods=["GET"])
+    def global_health():
+        return {"status": "healthy"}, 200
 
     try:
         from src.api.routes import api_bp

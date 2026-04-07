@@ -1,15 +1,18 @@
 import hashlib
 import logging
 import os
+import uuid
 from datetime import datetime, timedelta
 from typing import Any
 
 from flask import Blueprint, jsonify, request
 from sqlalchemy.exc import OperationalError, SQLAlchemyError
+from sqlalchemy import or_
 
 from src.api.rate_limits import RATE_LIMITS, limiter
 from src.extensions import db
 from src.models.alert import Alert
+from src.models.tenant import Tenant
 from src.models.unit import Unit
 from src.security.threat_detector import ThreatDetector
 
@@ -53,6 +56,39 @@ def _authenticate_unit() -> tuple[Unit | None, Any]:
     return unit, None
 
 
+def _resolve_tenant_id(raw_tenant_identifier: str) -> tuple[str | None, Any]:
+    """Resolve tenant identifier to canonical tenant UUID string."""
+    if not raw_tenant_identifier:
+        return None, _json_error("tenant_id is required", 400)
+    normalized = raw_tenant_identifier.strip()
+
+    try:
+        return str(uuid.UUID(normalized)), None
+    except ValueError:
+        pass
+
+    tenant = Tenant.query.filter(
+        or_(
+            Tenant.subdomain == normalized,
+            Tenant.slug == normalized,
+            Tenant.name == normalized,
+        )
+    ).first()
+    if tenant:
+        return str(tenant.id), None
+
+    fallback = normalized.lower().replace("_", "-")
+    tenant = Tenant.query.filter(
+        or_(
+            Tenant.subdomain == fallback,
+            Tenant.slug == fallback,
+        )
+    ).first()
+    if tenant:
+        return str(tenant.id), None
+    return None, _json_error("Unknown tenant identifier", 400)
+
+
 @units_bp.route("/register", methods=["POST"])
 @limiter.limit(RATE_LIMITS["units_register"])
 def register_unit():
@@ -60,11 +96,14 @@ def register_unit():
     if payload_err:
         return payload_err
     data = request.get_json(silent=True) or {}
-    tenant_id = data.get("tenant_id")
+    tenant_id_raw = data.get("tenant_id")
     device_id = data.get("device_id")
     secret_key = data.get("secret_key")
-    if not tenant_id or not device_id or not secret_key:
+    if not tenant_id_raw or not device_id or not secret_key:
         return _json_error("tenant_id, device_id and secret_key required", 400)
+    tenant_id, tenant_err = _resolve_tenant_id(str(tenant_id_raw))
+    if tenant_err:
+        return tenant_err
     whitelist_err = _validate_unit_whitelist(device_id)
     if whitelist_err:
         return whitelist_err
