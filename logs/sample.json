@@ -1,0 +1,47 @@
+[
+  {
+    "timestamp": "2026-03-30T08:00:00+02:00",
+    "user_id": "user_001",
+    "passport_id": "EN123456",
+    "phone": "0712345678",
+    "event_type": "file_access",
+    "file_path": "/home/user/documents/financial_report.pdf",
+    "description": "User accessed financial report"
+  },
+  {
+    "timestamp": "2026-03-30T08:05:00+02:00",
+    "user_id": "user_001",
+    "id": "9201515081089",
+    "phone": "0712345678",
+    "event_type": "file_access",
+    "file_path": "/home/user/documents/budget.xlsx",
+    "description": "User accessed budget spreadsheet"
+  },
+  {
+    "timestamp": "2026-03-30T09:15:00+02:00",
+    "user_id": "attacker_001",
+    "passport_id": "GN123456",
+    "phone": "0823456789",
+    "event_type": "file_access",
+    "file_path": "/home/user/documents/financial_report.pdf",
+    "description": "User accessed financial report"
+  },
+  {
+    "timestamp": "2026-03-30T09:20:00+02:00",
+    "user_id": "attacker_001",
+    "id": "08-20158615Y-43",
+    "phone": "0823456789",
+    "event_type": "compression",
+    "file_path": "/home/user/documents/financial_report.zip",
+    "description": "User compressed financial report"
+  },
+  {
+    "timestamp": "2026-03-30T09:25:00+02:00",
+    "user_id": "attacker_001",
+    "id": "08-20057115Y-35",
+    "phone": "0823456789",
+    "event_type": "data_transfer",
+    "transfer_size_mb": 150,
+    "description": "Large data transfer detected"
+  }
+]

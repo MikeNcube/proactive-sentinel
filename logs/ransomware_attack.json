@@ -1,0 +1,9 @@
+{
+    "timestamp": "2026-03-30T09:15:00+02:00",
+    "user_id": "attacker_001",
+    "passport_id": "BN123456",
+    "phone": "0823456789",
+    "event_type": "file_access",
+    "file_path": "/home/user/documents/financial_report.pdf",
+    "description": "User accessed financial report"
+}

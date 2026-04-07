@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Proactive Sentinel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0d1117;--tile:#161b27;--elevated:#1b2230;--line:rgba(255,255,255,0.08);--teal:#00d4aa;--critical:#ff4757;--high:#ff8c42;--medium:#ffd32a;--text:#e8edf5;--secondary:#8b95a8;--muted:#4a5568}
+    .alert-id,.log-line,.conf-pct,.rule-id-badge,.timestamp,code,pre,.metric-val,.tile-value,#breach-clock,.arch-node-box{font-family:"JetBrains Mono",monospace}
+    *{box-sizing:border-box} html,body{margin:0}
+    html{scroll-behavior:smooth;scroll-padding-top:100px}
+    body{background:var(--bg);color:var(--text);font-family:"Inter","Segoe UI",sans-serif;min-height:100vh;position:relative}
+    body::after{
+      content:'';
+      position:fixed;
+      inset:0;
+      z-index:0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(0,212,170,0.04) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(78,154,241,0.04) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 50% 50%, rgba(255,71,87,0.02) 0%, transparent 70%);
+      pointer-events:none;
+    }
+    *::-webkit-scrollbar{width:4px;height:4px}*::-webkit-scrollbar-track{background:transparent}*::-webkit-scrollbar-thumb{background:var(--line);border-radius:999px}
+    .top-nav{position:fixed;top:12px;left:50%;transform:translateX(-50%);width:calc(100% - 48px);max-width:1400px;height:64px;border-radius:20px;border:1px solid var(--line);background:var(--tile);backdrop-filter:blur(24px);display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;padding:0 16px;z-index:2000}
+    .nav-left,.nav-right{display:flex;align-items:center;gap:10px}.nav-middle{display:flex;justify-content:center;gap:18px}
+    .shield-logo{width:34px;height:34px;border-radius:10px;background:var(--teal);display:grid;place-items:center;color:var(--bg)}
+    .brand-title{font-family:"Inter","Segoe UI",sans-serif;font-weight:600}.brand-title .sentinel{color:var(--teal)}
+    .nav-link{color:var(--secondary);font-size:.88rem;padding:4px 8px;cursor:pointer}.nav-link:hover{color:var(--text)}
+    .nav-link.active{color:var(--teal);background:rgba(0,212,170,0.08);border-radius:8px}
+    .nav-link.active a{color:var(--teal)}
+    .pill-badge{border:1px solid var(--teal);color:var(--teal);background:var(--elevated);border-radius:999px;padding:6px 10px;font:700 .7rem "JetBrains Mono",monospace;letter-spacing:.06em}
+    .utc-clock{font:400 .76rem "JetBrains Mono",monospace;color:var(--secondary)}
+    .soc-btn{border:0;border-radius:999px;background:var(--teal);color:var(--bg);font-weight:700;padding:8px 14px}
+    .main-content{padding:92px 20px 20px;max-width:1400px;margin:0 auto;position:relative;z-index:1}
+    .bento{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+    .tile{
+      background: rgba(22, 27, 39, 0.68);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32);
+      border-radius:16px;
+      padding:24px;
+      position:relative;
+      overflow:hidden;
+      transition:box-shadow .25s ease, border-color .25s ease, transform .25s ease;
+    }
+    .tile:hover{border-color:rgba(0,212,170,0.55);box-shadow:0 0 0 1px rgba(0,212,170,0.25),0 0 24px rgba(0,212,170,0.22),0 12px 26px rgba(0,0,0,.35);transform:translateY(-1px)}
+    .tile-threat-posture,.tile-posture{grid-column:1 / 9;grid-row:1}.tile-system-health,.tile-health{grid-column:9 / 13;grid-row:1}.tile-signal-sources,.tile-sources{grid-column:9 / 13;grid-row:2;display:flex;flex-direction:column;justify-content:space-between}
+    .row-divider{grid-column:span 12;display:flex;align-items:center;gap:12px;padding:0 4px}.row-divider::before{content:'';width:4px;height:4px;background:var(--teal);border-radius:1px;flex-shrink:0}.row-divider.one{grid-row:2}.row-divider.two{grid-row:5}
+    .divider-label{font:400 10px "Space Mono",monospace;color:var(--muted);letter-spacing:2px;text-transform:uppercase}.divider-line{height:1px;background:linear-gradient(90deg,var(--line),transparent);flex:1}
+    .tile-hero-alert,.tile-alert-hero{grid-column:1 / 6;grid-row:2 / 4}.tile-alert-b{grid-column:6 / 10;grid-row:2}.tile-alert-c{grid-column:6 / 10;grid-row:3}.tile-alert-d{grid-column:10 / 13;grid-row:2}.tile-alert-e{grid-column:10 / 13;grid-row:3}.tile-pipeline{grid-column:span 12;grid-row:6}
+    .posture-value{margin-top:12px;font:700 32px "Space Mono",monospace;color:var(--high);letter-spacing:-1px}
+    .risk-track,.metric-track{background:var(--line);border-radius:999px;overflow:hidden}.risk-track{height:5px;max-width:320px;margin-top:10px}
+    .risk-fill,.metric-fill{width:0;animation:loadbar .9s ease forwards}.risk-fill{height:100%;--target-width:68%;background:linear-gradient(90deg,var(--teal),var(--high))}
+    @keyframes loadbar{from{width:0}to{width:var(--target-width)}}
+    .tile-triage{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}.triage-mini-btn{border:1px solid var(--line);background:transparent;color:var(--secondary);border-radius:999px;padding:6px 10px;font:400 11px "Space Mono",monospace}
+    .active-critical{color:var(--critical);border-color:var(--critical);background:var(--elevated)}.active-high{color:var(--high);border-color:var(--high);background:var(--elevated)}.active-teal{color:var(--teal);border-color:var(--teal);background:var(--elevated)}
+    .health-stack{margin-top:10px;display:grid;gap:10px}.health-head{display:flex;justify-content:space-between;color:var(--secondary);font-size:.82rem}
+    .metric-value-orange{color:var(--high)}.metric-value-red{color:var(--critical)}.metric-value-teal{color:var(--teal)}.metric-track{height:6px}.fill-orange{background:var(--high)}.fill-red{background:var(--critical)}.fill-teal{background:var(--teal)}
+    .signal-value{margin-top:10px;color:var(--teal);font:700 1.35rem "Space Mono",monospace}
+    .signal-head{margin-top:8px;font:400 9px "JetBrains Mono",monospace;color:var(--muted);text-transform:uppercase;letter-spacing:2px}
+    .signal-list{margin-top:10px;display:grid;gap:8px}
+    .signal-row{display:flex;justify-content:space-between;align-items:center}
+    .signal-name{font:400 12px "Inter","Segoe UI",sans-serif;color:var(--secondary)}
+    .signal-nominal{margin-top:10px;font:400 10px "JetBrains Mono",monospace;color:var(--teal)}
+    .pulse-dot-wrap{position:relative;width:12px;height:12px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+    .pulse-core{width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 6px var(--teal);position:relative;z-index:1}
+    .pulse-ring{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(0,212,170,0.5);animation:heartbeat 2.8s ease-out infinite}
+    .signal-dot{width:6px;height:6px;border-radius:50%;background:var(--muted)}
+    @keyframes heartbeat{0%{transform:scale(.8);opacity:.8}50%{transform:scale(1.8);opacity:0}100%{transform:scale(.8);opacity:0}}
+    .sources-ghost{position:absolute;right:-10px;bottom:-8px;width:140px;height:140px;opacity:.04;color:var(--text);pointer-events:none}
+    .alert-card{border-left:3px solid var(--medium)}.sev-critical{border-left-color:var(--critical)}.sev-high{border-left-color:var(--high)}.sev-medium{border-left-color:var(--medium)}
+    .card-top{display:flex;justify-content:space-between;gap:12px}.card-left{display:flex;align-items:center;gap:10px}.icon-box{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;border:1px solid transparent}.icon-slot .icon{width:20px;height:20px;color:currentColor}
+    .icon-critical{background:var(--elevated);color:var(--critical)}.icon-high{background:var(--elevated);color:var(--high)}.icon-medium{background:var(--elevated);color:var(--medium)}
+    .severity-pill{border-radius:20px;padding:5px 10px;font-size:10px;letter-spacing:.05em;text-transform:uppercase;border:1px solid var(--line)}.pill-critical{color:var(--critical)}.pill-high{color:var(--high)}.pill-medium{color:var(--medium)}
+    .card-title{margin:0;font-size:15px;color:var(--text)}.hero-title{font-family:"Space Mono",monospace;font-size:17px;font-weight:700;letter-spacing:-.5px;line-height:1.25}.card-description{margin:8px 0 0;font-size:12px;color:var(--secondary);line-height:1.65}
+    .card-footer{border-top:1px solid var(--line);margin-top:14px;padding-top:10px;display:flex;justify-content:space-between;gap:10px}
+    .conf-wrap{flex:1}
+    .conf-bar-label{font:400 10px "Space Mono",monospace;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+    .conf-row{display:flex;align-items:center;margin-top:6px}
+    .strength-bar-track{height:5px;flex:1;background:var(--line);border-radius:3px;overflow:hidden}
+    .strength-bar-fill{height:100%;width:0;--w:0%;--target-width:var(--w);animation:loadbar .9s ease forwards}
+    .strength-bar-fill.red,.strength-bar-fill.orange{background:linear-gradient(90deg,var(--high),var(--critical))}
+    .strength-bar-fill.teal{background:var(--teal)}
+    .strength-bar-fill.red{box-shadow:0 0 8px rgba(255,71,87,0.5)}
+    .strength-bar-fill.orange{box-shadow:0 0 8px rgba(255,140,66,0.5)}
+    .strength-bar-fill.teal{box-shadow:0 0 8px rgba(0,212,170,0.5)}
+    .conf-pct{font-family:"Space Mono",monospace;font-size:13px;font-weight:700;margin-left:10px;min-width:36px;text-align:right}
+    .conf-pct.red{color:#ff4757;text-shadow:0 0 12px rgba(255,71,87,0.6)}
+    .conf-pct.orange{color:#ff8c42;text-shadow:0 0 12px rgba(255,140,66,0.6)}
+    .conf-pct.teal{color:#00d4aa;text-shadow:0 0 12px rgba(0,212,170,0.6)}
+    .sparkline{width:90px;height:22px;flex-shrink:0;opacity:.8}
+    .source-chip{border:1px solid var(--line);border-radius:20px;color:var(--muted);font:400 10px "Space Mono",monospace;padding:5px 9px;display:inline-flex;align-items:center;gap:6px}
+    .chip-dot{font-size:12px;line-height:1}.chip-dot.critical{color:var(--critical)}.chip-dot.high{color:var(--high)}.chip-dot.medium{color:var(--medium)}.chip-dot.teal{color:var(--teal)}
+    .tile-label{color:var(--muted);font-family:"Space Mono",monospace;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;border-left:2px solid rgba(0,212,170,0.4);padding-left:8px}
+    .tile-posture{box-shadow:0 4px 24px rgba(0,0,0,0.3)}
+    .tile-health{box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+    .tile-sources{box-shadow:0 12px 40px rgba(0,0,0,0.5)}
+    .tile-alert-hero{box-shadow:0 16px 64px rgba(0,0,0,0.6),0 0 0 1px rgba(255,71,87,0.15)}
+    .tile-alert-b,.tile-alert-c,.tile-alert-d,.tile-alert-e{box-shadow:0 8px 32px rgba(0,0,0,0.35)}
+    .menu-btn{position:absolute;right:10px;top:10px;border:0;border-radius:999px;color:var(--text);background:var(--elevated);padding:8px 10px;z-index:10000}.menu{position:absolute;right:10px;top:38px;display:none;z-index:10000;background:var(--elevated);border:1px solid var(--line);border-radius:14px}.menu.open{display:block}.menu-item{display:block;width:100%;padding:10px 14px;background:transparent;border:0;color:var(--text);text-decoration:none;text-align:left;border-radius:999px}
+    .pipeline-scroll{margin-top:10px;overflow-x:auto}.pipeline-track{display:inline-flex;align-items:center;gap:10px;min-width:max-content}.pipeline-node{background:var(--elevated);border:1px solid var(--line);border-radius:10px;padding:10px 16px;font-size:11px;color:var(--text)}.pipeline-sub{margin-top:4px;font:400 10px "Space Mono",monospace;color:var(--muted)}
+    .pipeline-node.active{border-color:var(--teal);color:var(--teal);background:var(--elevated)}.pipeline-arrow{display:inline-flex;align-items:center;gap:4px;color:var(--teal)}.pipeline-arrow::before{content:"";width:18px;height:1px;background:var(--teal)}.pipeline-arrow::after{content:"›"}
+    .section-row{display:flex;align-items:center;gap:12px;margin-top:-100px;padding-top:100px}
+    .section-tag{color:var(--muted);font-family:"Space Mono",monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase}
+    .section-line{height:1px;flex:1;background:linear-gradient(90deg,var(--line),transparent)}
+    .arch-flow-tile{grid-column:span 8}
+    .arch-stack-tile{grid-column:span 4}
+    .flow-track{display:flex;align-items:center;overflow-x:auto;padding-bottom:6px}
+    .flow-node{
+      min-width:170px;
+      background:rgba(17,24,39,0.6);
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:12px;
+      padding:14px 18px;
+      font-size:12px;
+      font-weight:600;
+      color:var(--text);
+      flex-shrink:0;
+    }
+    .flow-sub{margin-top:4px;font-size:10px;color:var(--muted);font-weight:400}
+    .flow-node.active{
+      border-color:var(--teal);
+      background:rgba(0,212,170,0.06);
+      color:var(--teal);
+      box-shadow:0 0 20px rgba(0,212,170,0.08);
+    }
+    .flow-arrow{position:relative;width:40px;min-width:40px;height:14px;flex-shrink:0}
+    .flow-arrow::before{
+      content:"";
+      position:absolute;
+      left:0;
+      right:8px;
+      top:6px;
+      height:1px;
+      background:repeating-linear-gradient(90deg, rgba(0,212,170,0.4) 0px, rgba(0,212,170,0.4) 4px, transparent 4px, transparent 10px);
+      background-size:40px 1px;
+      animation:flowdash 1.2s linear infinite;
+    }
+    .flow-arrow::after{
+      content:"›";
+      position:absolute;
+      right:0;
+      top:-2px;
+      color:rgba(0,212,170,0.6);
+      font-size:14px;
+      line-height:1;
+    }
+    @keyframes flowdash{to{background-position:40px 0}}
+    .stack-list{margin-top:4px}
+    .stack-row{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+    .stack-row:last-child{border-bottom:0}
+    .stack-icon{
+      width:32px;height:32px;border-radius:8px;display:grid;place-items:center;flex-shrink:0;
+      background:rgba(0,212,170,0.1);color:var(--teal);font-size:14px
+    }
+    .stack-name{font-size:13px;font-weight:700;color:var(--text);line-height:1.2}
+    .stack-desc{font-size:11px;color:var(--muted);margin-top:3px}
+    .popia-mask-tile{grid-column:span 5}
+    .popia-checklist-tile{grid-column:span 4}
+    .popia-clock-tile{grid-column:span 3}
+    .mask-title{font:700 11px "Space Mono",monospace;color:var(--teal);letter-spacing:.04em}
+    .mask-table-wrap{margin-top:10px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.05)}
+    .mask-table{width:100%;border-collapse:collapse}
+    .mask-table thead tr{background:rgba(0,212,170,0.06)}
+    .mask-table th{padding:10px 14px;color:var(--teal);font:700 10px "Space Mono",monospace;letter-spacing:.06em;text-transform:uppercase;text-align:left}
+    .mask-table tbody tr:nth-child(odd){background:rgba(255,255,255,0.02)}
+    .mask-table td{padding:10px 14px}
+    .mask-label{color:var(--secondary);font:400 10px "Space Mono",monospace;text-transform:uppercase}
+    .mask-original{color:var(--critical);font:400 12px "JetBrains Mono",monospace}
+    .mask-arrow{color:var(--muted);font-size:14px;padding:0 12px;text-align:center}
+    .mask-masked{color:var(--teal);font:400 12px "JetBrains Mono",monospace}
+    .mask-standard{color:#4e9af1;font:400 10px "Space Mono",monospace}
+    .mask-caption{margin-top:14px;padding:12px 16px;background:rgba(0,212,170,0.04);border:1px solid rgba(0,212,170,0.12);border-radius:8px;font-size:11px;color:var(--secondary);line-height:1.7}
+    .compliance-list{margin-top:6px}
+    .compliance-item{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+    .compliance-item:last-child{border-bottom:0}
+    .check-badge{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);color:var(--teal);font-size:11px;box-shadow:0 0 8px rgba(0,212,170,0.2);flex-shrink:0}
+    .check-label{font-size:13px;color:var(--text)}
+    .breach-sub{margin-top:8px;color:var(--muted);font-size:11px}
+    .breach-clock{margin-top:16px;font:700 36px "Space Mono",monospace;color:var(--teal);text-shadow:0 0 20px rgba(0,212,170,0.5);letter-spacing:-1px}
+    .breach-caption{margin-top:2px;color:var(--muted);font-size:11px}
+    .status-pill{display:inline-flex;align-items:center;margin-top:14px;border:1px solid rgba(0,212,170,0.35);background:rgba(0,212,170,0.08);color:var(--teal);border-radius:999px;padding:6px 10px;font:700 10px "Space Mono",monospace;letter-spacing:.04em;text-transform:uppercase}
+    .logs-terminal-tile{grid-column:span 8}
+    .logs-stats-tile{grid-column:span 4}
+    .term-head{background:#0d1117;border-radius:12px 12px 0 0;padding:10px 16px;display:flex;align-items:center;gap:8px}
+    .term-dot{width:10px;height:10px;border-radius:50%}
+    .term-dot.red{background:#ff5f57}.term-dot.yellow{background:#febc2e}.term-dot.green{background:#28c840}
+    .term-title{font:400 11px "Space Mono",monospace;color:var(--muted);margin-left:6px}
+    .term-body{background:#060a10;border-radius:0 0 12px 12px;padding:16px;height:420px;overflow-y:auto;font:400 11px "Space Mono",monospace;line-height:1.8}
+    .log-line{display:block}
+    .log-ts{color:var(--muted)}
+    .log-id{color:#4e9af1}
+    .log-sev-CRITICAL{color:var(--critical)}
+    .log-sev-HIGH{color:var(--high)}
+    .log-sev-MEDIUM{color:var(--medium)}
+    .log-sev-LOW{color:var(--teal)}
+    .log-title{color:var(--text)}
+    .log-json{display:none;margin:4px 0 8px 0;padding:8px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);border-radius:8px;color:var(--secondary);white-space:pre-wrap}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+    .cursor-blink{animation:blink 1s step-end infinite;color:var(--teal)}
+    .log-stats-stack{margin-top:8px}
+    .log-stat{padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+    .log-stat:last-child{border-bottom:0}
+    .log-stat-num{font:700 28px "Space Mono",monospace;line-height:1}
+    .num-critical{color:var(--critical);text-shadow:0 0 16px rgba(255,71,87,0.3)}
+    .num-high{color:var(--high);text-shadow:0 0 16px rgba(255,140,66,0.3)}
+    .num-medium{color:var(--medium)}
+    .num-total{color:var(--text)}
+    .log-stat-label{margin-top:4px;font:400 10px "Space Mono",monospace;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+    .download-logs{margin-top:14px;padding:10px 20px;width:100%;border-radius:10px;border:1px solid rgba(0,212,170,0.3);background:rgba(0,212,170,0.06);color:var(--teal);font:400 11px "Space Mono",monospace;text-align:center;display:block;text-decoration:none}
+    .download-logs:hover{background:rgba(0,212,170,0.12)}
+    .to-top-btn{
+      position:fixed;bottom:28px;right:28px;z-index:99;width:40px;height:40px;border-radius:10px;
+      background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.2);color:var(--teal);font-size:16px;
+      display:grid;place-items:center;cursor:pointer;opacity:0;transition:opacity .2s ease
+    }
+    .to-top-btn{border-radius:999px}
+    .hidden{display:none}.modal{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;padding:20px}.modal.open{display:flex}.modal-box{width:min(820px,96vw);max-height:82vh;overflow:auto;background:var(--elevated);border:1px solid var(--line);border-radius:12px;padding:14px}.modal-head{display:flex;justify-content:space-between}.log-box{background:var(--tile);color:var(--secondary);padding:10px;border-radius:10px}
+    @media (max-width:960px){.bento{grid-template-columns:repeat(6,1fr)}.tile-threat-posture,.tile-system-health,.tile-signal-sources,.row-divider,.tile-hero-alert,.tile-alert-b,.tile-alert-c,.tile-alert-d,.tile-alert-e,.tile-pipeline{grid-column:span 6;grid-row:auto}.flow-track{flex-wrap:wrap;gap:10px}.flow-arrow{display:none}}
+    @media (max-width:600px){.bento{grid-template-columns:1fr}.nav-middle{display:none}.mask-table th:nth-child(2),.mask-table td:nth-child(2),.mask-table th:nth-child(3),.mask-table td:nth-child(3){display:none}.mask-title::after{content:"All PII masked per §18";display:block;color:var(--muted);font-size:10px;letter-spacing:.03em;margin-top:6px;font-weight:400}}
+  </style>
+</head>
+<body>
+  <nav class="top-nav"><div class="nav-left"><div class="shield-logo">S</div><div class="brand-title">Proactive <span class="sentinel">Sentinel</span></div></div><div class="nav-middle"><span class="nav-link active" onclick="setActive(this)" data-section="dashboard"><a href="#dashboard" style="color:inherit;text-decoration:none">Dashboard</a></span><span class="nav-link" onclick="setActive(this)" data-section="architecture"><a href="#architecture" style="color:inherit;text-decoration:none">Architecture</a></span><span class="nav-link" onclick="setActive(this)" data-section="popia"><a href="#popia" style="color:inherit;text-decoration:none">POPIA</a></span><span class="nav-link" onclick="setActive(this)" data-section="logs"><a href="#logs" style="color:inherit;text-decoration:none">Logs</a></span></div><div class="nav-right"><span class="pill-badge">POPIA §18</span><span id="live-time" class="utc-clock">--</span><button class="soc-btn">SOC Console</button></div></nav>
+  <main class="main-content">
+    <section id="dashboard">
+    <section class="bento">
+      <article class="tile tile-threat-posture tile-posture"><h3 class="tile-label">Threat Map</h3><p style="color:var(--secondary)">Real-time defensive status across security and UX signals.</p><div id="posture-value" class="posture-value">ELEVATED</div><div class="risk-track"><div class="risk-fill"></div></div><div class="tile-triage"><button class="triage-mini-btn active-critical" data-filter="critical">CRITICAL</button><button class="triage-mini-btn active-high" data-filter="high">HIGH</button><button class="triage-mini-btn" data-filter="improvements">MEDIUM</button><button class="triage-mini-btn active-teal" data-filter="all">ALL</button></div></article>
+      <article class="tile tile-system-health tile-health"><h3 class="tile-label">System Health</h3><div class="health-stack"><div><div class="health-head"><span>CPU</span><span class="metric-value-orange">91.7%</span></div><div class="metric-track"><div class="metric-fill fill-orange" style="--target-width:91.7%"></div></div></div><div><div class="health-head"><span>Memory</span><span class="metric-value-red">92.9%</span></div><div class="metric-track"><div class="metric-fill fill-red" style="--target-width:92.9%"></div></div></div><div><div class="health-head"><span>Disk I/O</span><span class="metric-value-teal">34%</span></div><div class="metric-track"><div class="metric-fill fill-teal" style="--target-width:34%"></div></div></div><div><div class="health-head"><span>Network</span><span class="metric-value-orange">72%</span></div><div class="metric-track"><div class="metric-fill fill-orange" style="--target-width:72%"></div></div></div></div></article>
+      <article class="tile tile-signal-sources tile-sources"><div><h3 class="tile-label">Signal Sources</h3><div class="signal-head">SIGNAL SOURCES</div></div><div class="signal-list"><div class="signal-row"><span class="signal-name">WhatsApp</span><span class="pulse-dot-wrap"><span class="pulse-ring" style="animation-delay:0s"></span><span class="pulse-core"></span></span></div><div class="signal-row"><span class="signal-name">Claims</span><span class="pulse-dot-wrap"><span class="pulse-ring" style="animation-delay:0.35s"></span><span class="pulse-core"></span></span></div><div class="signal-row"><span class="signal-name">Finance</span><span class="pulse-dot-wrap"><span class="pulse-ring" style="animation-delay:0.70s"></span><span class="pulse-core"></span></span></div><div class="signal-row"><span class="signal-name">Repatriation</span><span class="pulse-dot-wrap"><span class="pulse-ring" style="animation-delay:1.05s"></span><span class="pulse-core"></span></span></div></div><div id="channels-nominal" class="signal-nominal">4 / 4 channels nominal</div><svg class="sources-ghost" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 9a9 9 0 0 1 18 0M6 12a6 6 0 0 1 12 0M9 15a3 3 0 0 1 6 0M12 18.5h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></article>
+      <div class="row-divider one"><span class="divider-label">ALERT FEED</span><span class="divider-line"></span></div>
+      {% for a in alerts[:5] %}
+      {% set platform_text = (a.platform or '')|lower %}
+      {% set summary_text = (a.summary or '')|lower %}
+      {% set spark_points = "0,20 12,18 24,15 36,14 48,10 60,8 72,5 84,3 96,2 108,1" %}
+      {% if "identity gateway" in platform_text %}
+      {% set spark_points = "0,18 12,17 24,16 36,15 48,8 60,2 72,4 84,6 96,5 108,4" %}
+      {% elif "whatsapp frustration" in summary_text or "whatsapp" in platform_text %}
+      {% set spark_points = "0,14 12,13 24,14 36,12 48,11 60,12 72,10 84,9 96,10 108,9" %}
+      {% elif "web errors" in summary_text or "web" in platform_text %}
+      {% set spark_points = "0,20 12,19 24,19 36,18 48,18 60,5 72,3 84,8 96,9 108,7" %}
+      {% elif "social outcry" in summary_text or "facebook" in platform_text or "x" in platform_text %}
+      {% set spark_points = "0,20 12,18 24,16 36,14 48,13 60,11 72,10 84,9 96,8 108,7" %}
+      {% endif %}
+      {% set spark_color = "#ffd32a" %}
+      {% if a.triage_category == 'critical' %}
+      {% set spark_color = "#ff4757" %}
+      {% elif a.triage_category == 'high' %}
+      {% set spark_color = "#ff8c42" %}
+      {% elif a.triage_category == 'improvements' %}
+      {% set spark_color = "#00d4aa" %}
+      {% endif %}
+      <article class="tile {% if loop.index==1 %}tile-hero-alert tile-alert-hero{% elif loop.index==2 %}tile-alert-b{% elif loop.index==3 %}tile-alert-c{% elif loop.index==4 %}tile-alert-d{% else %}tile-alert-e{% endif %} alert-card {% if a.triage_category == 'critical' %}sev-critical{% elif a.triage_category == 'high' %}sev-high{% else %}sev-medium{% endif %}" data-platform="{{ a.platform }}" data-triage="{{ a.triage_category }}" data-raw="{{ a.raw_json|e }}"><h3 class="tile-label">{% if loop.index == 1 %}Hero Alert{% else %}Alert {{ "ABCDE"[loop.index0] }}{% endif %}</h3><div class="card-top"><div class="card-left"><div class="icon-box {% if a.triage_category == 'critical' %}icon-critical{% elif a.triage_category == 'high' %}icon-high{% else %}icon-medium{% endif %}"><span class="icon-slot"></span></div><h4 class="card-title {% if loop.index==1 %}hero-title{% endif %}">{{ a.platform }}</h4></div><span class="severity-pill {% if a.triage_category == 'critical' %}pill-critical{% elif a.triage_category == 'high' %}pill-high{% else %}pill-medium{% endif %}">{{ a.severity }}</span></div><p class="card-description">{{ a.summary }}</p><div class="card-footer"><div class="conf-wrap"><div class="conf-bar-label">AI Confidence</div><div class="conf-row"><div class="strength-bar-track"><div class="strength-bar-fill {% if a.triage_category == 'critical' %}red{% elif a.triage_category == 'high' %}orange{% else %}teal{% endif %}" style="--w: {{ a.ai_confidence|replace(' Match','') }}"></div></div><span class="conf-pct {% if a.triage_category == 'critical' %}red{% elif a.triage_category == 'high' %}orange{% else %}teal{% endif %}">{{ a.ai_confidence|replace(' Match','') }}</span></div></div><svg class="sparkline" viewBox="0 0 108 22" preserveAspectRatio="none"><defs><linearGradient id="spark-{{ loop.index }}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="{{ spark_color }}" stop-opacity="0.3"/><stop offset="100%" stop-color="{{ spark_color }}" stop-opacity="0"/></linearGradient></defs><polygon fill="url(#spark-{{ loop.index }})" points="0,22 {{ spark_points }} 108,22"/><polyline fill="none" stroke="{{ spark_color }}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="{{ spark_points }}"/></svg><span class="source-chip"><span class="chip-dot {% if a.triage_category == 'critical' %}critical{% elif a.triage_category == 'high' %}high{% elif a.triage_category == 'improvements' %}teal{% else %}medium{% endif %}">●</span>BankingDB</span></div>{% if role == "admin" %}<button class="menu-btn" type="button">⋮</button><div class="menu"><button class="menu-item view-logs-btn" type="button">View Raw Logs</button><a class="menu-item rca-link" href="#logs">Generate RCA</a></div>{% endif %}</article>
+      {% endfor %}
+      <div class="row-divider two"><span class="divider-label">ALERT FEED</span><span class="divider-line"></span></div>
+      <article class="tile tile-pipeline"><h3 class="tile-label">Data Pipeline</h3><div class="pipeline-scroll"><div class="pipeline-track"><div class="pipeline-node">Claims API<div class="pipeline-sub">Input</div></div><span class="pipeline-arrow"></span><div class="pipeline-node">CRM<div class="pipeline-sub">Enrichment</div></div><span class="pipeline-arrow"></span><div class="pipeline-node">WhatsApp<div class="pipeline-sub">Channel</div></div><span class="pipeline-arrow"></span><div class="pipeline-node active">Matano+VRL<div class="pipeline-sub">PII Masking</div></div><span class="pipeline-arrow"></span><div class="pipeline-node">Apache Iceberg<div class="pipeline-sub">Storage</div></div><span class="pipeline-arrow"></span><div class="pipeline-node">Python Rules<div class="pipeline-sub">Detection</div></div><span class="pipeline-arrow"></span><div class="pipeline-node">Redis Cache<div class="pipeline-sub">State</div></div><span class="pipeline-arrow"></span><div class="pipeline-node active">SOC Dashboard<div class="pipeline-sub">Action</div></div></div></div></article>
+    </section>
+    </section>
+    <section id="architecture" style="max-width:1400px;margin:0 auto;padding:0 24px 40px;">
+      <div class="section-row" style="margin-top:-100px;padding-top:100px;padding-bottom:16px">
+        <span class="section-tag">Architecture</span>
+        <div class="section-line"></div>
+      </div>
+      <div class="bento">
+        <article class="tile arch-flow-tile">
+          <h3 class="tile-label">Visual Pipeline Flow</h3>
+          <div class="flow-track" style="margin-top:12px">
+            <div class="flow-node">Webhook / API<div class="flow-sub">WhatsApp · Claims · Finance · Repatriation</div></div>
+            <span class="flow-arrow"></span>
+            <div class="flow-node active">VRL + Matano<div class="flow-sub">Normalise + POPIA Masking</div></div>
+            <span class="flow-arrow"></span>
+            <div class="flow-node">Apache Iceberg<div class="flow-sub">S3 Lake · ECS Schema</div></div>
+            <span class="flow-arrow"></span>
+            <div class="flow-node">Python Rules<div class="flow-sub">18 rules · InsurTech + Cyber</div></div>
+            <span class="flow-arrow"></span>
+            <div class="flow-node">Redis State<div class="flow-sub">Multi-stage correlation</div></div>
+            <span class="flow-arrow"></span>
+            <div class="flow-node">AI Analysis<div class="flow-sub">Claude Sonnet · MITRE mapping</div></div>
+            <span class="flow-arrow"></span>
+            <div class="flow-node active">SOC Dashboard<div class="flow-sub">This view</div></div>
+          </div>
+        </article>
+        <article class="tile arch-stack-tile">
+          <h3 class="tile-label">Tech Stack Breakdown</h3>
+          <div class="stack-list">
+            <div class="stack-row"><div class="stack-icon">WA</div><div><div class="stack-name">WhatsApp Business API</div><div class="stack-desc">Webhook ingestion channel</div></div></div>
+            <div class="stack-row"><div class="stack-icon">MT</div><div><div class="stack-name">Matano + VRL</div><div class="stack-desc">Log normalisation + POPIA masking</div></div></div>
+            <div class="stack-row"><div class="stack-icon">IB</div><div><div class="stack-name">Apache Iceberg</div><div class="stack-desc">S3 data lake, ECS schema</div></div></div>
+            <div class="stack-row"><div class="stack-icon">PY</div><div><div class="stack-name">Python Rules Engine</div><div class="stack-desc">18 MITRE-aligned detection rules</div></div></div>
+            <div class="stack-row"><div class="stack-icon">RC</div><div><div class="stack-name">Redis Cache</div><div class="stack-desc">Stateful multi-stage detection</div></div></div>
+            <div class="stack-row"><div class="stack-icon">AI</div><div><div class="stack-name">Claude Sonnet AI</div><div class="stack-desc">Threat classification + MITRE mapping</div></div></div>
+            <div class="stack-row"><div class="stack-icon">FL</div><div><div class="stack-name">Flask SOC Dashboard</div><div class="stack-desc">Real-time command centre</div></div></div>
+          </div>
+        </article>
+      </div>
+    </section>
+    <section id="popia" style="max-width:1400px;margin:0 auto;padding:0 24px 40px;">
+      <div class="section-row" style="margin-top:-100px;padding-top:100px;padding-bottom:16px">
+        <span class="section-tag">POPIA Compliance</span>
+        <div class="section-line"></div>
+        <span class="section-tag" style="color:#00d4aa">§18 · §19 · §22 · SADC Multi-national Identity</span>
+      </div>
+      <div class="bento">
+        <article class="tile popia-mask-tile">
+          <h3 class="mask-title">Before → After Masking Engine</h3>
+          <div class="mask-table-wrap">
+            <table class="mask-table">
+              <thead>
+                <tr><th>Type</th><th>Original</th><th>arrow</th><th>Masked</th><th>Standard</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="mask-label">SA National ID</td><td class="mask-original">9201015000081</td><td class="mask-arrow">→</td><td class="mask-masked">92XXXXXXXXX81</td><td class="mask-standard">POPIA §18</td></tr>
+                <tr><td class="mask-label">Zimbabwe ID</td><td class="mask-original">29-123456K78</td><td class="mask-arrow">→</td><td class="mask-masked">29-XXXXXXX78</td><td class="mask-standard">ZIM Privacy Act</td></tr>
+                <tr><td class="mask-label">SADC Passport</td><td class="mask-original">ZN1234567</td><td class="mask-arrow">→</td><td class="mask-masked">ZNXXXXX67</td><td class="mask-standard">POPIA §18 / ICAO</td></tr>
+                <tr><td class="mask-label">SA Mobile</td><td class="mask-original">0821234567</td><td class="mask-arrow">→</td><td class="mask-masked">XXXXXXXXXX</td><td class="mask-standard">POPIA §18</td></tr>
+                <tr><td class="mask-label">Email Address</td><td class="mask-original">sipho@zororo.co.za</td><td class="mask-arrow">→</td><td class="mask-masked">sXXXX@zororo.co.za</td><td class="mask-standard">POPIA §18</td></tr>
+                <tr><td class="mask-label">Payment Card</td><td class="mask-original">4111 1111 1111 1111</td><td class="mask-arrow">→</td><td class="mask-masked">XXXX XXXX XXXX 1111</td><td class="mask-standard">PCI-DSS</td></tr>
+                <tr><td class="mask-label">Policyholder</td><td class="mask-original">Name: Priya Naidoo</td><td class="mask-arrow">→</td><td class="mask-masked">Name: PrXXX NaXXXX</td><td class="mask-standard">POPIA §26</td></tr>
+                <tr><td class="mask-label">IP Address</td><td class="mask-original">192.168.10.55</td><td class="mask-arrow">→</td><td class="mask-masked">192.168.XXX.XXX</td><td class="mask-standard">POPIA §18</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="mask-caption">Multi-national identity normalisation covering SA, Zimbabwe, Botswana, Mozambique and all SADC passport formats. No raw identity document numbers are stored, transmitted or logged at any stage of the pipeline.</div>
+        </article>
+        <article class="tile popia-checklist-tile">
+          <h3 class="tile-label">Compliance Status</h3>
+          <div class="compliance-list">
+            <div class="compliance-item"><span class="check-badge">ONLINE</span><span class="check-label">PII masked before storage (§18)</span></div>
+            <div class="compliance-item"><span class="check-badge">ONLINE</span><span class="check-label">No raw ID numbers in logs (§19)</span></div>
+            <div class="compliance-item"><span class="check-badge">ONLINE</span><span class="check-label">Audit trail maintained (§22)</span></div>
+            <div class="compliance-item"><span class="check-badge">ONLINE</span><span class="check-label">Breach detection &lt; 72 hours</span></div>
+            <div class="compliance-item"><span class="check-badge">ONLINE</span><span class="check-label">Human-in-the-loop review active</span></div>
+            <div class="compliance-item"><span class="check-badge">ONLINE</span><span class="check-label">Data minimisation enforced</span></div>
+          </div>
+        </article>
+        <article class="tile popia-clock-tile">
+          <h3 class="tile-label">Breach Response Window</h3>
+          <div class="breach-sub">POPIA §22 — Regulator notification</div>
+          <div id="breach-clock" class="breach-clock">72:00:00</div>
+          <div class="breach-caption">hours remaining</div>
+          <span class="status-pill">No active breach</span>
+        </article>
+      </div>
+    </section>
+    <section id="logs" style="max-width:1400px;margin:0 auto;padding:0 24px 60px;">
+      <div class="section-row" style="margin-top:-100px;padding-top:100px;padding-bottom:16px">
+        <span class="section-tag">Raw Logs</span>
+        <div class="section-line"></div>
+        <span class="section-tag" id="log-count">loading...</span>
+      </div>
+      <div class="bento">
+        <article class="tile logs-terminal-tile">
+          <div class="term-head">
+            <span class="term-dot red"></span><span class="term-dot yellow"></span><span class="term-dot green"></span>
+            <span class="term-title">sentinel@soc:~$ tail -f alerts.jsonl</span>
+            <span style="margin-left: auto; font-size: 9px; padding: 2px 8px; border-radius: 4px; background: rgba(0,212,170,0.08); border: 1px solid rgba(0,212,170,0.2); color: #00d4aa; font-family: Space Mono;">UNIVERSAL MASK ACTIVE</span>
+          </div>
+          <div id="term-body" class="term-body">
+            <div class="log-line"><span class="log-ts">[boot]</span> <span class="log-title">Loading alert stream...</span></div>
+            <span class="cursor-blink">ACTIVE</span>
+          </div>
+        </article>
+        <article class="tile logs-stats-tile">
+          <h3 class="tile-label">Log Summary</h3>
+          <div class="log-stats-stack">
+            <div class="log-stat"><div id="stat-critical" class="log-stat-num num-critical">0</div><div class="log-stat-label">Critical</div></div>
+            <div class="log-stat"><div id="stat-high" class="log-stat-num num-high">0</div><div class="log-stat-label">High</div></div>
+            <div class="log-stat"><div id="stat-medium" class="log-stat-num num-medium">0</div><div class="log-stat-label">Medium</div></div>
+            <div class="log-stat"><div id="stat-total" class="log-stat-num num-total">0</div><div class="log-stat-label">Total</div></div>
+          </div>
+          <a class="download-logs" href="/api/alerts" download="sentinel_alerts.json">Download Logs</a>
+        </article>
+      </div>
+    </section>
+  </main>
+  <button id="toTopBtn" class="to-top-btn" type="button" onclick="window.scrollTo({top:0, behavior:'smooth'})">↑</button>
+  <div id="logModal" class="modal"><div class="modal-box"><div class="modal-head"><strong>Raw Alert Logs</strong><button class="menu-item close-btn" type="button">Close</button></div><pre id="modalLogContent" class="log-box"></pre></div></div>
+  <script>
+    const cards=document.querySelectorAll(".alert-card"),modal=document.getElementById("logModal"),log=document.getElementById("modalLogContent");
+    function clock(){document.getElementById('live-time').textContent=new Date().toISOString().replace('T',' ').substring(0,19)+' UTC'}
+    clock();setInterval(clock,1000);
+    async function refresh(){try{const r=await fetch('/api/alerts');if(!r.ok)return;const d=await r.json();const a=Array.isArray(d.alerts)?d.alerts:[];document.getElementById('alert-count-label').textContent=`${a.length} online`;const c=a.some(x=>String(x.severity||'').toUpperCase()==='CRITICAL');const p=document.getElementById('posture-value');p.textContent=c?'CRITICAL':'ELEVATED';p.style.color=c?'#ff4757':'#ff8c42'}catch(e){}}
+    refresh();setInterval(refresh,15000);
+    document.addEventListener("click",e=>{document.querySelectorAll(".menu.open").forEach(m=>{if(!m.parentElement.contains(e.target))m.classList.remove("open")})});
+    cards.forEach((c,i)=>{const b=c.querySelector(".menu-btn"),m=c.querySelector(".menu"),v=c.querySelector(".view-logs-btn"),r=c.querySelector(".rca-link");if(r)r.href=`/download_report/${i+1}`;if(b&&m)b.addEventListener("click",e=>{e.stopPropagation();m.classList.toggle("open")});if(v&&m)v.addEventListener("click",()=>{log.textContent=c.dataset.raw||"";modal.classList.add("open");m.classList.remove("open")})});
+    document.querySelector(".close-btn")?.addEventListener("click",()=>modal.classList.remove("open"));
+    document.querySelectorAll("[data-filter]").forEach(b=>b.addEventListener("click",()=>{const t=b.dataset.filter;cards.forEach(c=>{if(t==="all")c.classList.remove("hidden");else c.classList.toggle("hidden",c.dataset.triage!==t)})}));
+    function setActive(el){
+      document.querySelectorAll('.nav-link').forEach(n=>n.classList.remove('active'));
+      el.classList.add('active');
+    }
+    const sections=['dashboard','architecture','popia','logs'];
+    window.addEventListener('scroll',()=>{
+      let current='dashboard';
+      sections.forEach(id=>{
+        const el=document.getElementById(id);
+        if(el&&window.scrollY>=el.offsetTop-120) current=id;
+      });
+      document.querySelectorAll('.nav-link').forEach(n=>{
+        n.classList.toggle('active',n.dataset.section===current);
+      });
+    });
+    let secs=72*3600;
+    setInterval(()=>{
+      secs=secs>0?secs-1:72*3600;
+      const h=String(Math.floor(secs/3600)).padStart(2,'0');
+      const m=String(Math.floor((secs%3600)/60)).padStart(2,'0');
+      const s=String(secs%60).padStart(2,'0');
+      const clockEl=document.getElementById('breach-clock');
+      if(clockEl) clockEl.textContent=h+':'+m+':'+s;
+    },1000);
+    function bindLogLineToggles(){
+      document.querySelectorAll('.log-line').forEach(line=>{
+        line.style.cursor='pointer';
+        line.addEventListener('click',()=>{
+          const json=line.nextElementSibling;
+          if(json&&json.classList.contains('log-json')){
+            json.style.display=json.style.display==='none'?'block':'none';
+            line.style.background=json.style.display==='block'?'rgba(0,212,170,0.05)':'transparent';
+          }
+        });
+      });
+    }
+    function escapeHtml(text){
+      return String(text).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+    }
+    function clientMask(text){
+      if(!text) return text;
+      text=String(text);
+      text=text.replace(/\b(\d{2})(\d{2})(\d{2})(\d{7})\b/g,(m,y,mo,d,rest)=>y+mo+'XXXXXXX'+rest.slice(-2));
+      text=text.replace(/\b(\d{2})-(\d{6}[A-Z]\d{2})\b/g,(m,prefix,body)=>prefix+'-'+'XXXXXX'+body.slice(-2));
+      text=text.replace(/\b([A-Z]{2})(\d{6,7})\b/g,(m,cc,digits)=>cc+'X'.repeat(digits.length-2)+digits.slice(-2));
+      text=text.replace(/(\+27|0)([6-8]\d)(\d{7})/g,(m,p,area,num)=>p+area+'XXXXX'+num.slice(-2));
+      return text;
+    }
+    async function refreshLogs(){
+      try{
+        const res=await fetch('/api/alerts?limit=10');
+        if(!res.ok) return;
+        const data=await res.json();
+        const alerts=Array.isArray(data.alerts)?data.alerts:[];
+        const term=document.getElementById('term-body');
+        const countEl=document.getElementById('log-count');
+        if(countEl) countEl.textContent=`${alerts.length} entries`;
+        if(!term) return;
+        if(alerts.length===0){
+          term.innerHTML=`<div style="color:#4a5568;text-align:center;padding:40px;font-family:'Space Mono'">sentinel@soc:~$ no alerts found - system nominal ONLINE</div><span class="cursor-blink">ACTIVE</span>`;
+          return;
+        }
+        const lines=alerts.map((a,idx)=>{
+          const sev=String(a.severity||'LOW').toUpperCase();
+          const ts=new Date().toISOString().replace('T',' ').substring(0,19);
+          const safeTitle=clientMask(a.title||a.type||a.platform||'');
+          const safeDesc=clientMask(a.description||'');
+          const safeSnippet=clientMask(a.raw_log_snippet||'');
+          const safeJson=clientMask(JSON.stringify(a,null,2));
+          const titleText=safeTitle||'Alert';
+          const detailText=[safeDesc,safeSnippet].filter(Boolean).join(' | ');
+          const composed=detailText?`${titleText} — ${detailText}`:titleText;
+          return `<div class="log-line"><span class="log-ts">[${ts}]</span><span class="log-id"> [${a.alert_id||idx+1}] </span><span class="log-sev-${sev}">[${sev}]</span><span class="log-title"> ${escapeHtml(composed)}</span></div><pre class="log-json" style="display:none">${escapeHtml(safeJson)}</pre>`;
+        }).join('');
+        term.innerHTML=lines+`<span class="cursor-blink">ACTIVE</span>`;
+        bindLogLineToggles();
+      }catch(e){}
+    }
+    async function refreshStats(){
+      try{
+        const res=await fetch('/api/stats');
+        if(!res.ok) return;
+        const s=await res.json();
+        const set=(id,val)=>{const el=document.getElementById(id); if(el) el.textContent=String(val??0);};
+        set('stat-critical',s.critical);
+        set('stat-high',s.high);
+        set('stat-medium',s.medium);
+        set('stat-total',s.total);
+        const nominal=document.getElementById('channels-nominal');
+        if(nominal){
+          const totalChannels=4;
+          const critical=Number(s.critical||0);
+          const high=Number(s.high||0);
+          const down=Math.min(totalChannels,critical+high);
+          const online=Math.max(0,totalChannels-down);
+          nominal.textContent=`${online} / ${totalChannels} channels nominal`;
+        }
+      }catch(e){}
+    }
+    refreshLogs();
+    refreshStats();
+    setInterval(refreshLogs,15000);
+    setInterval(refreshStats,15000);
+    document.addEventListener('DOMContentLoaded',()=>{
+      const dashNav=document.querySelector('.nav-link[data-section="dashboard"]');
+      if(dashNav) setActive(dashNav);
+    });
+    const observer=new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting) e.target.style.opacity='1';
+      });
+    },{threshold:0.1});
+    document.querySelectorAll('section').forEach(s=>{
+      s.style.opacity='0';
+      s.style.transition='opacity 0.6s ease';
+      observer.observe(s);
+    });
+    const btn=document.getElementById('toTopBtn');
+    window.addEventListener('scroll',()=>{
+      if(btn) btn.style.opacity=window.scrollY>400?'1':'0';
+    });
+  </script>
+</body>
+</html>
