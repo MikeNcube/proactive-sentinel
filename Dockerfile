@@ -13,8 +13,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir gunicorn
 
 COPY . .
+COPY start.sh .
+RUN chmod +x start.sh
 
 RUN useradd -m -u 1000 sentinel && chown -R sentinel:sentinel /app
 USER sentinel
 
-CMD ["/bin/sh", "-c", "flask db upgrade && gunicorn --bind 0.0.0.0:${PORT:-5001} --workers 2 --timeout 120 app:app"]
+CMD ["sh", "start.sh"]
