@@ -8,7 +8,7 @@ import time
 import uuid
 from logging.config import dictConfig
 
-from flask import Flask, g, jsonify, request
+from flask import Flask, g, jsonify, request, render_template
 from sqlalchemy import text
 
 from src.auth.jwt_manager import JWTManager
@@ -176,6 +176,10 @@ def create_app(config_name=None) -> Flask:
             return {"status": "healthy", "database": "reachable"}, 200
         except Exception:
             return {"status": "degraded", "database": "unreachable"}, 503
+
+    @app.route("/dashboard")
+    def dashboard():
+        return render_template("dashboard.html")
 
     try:
         from src.api.routes import api_bp
