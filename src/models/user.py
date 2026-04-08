@@ -6,6 +6,7 @@ from sqlalchemy import String, DateTime, Boolean, Enum
 from src.extensions import db
 from src.models.types import UUID
 from src.utils.encryption import field_encryption
+from werkzeug.security import check_password_hash
 import bcrypt
 import uuid
 from datetime import datetime
@@ -66,6 +67,12 @@ class User(db.Model):
         self.password_hash = bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
     
     def check_password(self, password):
+        if not self.password_hash:
+            return False
+        # Support both bcrypt and Werkzeug hashes to avoid runtime auth failures
+        # when seed or migration scripts use different hashers.
+        if self.password_hash.startswith("pbkdf2:") or self.password_hash.startswith("scrypt:"):
+            return check_password_hash(self.password_hash, password)
         return bcrypt.checkpw(password.encode('utf-8'), self.password_hash.encode('utf-8'))
     
     def to_dict(self, include_sensitive=False):
