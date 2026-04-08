@@ -1,4 +1,5 @@
 import logging
+import os
 from logging.config import fileConfig
 
 from flask import current_app
@@ -6,6 +7,7 @@ from sqlalchemy import CHAR
 from sqlalchemy.types import TypeDecorator
 
 from alembic import context
+from src.utils.database import validate_postgresql_url
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -27,11 +29,11 @@ def get_engine():
 
 
 def get_engine_url():
-    try:
-        return get_engine().url.render_as_string(hide_password=False).replace(
-            '%', '%%')
-    except AttributeError:
-        return str(get_engine().url).replace('%', '%%')
+    raw_env_url = os.environ.get("DATABASE_URL")
+    if not raw_env_url:
+        raise RuntimeError("DATABASE_URL is required for migrations.")
+    normalized_url = validate_postgresql_url(raw_env_url)
+    return normalized_url.replace('%', '%%')
 
 
 # add your model's MetaData object here
@@ -66,6 +68,8 @@ def run_migrations_offline():
 
     """
     url = config.get_main_option("sqlalchemy.url")
+    if not url.startswith("postgresql://"):
+        raise RuntimeError("Offline migrations require a postgresql:// DATABASE_URL.")
     context.configure(
         url=url, target_metadata=get_metadata(), literal_binds=True
     )
@@ -110,10 +114,13 @@ def run_migrations_online():
     connectable = get_engine()
 
     with connectable.connect() as connection:
+        if connection.dialect.name != "postgresql":
+            raise RuntimeError(
+                f"Migrations must run against PostgreSQL, got '{connection.dialect.name}'."
+            )
         context.configure(
             connection=connection,
             target_metadata=get_metadata(),
-            compare_type=True,
             **conf_args
         )
 
