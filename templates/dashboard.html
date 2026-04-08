@@ -101,11 +101,15 @@
     .modal .body{width:min(720px,94vw);background:#111c2f;border:1px solid var(--border);border-radius:10px;padding:12px}
     .chart-wrap{width:100%;position:relative}
     canvas{width:100% !important}
-    .posture-header{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
-    .posture-title{font-size:20px;margin:8px 0 4px}
-    .posture-subtitle{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .posture-pills{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;margin-top:8px}
+    .posture-header{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;margin-bottom:8px}
+    .posture-title{font-size:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:8px 0 4px}
+    .posture-subtitle{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#8892a4}
+    .posture-pills{display:flex;flex-direction:row;align-items:center;gap:8px;flex-wrap:nowrap;margin:12px 0}
+    .posture-main-card{width:100%;box-sizing:border-box}
+    .posture-chart-wrap{width:100%;height:260px;position:relative}
     .posture-main-chart{height:260px !important}
+    .posture-bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;margin-top:16px}
+    .service-mesh-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
     @media(max-width:1000px){.kpi-grid,.kpi-row,.mesh,.metric-grid,.three,.grid3,.grid4{grid-template-columns:repeat(2,1fr)}.two,.grid2{grid-template-columns:1fr}}
   </style>
 </head>
@@ -174,7 +178,7 @@
         </section>
 
         <section id="page-posture" class="page">
-          <div class="card">
+          <div class="card posture-main-card">
             <div class="posture-header">
               <span class="mini">THREAT POSTURE</span>
               <span class="sev sev-low">NORMAL</span>
@@ -183,9 +187,9 @@
             <h2 class="posture-title">Zororo Phumulani Funeral Logistics SOC</h2>
             <div class="mini posture-subtitle">Cross-channel security for Claims, WhatsApp, Member Portals, Lead Management, Finance, Repatriation</div>
             <div class="posture-pills"><span class="badge">$FRAUD</span><span class="badge">$POPIA</span><span class="badge">$KYC</span><span class="badge">$HACK</span></div>
-            <div class="chart-wrap"><canvas id="postureMainChart" class="posture-main-chart" height="260"></canvas></div>
+            <div class="posture-chart-wrap"><canvas id="postureMainChart" class="posture-main-chart" height="260"></canvas></div>
           </div>
-          <div class="two">
+          <div class="posture-bottom-grid">
             <div class="card"><h3>Attack Timeline</h3><div id="attackTimeline"></div></div>
             <div class="card"><h3>Service Mesh</h3><div id="postureMesh"></div></div>
           </div>
@@ -497,7 +501,7 @@
         "UTC 08:29 | CRITICAL | Ransom note dropped",
         "UTC 09:11 | HIGH | C2 outbound exfiltration"
       ].map(x=>`<div class="mini" style="padding:6px 0;border-bottom:1px solid var(--border)">${x}</div>`).join("");
-      document.getElementById("postureMesh").innerHTML=`<div class="mini">Claims API: healthy</div><div class="mini">WhatsApp Gateway: healthy</div><div class="mini">Finance Connector: healthy</div><div class="mini">Repatriation Engine: monitored</div>`;
+      document.getElementById("postureMesh").innerHTML=`<div class="service-mesh-item mini"><span>Claims API</span><span style="color:var(--teal)">healthy</span></div><div class="service-mesh-item mini"><span>WhatsApp Gateway</span><span style="color:var(--teal)">healthy</span></div><div class="service-mesh-item mini"><span>Finance Connector</span><span style="color:var(--teal)">healthy</span></div><div class="service-mesh-item mini"><span>Repatriation Engine</span><span style="color:var(--teal)">monitored</span></div>`;
     }
 
     async function registerUnit(){
