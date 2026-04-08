@@ -112,6 +112,104 @@
     .posture-main-chart{height:200px !important}
     .posture-bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;margin-top:16px}
     .service-mesh-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+    .app {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+    .main {
+      flex: 1;
+      min-width: 0;
+      overflow-x: hidden;
+    }
+    .content {
+      width: 100%;
+      padding: 16px 24px;
+      box-sizing: border-box;
+    }
+    .page {
+      width: 100%;
+    }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: nowrap;
+    }
+    .page-title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--teal);
+    }
+    .badge-group { display: flex; gap: 8px; }
+    .badge-normal, .badge-critical {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .badge-normal { color: var(--teal); border-color: rgba(0, 212, 170, 0.5); }
+    .badge-critical { color: var(--red); border-color: rgba(255, 71, 87, 0.5); }
+    .timestamp { font-size: 12px; color: #8892a4; }
+    .threat-title-section h2 {
+      margin: 0 0 6px;
+      font-size: 20px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .threat-title-section p {
+      margin: 0;
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #8892a4;
+    }
+    .stat-pills {
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+      flex-wrap: nowrap;
+      margin: 12px 0;
+    }
+    .pill {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px 8px;
+      color: var(--teal);
+      font-size: 12px;
+    }
+    .chart-container {
+      width: 100%;
+      margin: 16px 0;
+    }
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      width: 100%;
+      margin-top: 16px;
+    }
+    .service-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .status.healthy { color: #00d4aa; }
+    .status.degraded { color: #ffa502; }
     @media(max-width:1000px){.kpi-grid,.kpi-row,.mesh,.metric-grid,.three,.grid3,.grid4{grid-template-columns:repeat(2,1fr)}.two,.grid2{grid-template-columns:1fr}}
   </style>
 </head>
@@ -124,7 +222,7 @@
       <div class="search-wrap"><input id="globalSearch" placeholder="Search alerts globally..." /></div>
       <nav class="nav" id="nav">
         <a class="nav-item active" data-page="overview" href="#"><span>Overview</span></a>
-        <a class="nav-item" data-page="posture" href="#"><span>Threat Posture</span></a>
+        <a class="nav-item" data-page="threat" href="#"><span>Threat Posture</span></a>
         <a class="nav-item" data-page="incidents" href="#"><span>Incidents</span><span class="count-badge" id="incCount">0</span></a>
         <a class="nav-item" data-page="alerts" href="#"><span>Alerts</span><span class="count-badge" id="alertCountBadge">0</span></a>
         <a class="nav-item" data-page="units" href="#"><span>Units/Endpoints</span></a>
@@ -179,21 +277,61 @@
           </div>
         </section>
 
-        <section id="page-posture" class="page">
-          <div class="card posture-main-card">
-            <div class="posture-header">
-              <span class="mini">THREAT POSTURE</span>
-              <span class="sev sev-low">NORMAL</span>
-              <span class="sev sev-critical">CRITICAL</span>
+        <section id="page-threat" class="page">
+          <div class="page-header card">
+            <div class="header-left">
+              <h1 class="page-title">THREAT POSTURE</h1>
+              <div class="badge-group">
+                <span class="badge-normal">NORMAL</span>
+                <span class="badge-critical">CRITICAL</span>
+              </div>
             </div>
-            <h2 class="posture-title">Zororo Phumulani Funeral Logistics SOC</h2>
-            <div class="mini posture-subtitle">Cross-channel security for Claims, WhatsApp, Member Portals, Lead Management, Finance, Repatriation</div>
-            <div class="posture-pills"><span class="badge">$FRAUD</span><span class="badge">$POPIA</span><span class="badge">$KYC</span><span class="badge">$HACK</span></div>
-            <div class="posture-chart-wrap"><canvas id="postureMainChart" class="posture-main-chart" height="200"></canvas></div>
+            <div class="header-right">
+              <span class="timestamp" id="threatTimestamp">--</span>
+            </div>
           </div>
-          <div class="posture-bottom-grid">
-            <div class="card"><h3>Attack Timeline</h3><div class="chart-wrap"><canvas id="attackTimelineChart" height="200"></canvas></div></div>
-            <div class="card"><h3>Service Mesh</h3><div id="postureMesh" class="service-mesh-grid"></div></div>
+
+          <div class="threat-title-section card">
+            <h2>Zororo Phumulani Funeral Logistics SOC</h2>
+            <p>Cross-channel security for Claims, WhatsApp, Member Portals, Lead Management, Finance, Repatriation</p>
+          </div>
+
+          <div class="stat-pills card">
+            <span class="pill">$FRAUD</span>
+            <span class="pill">$POPIA</span>
+            <span class="pill">$KYC</span>
+            <span class="pill">$HACK</span>
+          </div>
+
+          <div class="chart-container card">
+            <canvas id="threatChart" height="200" style="width: 100%;"></canvas>
+          </div>
+
+          <div class="bottom-grid">
+            <div class="card">
+              <h3>Attack Timeline</h3>
+              <canvas id="attackTimelineChart" height="150" style="width: 100%;"></canvas>
+            </div>
+
+            <div class="card">
+              <h3>Service Mesh</h3>
+              <div class="service-item">
+                <span>Claims API</span>
+                <span class="status healthy">Healthy</span>
+              </div>
+              <div class="service-item">
+                <span>WhatsApp Gateway</span>
+                <span class="status healthy">Healthy</span>
+              </div>
+              <div class="service-item">
+                <span>Finance Connector</span>
+                <span class="status degraded">Degraded</span>
+              </div>
+              <div class="service-item">
+                <span>Repatriation Engine</span>
+                <span class="status healthy">Healthy</span>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -343,7 +481,7 @@
       return "sev-low";
     }
     function pageTitle(id){
-      const map={overview:"Overview",posture:"Threat Posture",incidents:"Incidents",alerts:"Alerts",units:"Units/Endpoints",rules:"Detection Rules",anomalies:"Anomalies",audit:"Audit Log",reports:"Reports",settings:"Settings"};
+      const map={overview:"Overview",threat:"Threat Posture",incidents:"Incidents",alerts:"Alerts",units:"Units/Endpoints",rules:"Detection Rules",anomalies:"Anomalies",audit:"Audit Log",reports:"Reports",settings:"Settings"};
       return map[id]||"Overview";
     }
     function go(page){
@@ -479,7 +617,7 @@
       destroyChart("overviewThreat");
       destroyChart("cases");
       destroyChart("donut");
-      destroyChart("posture");
+      destroyChart("threat");
       destroyChart("attackTimeline");
       destroyChart("incTrend");
       destroyChart("uniqueModels");
@@ -496,15 +634,84 @@
         type:"doughnut",data:{labels:["Login Anomalies","API Abuse","Data Exfil","Other"],datasets:[{data:[45,28,15,12],backgroundColor:["#00d4aa","#4da6ff","#ffa502","#ff4757"]}]},
         options:{plugins:{legend:{labels:{color:"#8fa9c2"}}}}
       });
-      charts.posture=new Chart(document.getElementById("postureMainChart"),{
-        data:{labels:["00","04","08","12","16","20"],datasets:[{type:"bar",label:"Threat Volume",data:[6,8,10,9,12,11],backgroundColor:"#00d4aa88",borderColor:"#00d4aa",yAxisID:"y"},{type:"line",label:"Risk Score",data:[42,48,57,53,69,64],borderColor:"#4da6ff",yAxisID:"y1",tension:.3}]},
-        options:{plugins:{legend:{labels:{color:"#8fa9c2"}}},scales:{y:{position:"left",ticks:{color:"#8fa9c2"}},y1:{position:"right",grid:{drawOnChartArea:false},ticks:{color:"#8fa9c2"}},x:{ticks:{color:"#8fa9c2"}}}}
-      });
-      charts.attackTimeline=new Chart(document.getElementById("attackTimelineChart"),{
-        type:"line",
-        data:{labels:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],datasets:[{label:"Attacks",data:[3,5,2,8,12,7,4],borderColor:"#00d4aa",backgroundColor:"rgba(0,212,170,0.1)",fill:true,tension:.3}]},
-        options:{plugins:{legend:{labels:{color:"#8fa9c2"}}},scales:{x:{ticks:{color:"#8fa9c2"}},y:{ticks:{color:"#8fa9c2"}}}}
-      });
+      const threatCtx = document.getElementById("threatChart")?.getContext("2d");
+      if (threatCtx) {
+        charts.threat = new Chart(threatCtx, {
+          type: "bar",
+          data: {
+            labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+            datasets: [
+              {
+                label: "Threat Volume",
+                data: [12, 19, 15, 17, 14, 23, 18],
+                backgroundColor: "#00d4aa",
+                borderRadius: 4,
+                yAxisID: "y"
+              },
+              {
+                label: "Risk Score",
+                data: [65, 72, 68, 74, 71, 85, 78],
+                type: "line",
+                borderColor: "#4da6ff",
+                backgroundColor: "transparent",
+                borderWidth: 2,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: "#4da6ff",
+                yAxisID: "y1"
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: "index", intersect: false },
+            plugins: { legend: { position: "top", labels: { color: "#8892a4" } } },
+            scales: {
+              y: {
+                title: { display: true, text: "Threat Volume", color: "#8892a4" },
+                grid: { color: "#1e2d3d" },
+                ticks: { color: "#8892a4" }
+              },
+              y1: {
+                position: "right",
+                title: { display: true, text: "Risk Score", color: "#8892a4" },
+                grid: { drawOnChartArea: false },
+                ticks: { color: "#8892a4" }
+              },
+              x: { ticks: { color: "#8892a4" }, grid: { color: "#1e2d3d" } }
+            }
+          }
+        });
+      }
+      const attackCtx = document.getElementById("attackTimelineChart")?.getContext("2d");
+      if (attackCtx) {
+        charts.attackTimeline = new Chart(attackCtx, {
+          type: "line",
+          data: {
+            labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+            datasets: [{
+              label: "Attacks",
+              data: [3, 5, 2, 8, 12, 7, 4],
+              borderColor: "#ff4757",
+              backgroundColor: "rgba(255,71,87,0.1)",
+              fill: true,
+              tension: 0.4,
+              pointRadius: 4,
+              pointBackgroundColor: "#ff4757"
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, grid: { color: "#1e2d3d" }, ticks: { color: "#8892a4" } },
+              x: { ticks: { color: "#8892a4" }, grid: { color: "#1e2d3d" } }
+            }
+          }
+        });
+      }
       charts.incTrend=new Chart(document.getElementById("incTrend"),{
         type:"line",data:{labels:["W1","W2","W3","W4"],datasets:[{label:"Incidents",data:[8,12,9,14],borderColor:"#00d4aa",tension:.3}]},
         options:{plugins:{legend:{labels:{color:"#8fa9c2"}}},scales:{x:{ticks:{color:"#8fa9c2"}},y:{ticks:{color:"#8fa9c2"}}}}
@@ -517,12 +724,8 @@
         type:"line",data:{labels:["Mon","Tue","Wed","Thu","Fri"],datasets:[{label:"Open Cases",data:[9,11,10,12,8],borderColor:"#00d4aa",tension:.3}]},
         options:{plugins:{legend:{labels:{color:"#8fa9c2"}}},scales:{x:{ticks:{color:"#8fa9c2"}},y:{ticks:{color:"#8fa9c2"}}}}
       });
-      document.getElementById("postureMesh").innerHTML=`
-        <div class="card"><div class="mini">Claims API</div><div style="color:var(--teal)">Healthy</div></div>
-        <div class="card"><div class="mini">WhatsApp Gateway</div><div style="color:var(--teal)">Healthy</div></div>
-        <div class="card"><div class="mini">Finance Connector</div><div style="color:var(--amber)">Degraded</div></div>
-        <div class="card"><div class="mini">Repatriation Engine</div><div style="color:var(--teal)">Healthy</div></div>
-      `;
+      const ts = document.getElementById("threatTimestamp");
+      if (ts) ts.textContent = new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC";
     }
 
     async function registerUnit(){
