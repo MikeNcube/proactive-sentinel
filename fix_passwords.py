@@ -83,11 +83,11 @@ with app.app_context():
     
     db.session.commit()
     
-    print("\n✅ Users in database:")
+    print("\nUsers in database:")
     for u in User.query.all():
         print(f"  {u.email} ({u.role})")
     
-    print("\n🔑 Test credentials:")
+    print("\nTest credentials:")
     print(f"  admin@acme.com / password123")
     print(f"  admin@zororo.co.za / Admin1234!")
     print(f"  test@acme.com / test123")

@@ -16,7 +16,7 @@ from src.models.tenant import Tenant
 from src.models.unit import Unit
 from src.security.threat_detector import ThreatDetector
 
-units_bp = Blueprint("units", __name__, url_prefix="/api/units")
+units_bp = Blueprint("units", __name__)
 threat_detector = ThreatDetector()
 logger = logging.getLogger(__name__)
 

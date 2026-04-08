@@ -53,10 +53,10 @@ with app.app_context():
         print('Created admin@zororo.co.za')
     
     db.session.commit()
-    print('\n✅ Users in database:')
+    print('\nUsers in database:')
     for u in User.query.all():
         print(f'  {u.email}')
     
-    print('\n🔑 Login credentials:')
+    print('\nLogin credentials:')
     print('  admin@acme.com / password123')
     print('  admin@zororo.co.za / Admin1234!')

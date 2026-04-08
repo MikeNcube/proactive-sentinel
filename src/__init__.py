@@ -9,6 +9,7 @@ import uuid
 from logging.config import dictConfig
 
 from flask import Flask, g, jsonify, request
+from sqlalchemy import text
 
 from src.auth.jwt_manager import JWTManager
 from src.extensions import db, get_redis, migrate
@@ -35,29 +36,16 @@ dictConfig(LOGGING_CONFIG)
 logger = logging.getLogger(__name__)
 
 
-def _build_database_url_from_railway_vars() -> str | None:
-    """Construct PostgreSQL URL from Railway PG* variables when DATABASE_URL is absent."""
-    pg_user = os.environ.get("PGUSER")
-    pg_password = os.environ.get("PGPASSWORD")
-    pg_host = os.environ.get("PGHOST")
-    pg_port = os.environ.get("PGPORT")
-    pg_database = os.environ.get("PGDATABASE")
-    if all([pg_user, pg_password, pg_host, pg_port, pg_database]):
-        return f"postgresql://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_database}"
-    return None
-
-
 def create_app(config_name=None) -> Flask:
     """Application factory."""
     app = Flask(__name__)
 
-    database_url = os.environ.get("DATABASE_URL")
-    if not database_url:
-        logger.error("ERROR: DATABASE_URL not set. Refusing to start without a real database.")
-        raise RuntimeError("DATABASE_URL is required and must point to PostgreSQL.")
-    # Railway can provide postgres://, but SQLAlchemy expects postgresql://
+    database_url = os.environ.get("DATABASE_URL", "sqlite:///app.db")
+
+    # Railway uses postgres:// but SQLAlchemy needs postgresql://
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
+
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["MAX_CONTENT_LENGTH"] = int(os.environ.get("MAX_REQUEST_BYTES", "1048576"))
@@ -68,12 +56,14 @@ def create_app(config_name=None) -> Flask:
         "max_overflow": int(os.environ.get("DB_MAX_OVERFLOW", "10")),
     }
     jwt_secret = os.environ.get("JWT_SECRET_KEY", "")
-    if not jwt_secret or "dev" in jwt_secret.lower() or "change" in jwt_secret.lower():
+    if not jwt_secret:
+        raise RuntimeError("JWT_SECRET_KEY is required.")
+    if "dev" in jwt_secret.lower() or "change" in jwt_secret.lower():
         logger.warning(
-            "SECURITY WARNING: JWT_SECRET_KEY is weak or not set. "
+            "SECURITY WARNING: JWT_SECRET_KEY appears weak. "
             "Set a strong random secret in production."
         )
-    app.config["JWT_SECRET_KEY"] = jwt_secret or "fallback-for-dev-only"
+    app.config["JWT_SECRET_KEY"] = jwt_secret
     app.config["TESTING"] = config_name == "testing"
 
     if isinstance(config_name, dict):
@@ -181,7 +171,11 @@ def create_app(config_name=None) -> Flask:
 
     @app.route("/health", methods=["GET"])
     def global_health():
-        return {"status": "healthy"}, 200
+        try:
+            db.session.execute(text("SELECT 1"))
+            return {"status": "healthy", "database": "reachable"}, 200
+        except Exception:
+            return {"status": "degraded", "database": "unreachable"}, 503
 
     try:
         from src.api.routes import api_bp
@@ -192,7 +186,7 @@ def create_app(config_name=None) -> Flask:
         app.register_blueprint(api_bp, url_prefix="/api")
         app.register_blueprint(auth_bp, url_prefix="/api/auth")
         app.register_blueprint(audit_bp)
-        app.register_blueprint(units_bp)
+        app.register_blueprint(units_bp, url_prefix="/api/units")
     except Exception as exc:
         logger.exception("Failed to register blueprints: %s", exc)
         raise

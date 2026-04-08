@@ -59,11 +59,11 @@ with app.app_context():
     
     db.session.commit()
     
-    print('\n✅ Users in database:')
+    print('\nUsers in database:')
     for u in User.query.all():
         print(f'  {u.email} (hash starts with: {u.password_hash[:20]}...)')
     
-    print('\n🔑 Login credentials:')
+    print('\nLogin credentials:')
     print('  admin@acme.com / password123')
     print('  admin@zororo.co.za / Admin1234!')
-    print('\n✅ Passwords hashed with Werkzeug format (pbkdf2:sha256)')
+    print('\nPasswords hashed with Werkzeug format (pbkdf2:sha256)')

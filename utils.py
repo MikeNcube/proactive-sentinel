@@ -44,11 +44,11 @@ class VRLFilter:
 class ResponseSimulator:
     @staticmethod
     def isolate_user(user_id):
-        print(f"[ACTION] 🛡️ Isolating User: {user_id} due to suspicious activity.")
+        print(f"[ACTION] Isolating User: {user_id} due to suspicious activity.")
 
     @staticmethod
     def flag_system(system_id):
-        print(f"[ACTION] 🚩 Flagging System: {system_id} for manual review.")
+        print(f"[ACTION] Flagging System: {system_id} for manual review.")
 
 # For backward compatibility if other files call it directly
 def mask_pii(log_data):
