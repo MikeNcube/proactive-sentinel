@@ -1,32 +1,29 @@
-import os, sys
-
-from werkzeug.security import generate_password_hash
-
+import os
+import sys
 sys.path.insert(0, ".")
 
-from app import create_app, db
-from models import Tenant, User
+from src import create_app
+from src.extensions import db
+from src.models.tenant import Tenant
+from src.models.user import User
+from werkzeug.security import generate_password_hash
 
 app = create_app()
 
 with app.app_context():
-    # Only seed if tables are empty
     if Tenant.query.count() == 0:
         tenant = Tenant(
             name="Zororo Phumulani",
             slug="zororo",
             plan="enterprise",
-            # Must be active so @require_tenant passes after a fresh Docker rebuild.
             status="active",
         )
         db.session.add(tenant)
         db.session.flush()
 
-        password_hash = generate_password_hash("Admin1234!")
-
         admin = User(
             email="admin@zororo.co.za",
-            password_hash=password_hash,
+            password_hash=generate_password_hash("Admin1234!"),
             tenant_id=tenant.id,
             role="admin",
         )
@@ -34,12 +31,10 @@ with app.app_context():
         db.session.commit()
         print("Seed complete: admin@zororo.co.za / Admin1234!")
     else:
-        # Docker-compose often reuses volumes, so an old "trial" tenant can persist.
-        # Ensure the seeded Zororo tenant is active so @require_tenant never rejects it.
         zororo = Tenant.query.filter_by(slug="zororo").first()
         if zororo and zororo.status != "active":
             zororo.status = "active"
             db.session.commit()
-            print('Updated existing "zororo" tenant status -> active')
+            print("Updated zororo tenant -> active")
         else:
-            print("Already seeded — skipping")
+            print("Already seeded - skipping")
