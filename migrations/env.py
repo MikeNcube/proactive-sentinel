@@ -7,7 +7,6 @@ from sqlalchemy import CHAR
 from sqlalchemy.types import TypeDecorator
 
 from alembic import context
-from src.utils.database import validate_postgresql_url
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -29,11 +28,12 @@ def get_engine():
 
 
 def get_engine_url():
-    raw_env_url = os.environ.get("DATABASE_URL")
-    if not raw_env_url:
+    url = os.environ.get("DATABASE_URL", "")
+    if not url:
         raise RuntimeError("DATABASE_URL is required for migrations.")
-    normalized_url = validate_postgresql_url(raw_env_url)
-    return normalized_url.replace('%', '%%')
+    if url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql://", 1)
+    return url.replace('%', '%%')
 
 
 # add your model's MetaData object here
