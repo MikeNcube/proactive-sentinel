@@ -4,11 +4,12 @@ Proactive Sentinel - Application Factory
 
 import logging
 import os
+import os as _os
 import time
 import uuid
 from logging.config import dictConfig
 
-from flask import Flask, g, jsonify, request, render_template
+from flask import Flask, g, jsonify, request
 from sqlalchemy import text
 
 from src.auth.jwt_manager import JWTManager
@@ -179,7 +180,18 @@ def create_app(config_name=None) -> Flask:
 
     @app.route("/dashboard")
     def dashboard():
-        return render_template("dashboard.html")
+        try:
+            template_path = _os.path.join(
+                _os.path.dirname(_os.path.abspath(__file__)),
+                "..", "templates", "dashboard.html"
+            )
+            with open(template_path, "r", encoding="utf-8") as f:
+                html = f.read()
+            from flask import Response
+            return Response(html, mimetype="text/html")
+        except Exception as e:
+            app.logger.error(f"Dashboard error: {e}")
+            return f"Dashboard error: {e}", 500
 
     try:
         from src.api.routes import api_bp
