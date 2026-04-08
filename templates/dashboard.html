@@ -11,9 +11,25 @@
       --teal:#00d4aa; --red:#ff4757; --amber:#ffa502; --blue:#4da6ff;
     }
     *{box-sizing:border-box}
-    body{margin:0;font-family:Consolas,"Courier New",monospace;background:var(--bg);color:var(--txt)}
-    .layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
-    .sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--side);border-right:1px solid var(--border);display:flex;flex-direction:column}
+    html, body { margin: 0; padding: 0; width: 100%; }
+    body{font-family:Consolas,"Courier New",monospace;background:var(--bg);color:var(--txt)}
+    .app{
+      display:flex;
+      width:100%;
+      min-height:100vh;
+      min-width:900px;
+    }
+    .sidebar{
+      width:220px;
+      flex-shrink:0;
+      position:sticky;
+      top:0;
+      height:100vh;
+      background:var(--side);
+      border-right:1px solid var(--border);
+      display:flex;
+      flex-direction:column
+    }
     .logo{padding:14px 12px;border-bottom:1px solid var(--border);font-weight:700;color:var(--teal);display:flex;gap:8px;align-items:center}
     .search-wrap{padding:10px;border-bottom:1px solid var(--border)}
     .search-wrap input{width:100%;background:#101b2c;border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--txt);font-family:inherit}
@@ -26,8 +42,25 @@
     .avatar{width:28px;height:28px;border-radius:50%;background:#153048;display:inline-flex;align-items:center;justify-content:center;margin-right:8px}
     .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px;background:#1fd37b}
     .logout{margin-top:8px;width:100%;background:#14263a;border:1px solid var(--border);color:var(--txt);padding:8px;border-radius:8px;cursor:pointer;font-family:inherit}
-    .content{margin-left:220px}
-    .top{position:fixed;left:220px;right:0;top:0;height:62px;background:rgba(10,14,26,.96);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;padding:0 14px;z-index:8}
+    .main{
+      flex:1;
+      min-width:0;
+      overflow-x:hidden;
+      width:100%;
+    }
+    .top{
+      position:sticky;
+      top:0;
+      height:62px;
+      background:rgba(10,14,26,.96);
+      border-bottom:1px solid var(--border);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:0 14px;
+      z-index:8;
+      width:100%;
+    }
     .title{font-weight:700;color:var(--teal)}
     .org{font-size:12px;color:var(--muted)}
     .top-right{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--muted)}
@@ -35,17 +68,25 @@
     .bell{position:relative;border:1px solid var(--border);border-radius:8px;padding:5px 7px;cursor:pointer}
     .bell .red-dot{display:none;position:absolute;top:-3px;right:-3px;width:10px;height:10px;border-radius:50%;background:var(--red)}
     .btn{background:#12263a;border:1px solid var(--border);color:var(--txt);padding:6px 10px;border-radius:8px;cursor:pointer;font-family:inherit}
-    .main{padding:76px 14px 14px}
-    .page{display:none}
+    .content{
+      width:100%;
+      padding:16px 24px;
+      box-sizing:border-box;
+    }
+    .page{display:none;width:100%}
     .page.active{display:block}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px;width:100%;box-sizing:border-box}
     .mini{font-size:12px;color:var(--muted)}
-    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:100%}
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%}
     .kpi .value{font-size:24px;margin-top:4px}
-    .two{display:grid;grid-template-columns:2fr 1fr;gap:10px}
-    .three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-    .mesh{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-    .metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;width:100%}
+    .grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;width:100%}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+    .three{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%}
+    .mesh{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%}
+    .metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%}
     table{width:100%;border-collapse:collapse;font-size:12px}
     th,td{border-bottom:1px solid var(--border);padding:8px 6px;text-align:left}
     th{color:var(--muted)}
@@ -58,11 +99,18 @@
     input,select,textarea{background:#101b2c;border:1px solid var(--border);color:var(--txt);border-radius:8px;padding:8px;font-family:inherit}
     .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:20;align-items:center;justify-content:center}
     .modal .body{width:min(720px,94vw);background:#111c2f;border:1px solid var(--border);border-radius:10px;padding:12px}
-    @media(max-width:1000px){.kpi-grid,.mesh,.metric-grid,.three{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}}
+    .chart-wrap{width:100%;position:relative}
+    canvas{width:100% !important}
+    .posture-header{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
+    .posture-title{font-size:20px;margin:8px 0 4px}
+    .posture-subtitle{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .posture-pills{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;margin-top:8px}
+    .posture-main-chart{height:260px !important}
+    @media(max-width:1000px){.kpi-grid,.kpi-row,.mesh,.metric-grid,.three,.grid3,.grid4{grid-template-columns:repeat(2,1fr)}.two,.grid2{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
-  <div class="layout">
+  <div class="app">
     <aside class="sidebar">
       <div class="logo">
         <span>🛡</span><span>SENTINEL</span>
@@ -86,7 +134,7 @@
         <button class="logout" id="logoutBtn">Logout</button>
       </div>
     </aside>
-    <section class="content">
+    <section class="main">
       <header class="top">
         <div>
           <div class="title" id="pageTitle">Overview</div>
@@ -100,24 +148,24 @@
           <button class="btn" id="socConsoleBtn">SOC Console</button>
         </div>
       </header>
-      <main class="main">
+      <main class="content">
         <section id="page-overview" class="page active">
-          <div class="kpi-grid">
+          <div class="kpi-row">
             <div class="card kpi"><div class="mini">Incidents</div><div id="kpiIncidents" class="value">0</div></div>
             <div class="card kpi"><div class="mini">Alerts</div><div id="kpiAlerts" class="value">0</div></div>
             <div class="card kpi"><div class="mini">Units Online</div><div id="kpiUnits" class="value">0</div></div>
             <div class="card kpi"><div class="mini">Uptime</div><div class="value">99.94%</div></div>
           </div>
           <div class="two">
-            <div class="card"><h3>Threat Chart</h3><canvas id="overviewThreatChart" height="130"></canvas></div>
+            <div class="card"><h3>Threat Chart</h3><div class="chart-wrap"><canvas id="overviewThreatChart" height="130"></canvas></div></div>
             <div class="card"><h3>Alert Feed</h3><div id="overviewFeed" class="mini"></div></div>
           </div>
           <div class="two">
-            <div class="card"><h3>Cases per Day</h3><canvas id="casesChart" height="120"></canvas></div>
-            <div class="card"><h3>Monthly Anomalies</h3><canvas id="anomalyDonut" height="120"></canvas><div class="mini" id="threatIndicators"></div></div>
+            <div class="card"><h3>Cases per Day</h3><div class="chart-wrap"><canvas id="casesChart" height="120"></canvas></div></div>
+            <div class="card"><h3>Monthly Anomalies</h3><div class="chart-wrap"><canvas id="anomalyDonut" height="120"></canvas></div><div class="mini" id="threatIndicators"></div></div>
           </div>
           <div class="card"><h3>Service Mesh Status</h3><div class="mesh" id="meshGrid"></div></div>
-          <div class="metric-grid">
+          <div class="grid4">
             <div class="card"><div class="mini">Detection Latency</div><div>128ms</div></div>
             <div class="card"><div class="mini">False Positive Rate</div><div>1.9%</div></div>
             <div class="card"><div class="mini">MITRE Coverage</div><div>81%</div></div>
@@ -127,11 +175,15 @@
 
         <section id="page-posture" class="page">
           <div class="card">
-            <div class="mini"><span class="sev sev-low">NORMAL</span> <span class="sev sev-critical">CRITICAL</span></div>
-            <h2 style="margin:8px 0 4px">Zororo Phumulani Funeral Logistics SOC</h2>
-            <div class="mini">Cross-channel security for Claims, WhatsApp, Member Portals, Lead Management, Finance, Repatriation</div>
-            <div style="margin-top:8px"><span class="badge">$FRAUD</span> <span class="badge">$POPIA</span> <span class="badge">$KYC</span> <span class="badge">$HACK</span></div>
-            <canvas id="postureMainChart" height="130" style="margin-top:10px"></canvas>
+            <div class="posture-header">
+              <span class="mini">THREAT POSTURE</span>
+              <span class="sev sev-low">NORMAL</span>
+              <span class="sev sev-critical">CRITICAL</span>
+            </div>
+            <h2 class="posture-title">Zororo Phumulani Funeral Logistics SOC</h2>
+            <div class="mini posture-subtitle">Cross-channel security for Claims, WhatsApp, Member Portals, Lead Management, Finance, Repatriation</div>
+            <div class="posture-pills"><span class="badge">$FRAUD</span><span class="badge">$POPIA</span><span class="badge">$KYC</span><span class="badge">$HACK</span></div>
+            <div class="chart-wrap"><canvas id="postureMainChart" class="posture-main-chart" height="260"></canvas></div>
           </div>
           <div class="two">
             <div class="card"><h3>Attack Timeline</h3><div id="attackTimeline"></div></div>
