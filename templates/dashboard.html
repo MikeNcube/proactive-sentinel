@@ -134,6 +134,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 4px;
     }
     .header-left {
       display: flex;
@@ -162,7 +163,7 @@
     .badge-critical { color: var(--red); border-color: rgba(255, 71, 87, 0.5); }
     .timestamp { font-size: 12px; color: #8892a4; }
     .threat-title-section h2 {
-      margin: 0 0 6px;
+      margin: 0 0 4px;
       font-size: 20px;
       font-weight: 700;
       white-space: nowrap;
@@ -170,7 +171,7 @@
       text-overflow: ellipsis;
     }
     .threat-title-section p {
-      margin: 0;
+      margin: 0 0 4px;
       font-size: 12px;
       white-space: nowrap;
       overflow: hidden;
@@ -187,9 +188,9 @@
     .pill {
       border: 1px solid var(--border);
       border-radius: 999px;
-      padding: 4px 8px;
+      padding: 3px 6px;
       color: var(--teal);
-      font-size: 12px;
+      font-size: 11px;
     }
     .chart-container {
       width: 100%;
@@ -210,6 +211,10 @@
     }
     .status.healthy { color: #00d4aa; }
     .status.degraded { color: #ffa502; }
+    .bottom-grid > .card { padding: 12px; }
+    .bottom-grid .service-item span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card table { width: 100%; }
+    .card { overflow: hidden; }
     @media(max-width:1000px){.kpi-grid,.kpi-row,.mesh,.metric-grid,.three,.grid3,.grid4{grid-template-columns:repeat(2,1fr)}.two,.grid2{grid-template-columns:1fr}}
   </style>
 </head>
@@ -304,13 +309,13 @@
           </div>
 
           <div class="chart-container card">
-            <canvas id="threatChart" height="200" style="width: 100%;"></canvas>
+            <canvas id="threatChart" height="180" style="width: 100%;"></canvas>
           </div>
 
           <div class="bottom-grid">
             <div class="card">
               <h3>Attack Timeline</h3>
-              <canvas id="attackTimelineChart" height="150" style="width: 100%;"></canvas>
+              <canvas id="attackTimelineChart" height="120" style="width: 100%;"></canvas>
             </div>
 
             <div class="card">
