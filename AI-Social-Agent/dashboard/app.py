@@ -5,6 +5,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from fastapi import FastAPI, Request, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+import os
 import json
 import glob
 from datetime import datetime
@@ -13,6 +14,7 @@ import uvicorn
 
 app = FastAPI(title="AI Content Dashboard")
 templates = Jinja2Templates(directory="dashboard/templates")
+templates.env.auto_reload = os.getenv("TEMPLATES_AUTO_RELOAD", "false").lower() == "true"
 
 # Add this function to show current time in templates
 from datetime import datetime
