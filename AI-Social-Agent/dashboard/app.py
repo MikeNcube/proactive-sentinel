@@ -134,6 +134,7 @@ def get_posts(status=None):
     return posts
 
 @app.get("/", response_class=HTMLResponse)
+@app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request, filter: str = "all"):
     """Main dashboard with optional filtering"""
     if filter == "pending":
