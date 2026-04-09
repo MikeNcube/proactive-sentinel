@@ -36,14 +36,19 @@ except ImportError:  # pragma: no cover - optional in local/test envs
             return None
 
 # Database
-db = SQLAlchemy()
+db = SQLAlchemy(engine_options={"pool_pre_ping": True})
 migrate = Migrate()
 cors = CORS()
 redis_url = os.environ.get("REDIS_URL", None)
+
+# Validate redis_url is a real URL before using it
+if redis_url and not redis_url.startswith(("redis://", "rediss://")):
+    redis_url = None
+
 limiter = Limiter(
     key_func=get_remote_address,
     storage_uri=redis_url if redis_url else "memory://",
-    default_limits=["1000 per hour"],
+    default_limits=["200 per day", "50 per hour"],
 )
 
 # Redis client - initialize lazily

@@ -5,14 +5,19 @@ from src.api.rate_limits import RATE_LIMITS, limiter
 from src.extensions import db
 from src.models.alert import Alert
 from src.repositories.alert_repository import AlertRepository
+from sqlalchemy import text
 
 api_bp = Blueprint("api", __name__)
 
 
 @api_bp.route("/health", methods=["GET"])
 def health():
-    """Public health check."""
-    return jsonify({"status": "ok"}), 200
+    """Public health check with database connectivity verification."""
+    try:
+        db.session.execute(text("SELECT 1"))
+        return jsonify({"status": "ok", "database": "reachable"}), 200
+    except Exception:
+        return jsonify({"status": "degraded", "database": "unreachable"}), 503
 
 
 @api_bp.route("/alerts", methods=["GET"])

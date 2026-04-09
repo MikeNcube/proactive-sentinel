@@ -1,0 +1,821 @@
+﻿
+=== FILE: templates/dashboard.html ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Proactive Sentinel SOC Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root{
+      --bg:#0a0e1a; --side:#0d1117; --card:#0d1117; --border:#1e2d3d; --txt:#d9e9ff; --muted:#8fa9c2;
+      --teal:#00d4aa; --red:#ff4757; --amber:#ffa502; --blue:#4da6ff;
+    }
+    *{box-sizing:border-box}
+    html, body { margin: 0; padding: 0; width: 100%; }
+    body{font-family:Consolas,"Courier New",monospace;background:var(--bg);color:var(--txt)}
+    .app{
+      display:flex;
+      width:100%;
+      min-height:100vh;
+      min-width:900px;
+    }
+    .sidebar{
+      width:220px;
+      flex-shrink:0;
+      position:sticky;
+      top:0;
+      height:100vh;
+      background:var(--side);
+      border-right:1px solid var(--border);
+      display:flex;
+      flex-direction:column
+    }
+    .logo{padding:14px 12px;border-bottom:1px solid var(--border);font-weight:700;color:var(--teal);display:flex;gap:8px;align-items:center}
+    .search-wrap{padding:10px;border-bottom:1px solid var(--border)}
+    .search-wrap input{width:100%;background:#101b2c;border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--txt);font-family:inherit}
+    .nav{flex:1;overflow:auto;padding:8px 0}
+    .nav-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;color:var(--muted);text-decoration:none;border-left:3px solid transparent}
+    .nav-item:hover{background:#1e2d3d;color:var(--txt)}
+    .nav-item.active{border-left-color:var(--teal);color:var(--teal);background:#122131}
+    .count-badge{font-size:11px;border:1px solid var(--border);border-radius:999px;padding:1px 7px;color:var(--teal)}
+    .bottom{padding:10px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)}
+    .avatar{width:28px;height:28px;border-radius:50%;background:#153048;display:inline-flex;align-items:center;justify-content:center;margin-right:8px}
+    .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px;background:#1fd37b}
+    .logout{margin-top:8px;width:100%;background:#14263a;border:1px solid var(--border);color:var(--txt);padding:8px;border-radius:8px;cursor:pointer;font-family:inherit}
+    .main{
+      flex:1;
+      min-width:0;
+      overflow-x:hidden;
+      width:100%;
+    }
+    .top{
+      position:sticky;
+      top:0;
+      height:62px;
+      background:rgba(10,14,26,.96);
+      border-bottom:1px solid var(--border);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:0 14px;
+      z-index:8;
+      width:100%;
+    }
+    .title{font-weight:700;color:var(--teal)}
+    .org{font-size:12px;color:var(--muted)}
+    .top-right{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--muted)}
+    .badge{border:1px solid var(--border);border-radius:999px;padding:3px 8px}
+    .bell{position:relative;border:1px solid var(--border);border-radius:8px;padding:5px 7px;cursor:pointer}
+    .bell .red-dot{display:none;position:absolute;top:-3px;right:-3px;width:10px;height:10px;border-radius:50%;background:var(--red)}
+    .btn{background:#12263a;border:1px solid var(--border);color:var(--txt);padding:6px 10px;border-radius:8px;cursor:pointer;font-family:inherit}
+    .content{
+      width:100%;
+      padding:16px 24px;
+      box-sizing:border-box;
+    }
+    .page{display:none;width:100%}
+    .page.active{display:block}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;width:100%;box-sizing:border-box;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+    .card:hover{transform:translateY(-1px);border-color:#2a435d;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+    h3{margin:0 0 8px;font-size:14px;font-weight:700}
+    .mini{font-size:12px;color:var(--muted)}
+    .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:100%}
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%}
+    .kpi .value{font-size:24px;margin-top:4px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;width:100%}
+    .grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;width:100%}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+    .three{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%}
+    .mesh{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%}
+    .metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%}
+    table{width:100%;border-collapse:collapse;font-size:12px}
+    th,td{border-bottom:1px solid var(--border);padding:8px 6px;text-align:left}
+    th{color:var(--muted)}
+    .sev{padding:2px 7px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid}
+    .sev-critical{color:var(--red);border-color:rgba(255,71,87,.5);background:rgba(255,71,87,.12)}
+    .sev-high{color:var(--amber);border-color:rgba(255,165,2,.5);background:rgba(255,165,2,.12)}
+    .sev-medium{color:var(--blue);border-color:rgba(77,166,255,.5);background:rgba(77,166,255,.12)}
+    .sev-low{color:var(--teal);border-color:rgba(0,212,170,.5);background:rgba(0,212,170,.12)}
+    .filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px}
+    input,select,textarea{background:#101b2c;border:1px solid var(--border);color:var(--txt);border-radius:8px;padding:8px;font-family:inherit}
+    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:20;align-items:center;justify-content:center}
+    .modal .body{width:min(720px,94vw);background:#111c2f;border:1px solid var(--border);border-radius:10px;padding:12px}
+    .chart-wrap{width:100%;height:200px;position:relative}
+    canvas{width:100% !important}
+    .posture-header{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;margin-bottom:8px}
+    .posture-title{font-size:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:8px 0 4px}
+    .posture-subtitle{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#8892a4}
+    .posture-pills{display:flex;flex-direction:row;align-items:center;gap:8px;flex-wrap:nowrap;margin:12px 0}
+    .posture-main-card{width:100%;box-sizing:border-box}
+    .posture-chart-wrap{width:100%;height:260px;position:relative}
+    .posture-main-chart{height:200px !important}
+    .posture-bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;margin-top:16px}
+    .service-mesh-item{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+    .app {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+    .main {
+      flex: 1;
+      min-width: 0;
+      overflow-x: hidden;
+    }
+    .content {
+      width: 100%;
+      padding: 16px 24px;
+      box-sizing: border-box;
+    }
+    .page {
+      width: 100%;
+    }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: nowrap;
+    }
+    .page-title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--teal);
+    }
+    .badge-group { display: flex; gap: 8px; }
+    .badge-normal, .badge-critical {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .badge-normal { color: var(--teal); border-color: rgba(0, 212, 170, 0.5); }
+    .badge-critical { color: var(--red); border-color: rgba(255, 71, 87, 0.5); }
+    .timestamp { font-size: 12px; color: #8892a4; }
+    .threat-title-section h2 {
+      margin: 0 0 4px;
+      font-size: 20px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .threat-title-section p {
+      margin: 0 0 4px;
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #8892a4;
+    }
+    .stat-pills {
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+      flex-wrap: nowrap;
+      margin: 12px 0;
+    }
+    .pill {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 3px 6px;
+      color: var(--teal);
+      font-size: 11px;
+    }
+    .chart-container {
+      width: 100%;
+      margin: 16px 0;
+    }
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      width: 100%;
+      margin-top: 16px;
+    }
+    .service-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .status.healthy { color: #00d4aa; }
+    .status.degraded { color: #ffa502; }
+    .bottom-grid > .card { padding: 12px; }
+    .bottom-grid .service-item span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card table { width: 100%; }
+    .card { overflow: hidden; }
+    @media(max-width:1000px){.kpi-grid,.kpi-row,.mesh,.metric-grid,.three,.grid3,.grid4{grid-template-columns:repeat(2,1fr)}.two,.grid2{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo">
+        <span>ðŸ›¡</span><span>SENTINEL</span>
+      </div>
+      <div class="search-wrap"><input id="globalSearch" placeholder="Search alerts globally..." /></div>
+      <nav class="nav" id="nav">
+        <a class="nav-item active" data-page="overview" href="#"><span>Overview</span></a>
+        <a class="nav-item" data-page="threat" href="#"><span>Threat Posture</span></a>
+        <a class="nav-item" data-page="incidents" href="#"><span>Incidents</span><span class="count-badge" id="incCount">0</span></a>
+        <a class="nav-item" data-page="alerts" href="#"><span>Alerts</span><span class="count-badge" id="alertCountBadge">0</span></a>
+        <a class="nav-item" data-page="units" href="#"><span>Units/Endpoints</span></a>
+        <a class="nav-item" data-page="rules" href="#"><span>Detection Rules</span></a>
+        <a class="nav-item" data-page="anomalies" href="#"><span>Anomalies</span></a>
+        <a class="nav-item" data-page="audit" href="#"><span>Audit Log</span></a>
+        <a class="nav-item" data-page="reports" href="#"><span>Reports</span></a>
+        <a class="nav-item" data-page="settings" href="#"><span>Settings</span></a>
+      </nav>
+      <div class="bottom">
+        <div style="display:flex;align-items:center;margin-bottom:8px"><span class="avatar">A</span><span>admin@zororo.co.za</span></div>
+        <div><span class="dot"></span>System healthy</div>
+        <button class="logout" id="logoutBtn">Logout</button>
+      </div>
+    </aside>
+    <section class="main">
+      <header class="top">
+        <div>
+          <div class="title" id="pageTitle">Overview</div>
+          <div class="org">Zororo Phumulani Funeral Logistics SOC</div>
+        </div>
+        <div class="top-right">
+          <span id="utcClock"></span>
+          <span class="badge">POPIA S18</span>
+          <span class="badge">MITRE</span>
+          <span class="bell" id="bell">ðŸ””<span class="red-dot" id="bellDot"></span></span>
+          <button class="btn" id="socConsoleBtn">SOC Console</button>
+        </div>
+      </header>
+      <main class="content">
+        <section id="page-overview" class="page active">
+          <div class="kpi-row">
+            <div class="card kpi"><div class="mini">Incidents</div><div id="kpiIncidents" class="value">0</div></div>
+            <div class="card kpi"><div class="mini">Alerts</div><div id="kpiAlerts" class="value">0</div></div>
+            <div class="card kpi"><div class="mini">Units Online</div><div id="kpiUnits" class="value">0</div></div>
+            <div class="card kpi"><div class="mini">Uptime</div><div class="value">99.94%</div></div>
+          </div>
+          <div class="two">
+            <div class="card"><h3>Threat Chart</h3><div class="chart-wrap"><canvas id="overviewThreatChart" height="200"></canvas></div></div>
+            <div class="card"><h3>Alert Feed</h3><div id="overviewFeed" class="mini"></div></div>
+          </div>
+          <div class="two">
+            <div class="card"><h3>Cases per Day</h3><div class="chart-wrap"><canvas id="casesChart" height="200"></canvas></div></div>
+            <div class="card"><h3>Monthly Anomalies</h3><div class="chart-wrap"><canvas id="anomalyDonut" height="200"></canvas></div><div class="mini" id="threatIndicators"></div></div>
+          </div>
+          <div class="card"><h3>Service Mesh Status</h3><div class="mesh" id="meshGrid"></div></div>
+          <div class="grid4">
+            <div class="card"><div class="mini">Detection Latency</div><div>128ms</div></div>
+            <div class="card"><div class="mini">False Positive Rate</div><div>1.9%</div></div>
+            <div class="card"><div class="mini">MITRE Coverage</div><div>81%</div></div>
+            <div class="card"><div class="mini">Mean Time To Respond</div><div>11m</div></div>
+          </div>
+        </section>
+
+        <section id="page-threat" class="page">
+          <div class="page-header card">
+            <div class="header-left">
+              <h1 class="page-title">THREAT POSTURE</h1>
+              <div class="badge-group">
+                <span class="badge-normal">NORMAL</span>
+                <span class="badge-critical">CRITICAL</span>
+              </div>
+            </div>
+            <div class="header-right">
+              <span class="timestamp" id="threatTimestamp">--</span>
+            </div>
+          </div>
+
+          <div class="threat-title-section card">
+            <h2>Zororo Phumulani Funeral Logistics SOC</h2>
+            <p>Cross-channel security for Claims, WhatsApp, Member Portals, Lead Management, Finance, Repatriation</p>
+          </div>
+
+          <div class="stat-pills card">
+            <span class="pill">$FRAUD</span>
+            <span class="pill">$POPIA</span>
+            <span class="pill">$KYC</span>
+            <span class="pill">$HACK</span>
+          </div>
+
+          <div class="chart-container card">
+            <canvas id="threatChart" height="180" style="width: 100%;"></canvas>
+          </div>
+
+          <div class="bottom-grid">
+            <div class="card">
+              <h3>Attack Timeline</h3>
+              <canvas id="attackTimelineChart" height="120" style="width: 100%;"></canvas>
+            </div>
+
+            <div class="card">
+              <h3>Service Mesh</h3>
+              <div class="service-item">
+                <span>Claims API</span>
+                <span class="status healthy">Healthy</span>
+              </div>
+              <div class="service-item">
+                <span>WhatsApp Gateway</span>
+                <span class="status healthy">Healthy</span>
+              </div>
+              <div class="service-item">
+                <span>Finance Connector</span>
+                <span class="status degraded">Degraded</span>
+              </div>
+              <div class="service-item">
+                <span>Repatriation Engine</span>
+                <span class="status healthy">Healthy</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="page-incidents" class="page">
+          <div class="three">
+            <div class="card"><div class="mini">Open Incidents</div><div id="incOpen" class="value">0</div></div>
+            <div class="card"><div class="mini">High Impact</div><div id="incHigh" class="value">0</div></div>
+            <div class="card"><div class="mini">Resolved Today</div><div id="incResolved" class="value">0</div></div>
+          </div>
+          <div class="two">
+            <div class="card"><h3>Incidents Trend</h3><div class="chart-wrap"><canvas id="incTrend" height="200"></canvas></div></div>
+            <div class="card"><h3>Unique Models</h3><div class="chart-wrap"><canvas id="uniqueModelsChart" height="200"></canvas></div></div>
+          </div>
+          <div class="card"><h3>Anomalies Feed</h3><div id="incAnomalyFeed"></div></div>
+        </section>
+
+        <section id="page-alerts" class="page">
+          <div class="card">
+            <div class="filters">
+              <input id="alertSearch" placeholder="Search alerts..." />
+              <select id="severityFilter"><option value="">All Severities</option><option>critical</option><option>high</option><option>medium</option><option>low</option></select>
+              <select id="statusFilter"><option value="">All Statuses</option><option>open</option><option>investigating</option><option>resolved</option><option>dismissed</option></select>
+            </div>
+            <table>
+              <thead><tr><th>ID</th><th>Title</th><th>Severity</th><th>Category</th><th>Status</th><th>Time</th><th>Action</th></tr></thead>
+              <tbody id="alertsBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="page-units" class="page">
+          <div class="card">
+            <h3>Register Unit</h3>
+            <div class="filters" style="grid-template-columns:repeat(4,1fr)">
+              <input id="unitTenant" placeholder="tenant_id" />
+              <input id="unitDevice" placeholder="device_id" />
+              <input id="unitSecret" placeholder="secret_key" />
+              <input id="unitName" placeholder="name" />
+            </div>
+            <button class="btn" id="registerUnitBtn">Register</button>
+            <div class="mini" id="unitMsg"></div>
+          </div>
+          <div class="card">
+            <table>
+              <thead><tr><th>Device ID</th><th>Name</th><th>Status</th><th>Last Seen</th><th>Tenant</th><th>Actions</th></tr></thead>
+              <tbody id="unitsBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="page-rules" class="page">
+          <div class="card">
+            <h3>Detection Rules</h3>
+            <table><thead><tr><th>Rule Name</th><th>Severity</th><th>MITRE</th><th>Status</th></tr></thead><tbody id="rulesBody"></tbody></table>
+          </div>
+        </section>
+
+        <section id="page-anomalies" class="page">
+          <div class="two">
+            <div class="card">
+              <h3>Flagged Anomalies</h3>
+              <div id="anomBig" class="value">0</div>
+              <div id="anomFeed"></div>
+            </div>
+            <div class="card">
+              <h3>Risky Users</h3>
+              <div id="riskyUsers"></div>
+            </div>
+          </div>
+          <div class="card"><h3>Open Cases Trend</h3><div class="chart-wrap"><canvas id="openCasesTrend" height="200"></canvas></div></div>
+        </section>
+
+        <section id="page-audit" class="page">
+          <div class="card">
+            <h3>Audit Log</h3>
+            <table><thead><tr><th>Timestamp</th><th>Actor</th><th>Action</th><th>Resource</th><th>IP Address</th></tr></thead><tbody id="auditBody"></tbody></table>
+          </div>
+        </section>
+
+        <section id="page-reports" class="page">
+          <div class="three">
+            <div class="card"><h3>Threat Summary Report</h3><div class="mini">Format: PDF</div><button class="btn gen">Generate</button></div>
+            <div class="card"><h3>POPIA Compliance Report</h3><div class="mini">Format: CSV</div><button class="btn gen">Generate</button></div>
+            <div class="card"><h3>MITRE ATT&CK Coverage Report</h3><div class="mini">Format: PDF</div><button class="btn gen">Generate</button></div>
+          </div>
+        </section>
+
+        <section id="page-settings" class="page">
+          <div class="card">
+            <h3>System Config</h3>
+            <table><tbody>
+              <tr><td>API Endpoint</td><td>https://proactive-sentinel-production.up.railway.app</td></tr>
+              <tr><td>Version</td><td>1.0.0</td></tr>
+              <tr><td>Environment</td><td>Production</td></tr>
+              <tr><td>Rate Limiting</td><td>Active</td></tr>
+              <tr><td>Redis</td><td>Configured</td></tr>
+              <tr><td>Database</td><td>PostgreSQL</td></tr>
+            </tbody></table>
+          </div>
+          <div class="card">
+            <h3>Change Password</h3>
+            <div class="three">
+              <input id="curPwd" type="password" placeholder="Current password" />
+              <input id="newPwd" type="password" placeholder="New password" />
+              <input id="conPwd" type="password" placeholder="Confirm password" />
+            </div>
+            <button class="btn" id="changePwdBtn" style="margin-top:8px">Update</button>
+            <div class="mini" id="pwdMsg"></div>
+          </div>
+        </section>
+      </main>
+    </section>
+  </div>
+
+  <div id="modal" class="modal">
+    <div class="body">
+      <h3>Alert Details</h3>
+      <pre id="modalText" style="white-space:pre-wrap;color:var(--muted)"></pre>
+      <button class="btn" id="closeModal">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "https://proactive-sentinel-production.up.railway.app";
+    let token = null;
+    let alerts = [];
+    let units = [];
+    const rules = [
+      ["Ransomware File Encryption Burst","critical","T1486","Active"],
+      ["Shadow Copy Deletion","high","T1490","Active"],
+      ["Suspicious Extension Change","high","T1486","Active"],
+      ["Ransom Note Dropped","critical","T1491","Active"],
+      ["Credential Dumping LSASS","critical","T1003","Active"],
+      ["C2 Outbound Exfiltration","high","T1041","Active"],
+      ["PowerShell Encoded Command","medium","T1059","Active"],
+      ["Lateral Movement RDP/SMB","medium","T1021","Active"],
+      ["Directory Enumeration","medium","T1083","Active"],
+      ["Anomaly Detection ML","low","Isolation Forest","Active"]
+    ];
+    let charts = {};
+
+    function sevClass(sev){
+      const s=String(sev||"low").toLowerCase();
+      if(s==="critical") return "sev-critical";
+      if(s==="high") return "sev-high";
+      if(s==="medium") return "sev-medium";
+      return "sev-low";
+    }
+    function pageTitle(id){
+      const map={overview:"Overview",threat:"Threat Posture",incidents:"Incidents",alerts:"Alerts",units:"Units/Endpoints",rules:"Detection Rules",anomalies:"Anomalies",audit:"Audit Log",reports:"Reports",settings:"Settings"};
+      return map[id]||"Overview";
+    }
+    function go(page){
+      document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+      document.getElementById("page-"+page).classList.add("active");
+      document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));
+      const nav=document.querySelector(`.nav-item[data-page="${page}"]`);
+      if(nav) nav.classList.add("active");
+      document.getElementById("pageTitle").textContent=pageTitle(page);
+    }
+
+    async function request(path, opts={}){
+      const headers={...(opts.headers||{})};
+      if(token) headers.Authorization=`Bearer ${token}`;
+      if(opts.body && !headers["Content-Type"]) headers["Content-Type"]="application/json";
+      const res=await fetch(API_BASE+path,{...opts,headers});
+      if(res.status===401){await silentLogin();throw new Error("unauthorized");}
+      return res;
+    }
+
+    async function silentLogin(){
+      const res=await fetch(API_BASE+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:"admin@zororo.co.za",password:"Admin1234!"})});
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok||!data.access_token) throw new Error("Login failed");
+      token=data.access_token;
+    }
+
+    async function loadAlerts(){
+      const res=await request("/api/alerts");
+      if(!res.ok) return;
+      const data=await res.json();
+      alerts=data.alerts||[];
+      document.getElementById("alertCountBadge").textContent=alerts.length;
+      document.getElementById("incCount").textContent=alerts.filter(a=>String(a.severity).toLowerCase()==="critical"||String(a.severity).toLowerCase()==="high").length;
+      document.getElementById("bellDot").style.display=alerts.length?"block":"none";
+      renderOverview();
+      renderAlerts();
+      renderIncidents();
+      renderAnomalies();
+    }
+
+    async function loadUnits(){
+      const res=await request("/api/units/status");
+      if(!res.ok) return;
+      const data=await res.json();
+      units=data.units||[];
+      renderUnits();
+      document.getElementById("kpiUnits").textContent=units.filter(u=>String(u.status).toLowerCase()==="online").length;
+    }
+
+    async function loadAudit(){
+      const body=document.getElementById("auditBody");
+      try{
+        const res=await request("/api/audit/logs");
+        const data=await res.json();
+        const logs=data.logs||[];
+        body.innerHTML=logs.map(l=>`<tr><td>${l.timestamp||"-"}</td><td>${l.actor_id||"-"}</td><td>${l.action||"-"}</td><td>${l.resource_type||"-"}</td><td>${l.source_ip||"-"}</td></tr>`).join("") || `<tr><td colspan="5" class="mini">Audit logging active</td></tr>`;
+      }catch(_e){ body.innerHTML=`<tr><td colspan="5" class="mini">Audit logging active</td></tr>`; }
+    }
+
+    function renderOverview(){
+      const critical=alerts.filter(a=>String(a.severity).toLowerCase()==="critical").length;
+      document.getElementById("kpiIncidents").textContent=critical;
+      document.getElementById("kpiAlerts").textContent=alerts.length;
+      const feed=document.getElementById("overviewFeed");
+      feed.innerHTML=alerts.slice(0,5).map(a=>`<div style="padding:6px 0;border-bottom:1px solid var(--border)"><span class="sev ${sevClass(a.severity)}">${String(a.severity||"low").toUpperCase()}</span> ${a.title||"-"}</div>`).join("") || `<div class="mini">No alerts</div>`;
+      document.getElementById("threatIndicators").innerHTML=`<div class="mini">Critical: ${critical}</div><div class="mini">High: ${alerts.filter(a=>String(a.severity).toLowerCase()==="high").length}</div>`;
+      document.getElementById("meshGrid").innerHTML=`<div class="card"><div class="mini">postgres</div><div style="color:var(--teal)">online</div></div><div class="card"><div class="mini">redis</div><div style="color:var(--teal)">healthy</div></div><div class="card"><div class="mini">api</div><div style="color:var(--teal)">online</div></div><div class="card"><div class="mini">railway</div><div style="color:var(--teal)">stable</div></div>`;
+      if(charts.overviewThreat){
+        const med=alerts.filter(a=>String(a.severity).toLowerCase()==="medium").length;
+        const high=alerts.filter(a=>String(a.severity).toLowerCase()==="high").length;
+        charts.overviewThreat.data.datasets[0].data=[med,high,critical,Math.max(0,alerts.length-med-high-critical)];
+        charts.overviewThreat.update();
+      }
+    }
+
+    function renderAlerts(){
+      const q=(document.getElementById("alertSearch").value||"").toLowerCase();
+      const sf=document.getElementById("severityFilter").value;
+      const st=document.getElementById("statusFilter").value;
+      const rows=alerts.filter(a=>{
+        const okQ=!q || JSON.stringify(a).toLowerCase().includes(q);
+        const okS=!sf || String(a.severity||"").toLowerCase()===sf;
+        const okT=!st || String(a.status||"").toLowerCase()===st;
+        return okQ&&okS&&okT;
+      });
+      const body=document.getElementById("alertsBody");
+      body.innerHTML=rows.map((a,i)=>`<tr><td>${String(a.id||i).slice(0,8)}</td><td>${a.title||"-"}</td><td><span class="sev ${sevClass(a.severity)}">${String(a.severity||"low").toUpperCase()}</span></td><td>${a.category||"-"}</td><td>${a.status||"-"}</td><td>${a.created_at?new Date(a.created_at).toLocaleString():"-"}</td><td><button class="btn view-btn" data-id="${a.id||i}">View</button></td></tr>`).join("") || `<tr><td colspan="7" class="mini">No alerts</td></tr>`;
+      document.querySelectorAll(".view-btn").forEach(btn=>{
+        btn.onclick=()=>{
+          const id=btn.dataset.id;
+          const a=rows.find(x=>String(x.id)===id) || {};
+          document.getElementById("modalText").textContent=JSON.stringify(a,null,2);
+          document.getElementById("modal").style.display="flex";
+        };
+      });
+    }
+
+    function renderUnits(){
+      const body=document.getElementById("unitsBody");
+      body.innerHTML=units.map(u=>`<tr><td>${u.device_id||"-"}</td><td>${u.name||"-"}</td><td style="color:${String(u.status).toLowerCase()==="online"?"var(--teal)":"var(--red)"}">${u.status||"offline"}</td><td>${u.last_seen_at?new Date(u.last_seen_at).toLocaleString():"-"}</td><td>${u.tenant_id||"-"}</td><td><button class="btn">Inspect</button></td></tr>`).join("") || `<tr><td colspan="6" class="mini">No units</td></tr>`;
+    }
+
+    function renderRules(){
+      const body=document.getElementById("rulesBody");
+      body.innerHTML=rules.map(r=>`<tr><td>${r[0]}</td><td><span class="sev ${sevClass(r[1])}">${r[1].toUpperCase()}</span></td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join("");
+    }
+
+    function renderIncidents(){
+      const crit=alerts.filter(a=>String(a.severity).toLowerCase()==="critical").length;
+      const high=alerts.filter(a=>String(a.severity).toLowerCase()==="high").length;
+      document.getElementById("incOpen").textContent=crit+high;
+      document.getElementById("incHigh").textContent=high;
+      document.getElementById("incResolved").textContent=Math.max(0,alerts.length-(crit+high));
+      document.getElementById("incAnomalyFeed").innerHTML=[`Claims model drift: ${Math.max(1,high)} spikes`,`Finance login anomalies: ${Math.max(1,crit)} signals`,`Member portal fuzz attempts: ${alerts.length}`].map(t=>`<div class="mini" style="padding:6px 0;border-bottom:1px solid var(--border)">${t}</div>`).join("");
+    }
+
+    function renderAnomalies(){
+      const flagged=alerts.filter(a=>["critical","high"].includes(String(a.severity).toLowerCase()));
+      document.getElementById("anomBig").textContent=flagged.length;
+      document.getElementById("anomFeed").innerHTML=flagged.slice(0,6).map(a=>`<div class="mini" style="padding:6px 0;border-bottom:1px solid var(--border)">${a.title||"-"} (${String(a.severity||"").toUpperCase()})</div>`).join("") || `<div class="mini">No active anomalies</div>`;
+      document.getElementById("riskyUsers").innerHTML=[["admin@zororo.co.za",82],["ops@zororo.co.za",67],["claims@zororo.co.za",54]].map(u=>`<div class="mini" style="padding:6px 0;border-bottom:1px solid var(--border)">${u[0]} - risk ${u[1]}</div>`).join("");
+    }
+
+    function destroyChart(name){
+      if(charts[name]){
+        charts[name].destroy();
+        charts[name]=null;
+      }
+    }
+
+    function initCharts(){
+      destroyChart("overviewThreat");
+      destroyChart("cases");
+      destroyChart("donut");
+      destroyChart("threat");
+      destroyChart("attackTimeline");
+      destroyChart("incTrend");
+      destroyChart("uniqueModels");
+      destroyChart("openCases");
+      charts.overviewThreat=new Chart(document.getElementById("overviewThreatChart"),{
+        data:{labels:["Medium","High","Critical","Low"],datasets:[{type:"bar",label:"Volume",data:[0,0,0,0],backgroundColor:["#00d4aa88","#00d4aa88","#ff475788","#00d4aa88"],borderColor:["#00d4aa","#00d4aa","#ff4757","#00d4aa"]}]},
+        options:{plugins:{legend:{labels:{color:"#8fa9c2"}}},scales:{x:{ticks:{color:"#8fa9c2"}},y:{ticks:{color:"#8fa9c2"}}}}
+      });
+      charts.cases=new Chart(document.getElementById("casesChart"),{
+        type:"bar",data:{labels:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],datasets:[{label:"Cases",data:[4,7,5,9,6,5,4],backgroundColor:"#00d4aa",borderColor:"#00d4aa",hoverBackgroundColor:"rgba(0,212,170,0.7)"}]},
+        options:{plugins:{legend:{labels:{color:"#8fa9c2"}}},scales:{x:{ticks:{color:"#8fa9c2"}},y:{ticks:{color:"#8fa9c2"}}}}
+      });
+      charts.donut=new Chart(document.getElementById("anomalyDonut"),{
+        type:"doughnut",data:{labels:["Login Anomalies","API Abuse","Data Exfil","Other"],datasets:[{data:[45,28,15,12],backgroundColor:["#00d4aa","#4da6ff","#ffa502","#ff4757"]}]},
+        options:{plugins:{legend:{labels:{color:"#8fa9c2"}}}}
+      });
+      const threatCtx = document.getElementById("threatChart")?.getContext("2d");
+      if (threatCtx) {
+        charts.threat = new Chart(threatCtx, {
+          type: "bar",
+          data: {
+            labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+            datasets: [
+              {
+                label: "Threat Volume",
+                data: [12, 19, 15, 17, 14, 23, 18],
+                backgroundColor: "#00d4aa",
+                borderRadius: 4,
+                yAxisID: "y"
+              },
+              {
+                label: "Risk Score",
+                data: [65, 72, 68, 74, 71, 85, 78],
+                type: "line",
+                borderColor: "#4da6ff",
+                backgroundColor: "transparent",
+                borderWidth: 2,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: "#4da6ff",
+                yAxisID: "y1"
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: { mode: "index", intersect: false },
+            plugins: { legend: { position: "top", labels: { color: "#8892a4" } } },
+            scales: {
+              y: {
+                title: { display: true, text: "Threat Volume", color: "#8892a4" },
+                grid: { color: "#1e2d3d" },
+                ticks: { color: "#8892a4" }
+              },
+              y1: {
+                position: "right",
+                title: { display: true, text: "Risk Score", color: "#8892a4" },
+                grid: { drawOnChartArea: false },
+                ticks: { color: "#8892a4" }
+              },
+              x: { ticks: { color: "#8892a4" }, grid: { color: "#1e2d3d" } }
+            }
+          }
+        });
+      }
+      const attackCtx = document.getElementById("attackTimelineChart")?.getContext("2d");
+      if (attackCtx) {
+        charts.attackTimeline = new Chart(attackCtx, {
+          type: "line",
+          data: {
+            labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+            datasets: [{
+              label: "Attacks",
+              data: [3, 5, 2, 8, 12, 7, 4],
+              borderColor: "#ff4757",
+              backgroundColor: "rgba(255,71,87,0.1)",
+              fill: true,
+              tension: 0.4,
+              pointRadius: 4,
+              pointBackgroundColor: "#ff4757"
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, grid: { color: "#1e2d3d" }, ticks: { color: "#8892a4" } },
+              x: { ticks: { color: "#8892a4" }, grid: { color: "#1e2d3d" } }
+            }
+          }
+        });
+      }
+      charts.incTrend=new Chart(document.getElementById("incTrend"),{
+        type:"line",data:{labels:["W1","W2","W3","W4"],datasets:[{label:"Incidents",data:[8,12,9,14],borderColor:"#00d4aa",tension:.3}]},
+        options:{plugins:{legend:{labels:{color:"#8fa9c2"}}},scales:{x:{ticks:{color:"#8fa9c2"}},y:{ticks:{color:"#8fa9c2"}}}}
+      });
+      charts.uniqueModels=new Chart(document.getElementById("uniqueModelsChart"),{
+        type:"line",data:{labels:["Jan","Feb","Mar","Apr"],datasets:[{label:"Unique Models",data:[5,7,6,9],borderColor:"#4da6ff",tension:.3}]},
+        options:{plugins:{legend:{labels:{color:"#8fa9c2"}}},scales:{x:{ticks:{color:"#8fa9c2"}},y:{ticks:{color:"#8fa9c2"}}}}
+      });
+      charts.openCases=new Chart(document.getElementById("openCasesTrend"),{
+        type:"line",data:{labels:["Mon","Tue","Wed","Thu","Fri"],datasets:[{label:"Open Cases",data:[9,11,10,12,8],borderColor:"#00d4aa",tension:.3}]},
+        options:{plugins:{legend:{labels:{color:"#8fa9c2"}}},scales:{x:{ticks:{color:"#8fa9c2"}},y:{ticks:{color:"#8fa9c2"}}}}
+      });
+      const ts = document.getElementById("threatTimestamp");
+      if (ts) ts.textContent = new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC";
+    }
+
+    async function registerUnit(){
+      const payload={tenant_id:document.getElementById("unitTenant").value.trim(),device_id:document.getElementById("unitDevice").value.trim(),secret_key:document.getElementById("unitSecret").value,name:document.getElementById("unitName").value.trim()};
+      const msg=document.getElementById("unitMsg");
+      msg.textContent="Submitting...";
+      try{
+        const res=await request("/api/units/register",{method:"POST",body:JSON.stringify(payload)});
+        const data=await res.json();
+        msg.textContent=res.ok?`Registered ${data.device_id||payload.device_id}`:(data.error||"Registration failed");
+      }catch(_e){msg.textContent="Registration failed";}
+      await loadUnits();
+    }
+
+    async function changePassword(){
+      const current_password=document.getElementById("curPwd").value;
+      const new_password=document.getElementById("newPwd").value;
+      const confirm=document.getElementById("conPwd").value;
+      const msg=document.getElementById("pwdMsg");
+      if(!new_password||new_password!==confirm){msg.textContent="Password mismatch";return;}
+      try{
+        const res=await request("/api/auth/change-password",{method:"POST",body:JSON.stringify({current_password,new_password})});
+        msg.textContent=res.ok?"Password updated":"Unable to change password";
+      }catch(_e){msg.textContent="Unable to change password";}
+    }
+
+    async function refreshAll(){ await Promise.all([loadAlerts(),loadUnits(),loadAudit()]); }
+
+    document.querySelectorAll(".nav-item").forEach(item=>item.onclick=(e)=>{e.preventDefault();go(item.dataset.page);});
+    document.getElementById("socConsoleBtn").onclick=()=>go("alerts");
+    document.getElementById("bell").onclick=()=>go("alerts");
+    document.getElementById("logoutBtn").onclick=async()=>{token=null;await silentLogin();await refreshAll();};
+    document.getElementById("registerUnitBtn").onclick=registerUnit;
+    document.getElementById("changePwdBtn").onclick=changePassword;
+    document.getElementById("closeModal").onclick=()=>document.getElementById("modal").style.display="none";
+    document.getElementById("globalSearch").addEventListener("input",(e)=>{document.getElementById("alertSearch").value=e.target.value;go("alerts");renderAlerts();});
+    ["alertSearch","severityFilter","statusFilter"].forEach(id=>document.getElementById(id).addEventListener("input",renderAlerts));
+    document.querySelectorAll(".gen").forEach(btn=>btn.onclick=()=>{const t=btn.textContent;btn.textContent="Generating...";btn.disabled=true;setTimeout(()=>{btn.textContent="Ready - Download";btn.disabled=false;setTimeout(()=>btn.textContent=t,1800);},1400);});
+    document.addEventListener("DOMContentLoaded", async () => {
+      initCharts();
+      renderRules();
+      await silentLogin();
+      await refreshAll();
+      setInterval(()=>{document.getElementById("utcClock").textContent=new Date().toISOString().replace("T"," ").slice(0,19)+" UTC";},1000);
+      setInterval(()=>{if(token) refreshAll();},30000);
+    });
+  </script>
+</body>
+</html>
+
+
+=== FILE: templates/base.html ===
+FILE DOES NOT EXIST
+
+=== FILE: templates/overview.html ===
+FILE DOES NOT EXIST
+
+=== FILE: templates/threats.html ===
+FILE DOES NOT EXIST
+
+=== FILE: templates/incidents.html ===
+FILE DOES NOT EXIST
+
+=== FILE: templates/alerts.html ===
+FILE DOES NOT EXIST
+
+=== FILE: templates/detection_rules.html ===
+FILE DOES NOT EXIST
+
+=== FILE: templates/anomalies.html ===
+FILE DOES NOT EXIST
+
+=== FILE: templates/audit_logs.html ===
+FILE DOES NOT EXIST
+
+=== FILE: templates/reports.html ===
+FILE DOES NOT EXIST
+
+=== FILE: templates/settings.html ===
+FILE DOES NOT EXIST
+
+=== FILE: static/css/dashboard.css ===
+FILE DOES NOT EXIST
+
+=== FILE: static/js/dashboard.js ===
+FILE DOES NOT EXIST
