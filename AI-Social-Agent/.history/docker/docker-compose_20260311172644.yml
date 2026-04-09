@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  n8n:
+    image: n8nio/n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=yourpassword
+      - N8N_METRICS=true
+      - N8N_METRICS_INCLUDE_DEFAULT_METRICS=true
+      - N8N_ENCRYPTION_KEY=your-encryption-key-here
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ../workflows:/home/node/workflows  # Mount your workflows folder
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  n8n_data:

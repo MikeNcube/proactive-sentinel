@@ -1,0 +1,21 @@
+# Environment variables
+.env
+
+# Data files
+data/
+*.db
+*.db-journal
+
+# Docker volumes
+docker/volumes/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# n8n exports
+*.n8n_export.json
