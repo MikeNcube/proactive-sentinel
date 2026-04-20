@@ -30,9 +30,13 @@ class TestingConfig(Config):
     """Testing configuration for containerized CI/integration runs."""
 
     TESTING = True
+    # No hardcoded credentials in the default. Callers must supply either
+    # DATABASE_TEST_URL or DATABASE_URL. The previous default of
+    # 'postgresql://sentinel:dev_password@postgres:5432/sentinel' leaked a
+    # fake-but-still-default credential into the codebase.
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_TEST_URL",
-        os.environ.get("DATABASE_URL", "postgresql://sentinel:dev_password@postgres:5432/sentinel"),
+        os.environ.get("DATABASE_URL", ""),
     )
 
 

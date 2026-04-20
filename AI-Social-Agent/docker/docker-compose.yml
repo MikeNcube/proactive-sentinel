@@ -1,4 +1,11 @@
 version: '3.8'
+# All credential and signing values are injected from the environment. The
+# previous version of this file shipped with the placeholders
+#   N8N_BASIC_AUTH_PASSWORD=yourpassword
+#   N8N_ENCRYPTION_KEY=your-encryption-key-here
+# which are still *default values* the moment someone runs `docker-compose
+# up` without reading the README. Now: unset env vars cause docker-compose
+# to refuse to start, which is the intended behaviour.
 services:
   n8n:
     image: n8nio/n8n
@@ -6,14 +13,14 @@ services:
       - "5678:5678"
     environment:
       - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=admin
-      - N8N_BASIC_AUTH_PASSWORD=yourpassword
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER:?N8N_BASIC_AUTH_USER must be set}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD:?N8N_BASIC_AUTH_PASSWORD must be set}
       - N8N_METRICS=true
       - N8N_METRICS_INCLUDE_DEFAULT_METRICS=true
-      - N8N_ENCRYPTION_KEY=your-encryption-key-here
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:?N8N_ENCRYPTION_KEY must be set}
     volumes:
       - n8n_data:/home/node/.n8n
-      - ../workflows:/home/node/workflows  # Mount your workflows folder
+      - ../workflows:/home/node/workflows
     extra_hosts:
       - "host.docker.internal:host-gateway"
 

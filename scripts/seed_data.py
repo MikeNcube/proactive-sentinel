@@ -1,31 +1,74 @@
 #!/usr/bin/env python
-"""Seed database with test data for development"""
+"""
+Seed sample tenants, users and alerts for local development / CI.
 
+This script used to hardcode demo passwords ('password123', 'Admin1234!')
+inline, which leaked into git. It now:
+
+* Reads every user password from environment variables.
+* Refuses to run in FLASK_ENV=production without SEED_ALLOW_PROD=1.
+* Refuses to run without SEED_ALLOW=1 to prevent accidental execution
+  against a populated database.
+* Never prints plaintext passwords.
+"""
+
+import os
 import sys
 import uuid
 from datetime import datetime, timedelta
 
 sys.path.insert(0, "/app")
-from app import create_app
-from src.extensions import db
-from src.models.tenant import Tenant
-from src.models.user import User
-from src.models.alert import Alert
+sys.path.insert(0, ".")
+
+from app import create_app  # noqa: E402
+from src.extensions import db  # noqa: E402
+from src.models.alert import Alert  # noqa: E402
+from src.models.tenant import Tenant  # noqa: E402
+from src.models.user import User  # noqa: E402
+
+
+def _env_password(name: str) -> str:
+    value = os.environ.get(name, "").strip()
+    if not value:
+        raise SystemExit(
+            f"Refusing to seed: {name} is required. "
+            "This script never uses hardcoded passwords."
+        )
+    if len(value) < 12:
+        raise SystemExit(
+            f"Refusing to seed: {name} must be at least 12 characters."
+        )
+    return value
 
 
 def seed():
+    if os.environ.get("SEED_ALLOW") != "1":
+        raise SystemExit(
+            "Refusing to seed: set SEED_ALLOW=1 to confirm you intend to "
+            "mutate this database with sample data."
+        )
+    if (
+        os.environ.get("FLASK_ENV", "").lower() == "production"
+        and os.environ.get("SEED_ALLOW_PROD") != "1"
+    ):
+        raise SystemExit(
+            "Refusing to seed in FLASK_ENV=production without "
+            "SEED_ALLOW_PROD=1."
+        )
+
+    acme_admin_pw = _env_password("SEED_ACME_ADMIN_PASSWORD")
+    acme_analyst_pw = _env_password("SEED_ACME_ANALYST_PASSWORD")
+    acme_viewer_pw = _env_password("SEED_ACME_VIEWER_PASSWORD")
+    zororo_admin_pw = _env_password("SEED_ZORORO_ADMIN_PASSWORD")
+    zororo_analyst_pw = _env_password("SEED_ZORORO_ANALYST_PASSWORD")
+
     app = create_app()
 
     with app.app_context():
         print("Seeding database...")
 
-        # Create tenants
         tenants = [
-            {
-                "name": "Acme Insurance",
-                "subdomain": "acme",
-                "status": "active",
-            },
+            {"name": "Acme Insurance", "subdomain": "acme", "status": "active"},
             {
                 "name": "Zororo Phumulani",
                 "subdomain": "zororo",
@@ -51,25 +94,20 @@ def seed():
 
         db.session.commit()
 
-        # Users data with consistent password hashing
         users_data = [
-            # Acme Insurance users
-            {"tenant": "acme", "email": "admin@acme.com", "password": "password123", "role": "admin"},
-            {"tenant": "acme", "email": "analyst@acme.com", "password": "password123", "role": "analyst"},
-            {"tenant": "acme", "email": "viewer@acme.com", "password": "password123", "role": "viewer"},
-            # Zororo Phumulani users
-            {"tenant": "zororo", "email": "admin@zororo.co.za", "password": "Admin1234!", "role": "admin"},
-            {"tenant": "zororo", "email": "analyst@zororo.co.za", "password": "Admin1234!", "role": "analyst"},
+            {"tenant": "acme", "email": "admin@acme.com", "password": acme_admin_pw, "role": "admin"},
+            {"tenant": "acme", "email": "analyst@acme.com", "password": acme_analyst_pw, "role": "analyst"},
+            {"tenant": "acme", "email": "viewer@acme.com", "password": acme_viewer_pw, "role": "viewer"},
+            {"tenant": "zororo", "email": "admin@zororo.co.za", "password": zororo_admin_pw, "role": "admin"},
+            {"tenant": "zororo", "email": "analyst@zororo.co.za", "password": zororo_analyst_pw, "role": "analyst"},
         ]
 
         for u_data in users_data:
-            # Find tenant
             tenant = Tenant.query.filter_by(subdomain=u_data["tenant"]).first()
             if not tenant:
                 print(f" Tenant not found: {u_data['tenant']}")
                 continue
 
-            # Create or update user
             user = User.query.filter_by(email=u_data["email"]).first()
             if not user:
                 user = User(
@@ -83,12 +121,10 @@ def seed():
             else:
                 print(f"Updating user: {user.email}")
 
-            # ALWAYS use set_password for consistent bcrypt hashing
             user.set_password(u_data["password"])
 
         db.session.commit()
 
-        # Create sample alerts
         severities = ["critical", "high", "medium", "low"]
         categories = ["ransomware", "data_exfil", "unauthorized_access", "suspicious_activity"]
 
@@ -114,15 +150,15 @@ def seed():
 
         db.session.commit()
 
-        # Display summary
         print("\n" + "=" * 50)
         print("Seeding complete!" + "\n" + "=" * 50)
         print(f"Tenants: {Tenant.query.count()}")
         print(f"Users: {User.query.count()}")
         print(f"Alerts: {Alert.query.count()}")
-        print("\n Login credentials:")
+        # Emails only -- plaintext passwords never logged.
+        print("\n Users created / updated:")
         for u_data in users_data:
-            print(f"  {u_data['email']} / {u_data['password']}")
+            print(f"  {u_data['email']}")
         print("=" * 50)
 
 

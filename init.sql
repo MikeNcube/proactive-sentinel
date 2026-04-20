@@ -1,38 +1,31 @@
 -- init.sql
--- This script runs on first PostgreSQL container startup
+-- Runs on first PostgreSQL container startup (docker-compose).
+--
+-- Historical note: this file used to create a role named ``app_user`` with
+-- the hardcoded password ``app_password`` and ``GRANT ALL PRIVILEGES``. That
+-- default credential has been removed; the application connects as the
+-- ``sentinel`` role created by the postgres image's POSTGRES_USER /
+-- POSTGRES_PASSWORD, which are injected from the POSTGRES_PASSWORD env var
+-- (see docker-compose.yml and .env.example). If you need an additional
+-- read-only or reporting role, create it explicitly with a password sourced
+-- from your secret manager -- never hardcode it in init.sql.
 
--- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- Set default timezone
 SET timezone = 'UTC';
 
--- Create application role (if needed)
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'app_user') THEN
-        CREATE ROLE app_user WITH LOGIN PASSWORD 'app_password';
-    END IF;
-END
-$$;
-
--- Grant privileges
-GRANT CONNECT ON DATABASE sentinel TO app_user;
-GRANT USAGE ON SCHEMA public TO app_user;
-GRANT CREATE ON SCHEMA public TO app_user;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO app_user;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO app_user;
-
--- Create function for setting tenant context
+-- Helper function referenced by application RLS policies.
+-- The authoritative RLS policies are installed by the Alembic migration
+-- ``migrations/versions/b7f3c9d1a2e4_enable_row_level_security.py``.
 CREATE OR REPLACE FUNCTION set_tenant_context()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- This will be used by RLS policies
-    PERFORM set_config('app.current_tenant_id', current_setting('app.current_tenant_id', true), false);
+    PERFORM set_config(
+        'app.current_tenant_id',
+        current_setting('app.current_tenant_id', true),
+        false
+    );
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
--- Note: Tables will be created by Alembic migrations
--- This script only sets up database extensions and base functions

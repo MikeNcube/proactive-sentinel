@@ -1,93 +1,103 @@
-﻿import sys
-sys.path.insert(0, '.')
-from app import create_app
-from src.extensions import db
-from src.models.tenant import Tenant
-from src.models.user import User
-import bcrypt
+﻿"""
+Developer helper: force-reset a small set of demo user passwords using bcrypt.
+
+This script previously hardcoded the passwords ('password123', 'Admin1234!',
+'test123') in source and in its final print statement. Those values were
+committed to git and appeared in seed scripts and the dashboard. This version:
+
+* Reads every password from environment variables.
+* Refuses to run unless the operator explicitly opts in via ALLOW_PASSWORD_RESET=1.
+* Refuses to run in a production environment (FLASK_ENV=production).
+* Never prints the plaintext passwords or writes them to a log.
+
+Usage (local dev only):
+
+    ALLOW_PASSWORD_RESET=1 \
+    FIX_ACME_ADMIN_PASSWORD='...' \
+    FIX_ZORORO_ADMIN_PASSWORD='...' \
+    FIX_TEST_USER_PASSWORD='...' \
+    python fix_passwords.py
+"""
+
+import os
+import sys
 import uuid
 
-app = create_app()
-with app.app_context():
-    print("Fixing user passwords with bcrypt...")
-    
-    # Find or create tenant
-    tenant = Tenant.query.filter_by(subdomain='acme').first()
-    if not tenant:
-        tenant = Tenant(
-            id=uuid.uuid4(),
-            name='Acme Insurance',
-            subdomain='acme',
-            status='active'
+sys.path.insert(0, ".")
+
+from app import create_app  # noqa: E402
+from src.extensions import db  # noqa: E402
+from src.models.tenant import Tenant  # noqa: E402
+from src.models.user import User  # noqa: E402
+
+
+def _require(name: str) -> str:
+    value = os.environ.get(name, "").strip()
+    if not value:
+        raise SystemExit(
+            f"Refusing to run: environment variable {name} is not set. "
+            "This script never accepts hardcoded passwords."
         )
-        db.session.add(tenant)
+    if len(value) < 12:
+        raise SystemExit(
+            f"Refusing to run: {name} must be at least 12 characters."
+        )
+    return value
+
+
+def main() -> None:
+    if os.environ.get("ALLOW_PASSWORD_RESET") != "1":
+        raise SystemExit(
+            "Refusing to run: set ALLOW_PASSWORD_RESET=1 to confirm a "
+            "destructive password reset."
+        )
+    if os.environ.get("FLASK_ENV", "").lower() == "production":
+        raise SystemExit(
+            "Refusing to run in FLASK_ENV=production. "
+            "Rotate passwords through the normal admin flow instead."
+        )
+
+    acme_password = _require("FIX_ACME_ADMIN_PASSWORD")
+    zororo_password = _require("FIX_ZORORO_ADMIN_PASSWORD")
+    test_password = _require("FIX_TEST_USER_PASSWORD")
+
+    app = create_app()
+    with app.app_context():
+        tenant = Tenant.query.filter_by(subdomain="acme").first()
+        if not tenant:
+            tenant = Tenant(
+                id=uuid.uuid4(),
+                name="Acme Insurance",
+                subdomain="acme",
+                status="active",
+            )
+            db.session.add(tenant)
+            db.session.commit()
+
+        for email, password, role in (
+            ("admin@acme.com", acme_password, "admin"),
+            ("admin@zororo.co.za", zororo_password, "admin"),
+            ("test@acme.com", test_password, "analyst"),
+        ):
+            user = User.query.filter_by(email=email).first()
+            if user is None:
+                user = User(
+                    id=uuid.uuid4(),
+                    tenant_id=tenant.id,
+                    email=email,
+                    role=role,
+                )
+                db.session.add(user)
+            user.set_password(password)
+
         db.session.commit()
-        print(f"Created tenant: {tenant.name}")
-    
-    # Create/update admin user with bcrypt
-    admin_email = 'admin@acme.com'
-    admin_password = 'password123'
-    admin_hash = bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-    
-    admin = User.query.filter_by(email=admin_email).first()
-    if admin:
-        admin.password_hash = admin_hash
-        print(f"Updated {admin_email} password hash")
-    else:
-        admin = User(
-            id=uuid.uuid4(),
-            tenant_id=tenant.id,
-            email=admin_email,
-            password_hash=admin_hash,
-            role='admin'
+        # Intentionally no listing of email->password pairs: the operator
+        # already has the values in-process via the env.
+        print(
+            f"Reset {User.query.count()} user password(s). "
+            "Plaintext values were not logged."
         )
-        db.session.add(admin)
-        print(f"Created {admin_email}")
-    
-    # Create/update zororo user with bcrypt
-    zororo_email = 'admin@zororo.co.za'
-    zororo_password = 'Admin1234!'
-    zororo_hash = bcrypt.hashpw(zororo_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-    
-    zororo = User.query.filter_by(email=zororo_email).first()
-    if zororo:
-        zororo.password_hash = zororo_hash
-        print(f"Updated {zororo_email} password hash")
-    else:
-        zororo = User(
-            id=uuid.uuid4(),
-            tenant_id=tenant.id,
-            email=zororo_email,
-            password_hash=zororo_hash,
-            role='admin'
-        )
-        db.session.add(zororo)
-        print(f"Created {zororo_email}")
-    
-    # Add a test user
-    test_email = 'test@acme.com'
-    test_password = 'test123'
-    test_hash = bcrypt.hashpw(test_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-    
-    test_user = User.query.filter_by(email=test_email).first()
-    if not test_user:
-        test_user = User(
-            id=uuid.uuid4(),
-            tenant_id=tenant.id,
-            email=test_email,
-            password_hash=test_hash,
-            role='analyst'
-        )
-        db.session.add(test_user)
-        print(f"Created {test_email}")
-    
-    db.session.commit()
-    
-    print("\nUsers in database:")
-    for u in User.query.all():
-        print(f"  {u.email} ({u.role})")
-    
-    print("\nTest credentials:")
-    print(f"  admin@acme.com / password123")
-    print(f"  admin@zororo.co.za / Admin1234!")
-    print(f"  test@acme.com / test123")
+
+
+if __name__ == "__main__":
+    main()
