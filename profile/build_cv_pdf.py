@@ -1,11 +1,14 @@
 """
-Build the ATS-safe PDF CV from profile/cv_ats_ai_engineer.md.
+Build a strictly one-page, ATS-safe PDF CV from profile/cv_ats_ai_engineer.md.
 
-Strict ATS compliance:
+ATS rules enforced:
   - Single column, no tables, no icons, no graphics, no colors.
-  - Standard font (Helvetica, the PDF equivalent of Arial).
-  - Simple paragraphs and unordered list bullets only.
-  - Content is preserved from the source markdown exactly (only formatted).
+  - No emojis, no decorative separator lines or decorative hyphens.
+  - Standard Helvetica (PDF equivalent of Arial/Calibri).
+  - Bullet character is a plain "-" to maximize ATS compatibility.
+  - Content is preserved verbatim from the source markdown.
+  - Layout order: Name + title, Contact, Summary, Core Skills,
+    Project Experience, Education, Certifications, Keywords.
 """
 
 from pathlib import Path
@@ -19,7 +22,6 @@ from reportlab.platypus import (
     ListItem,
     Paragraph,
     SimpleDocTemplate,
-    Spacer,
 )
 
 
@@ -34,8 +36,8 @@ def make_styles():
     base = ParagraphStyle(
         "Base",
         fontName=FONT,
-        fontSize=10.5,
-        leading=14,
+        fontSize=8,
+        leading=9.6,
         textColor=BLACK,
         alignment=TA_LEFT,
         spaceBefore=0,
@@ -46,60 +48,60 @@ def make_styles():
         "Name",
         parent=base,
         fontName=FONT_BOLD,
-        fontSize=18,
-        leading=22,
-        spaceAfter=2,
+        fontSize=12,
+        leading=14,
+        spaceAfter=1,
     )
 
     title = ParagraphStyle(
         "Title",
         parent=base,
-        fontSize=11.5,
-        leading=15,
-        spaceAfter=2,
+        fontSize=8.5,
+        leading=10,
+        spaceAfter=1,
     )
 
     contact = ParagraphStyle(
         "Contact",
         parent=base,
-        fontSize=10.5,
-        leading=14,
-        spaceAfter=10,
+        fontSize=8,
+        leading=9.6,
+        spaceAfter=4,
     )
 
     section = ParagraphStyle(
         "Section",
         parent=base,
         fontName=FONT_BOLD,
-        fontSize=12,
-        leading=16,
-        spaceBefore=10,
-        spaceAfter=4,
+        fontSize=9,
+        leading=11,
+        spaceBefore=4,
+        spaceAfter=1,
     )
 
     subsection = ParagraphStyle(
         "Subsection",
         parent=base,
         fontName=FONT_BOLD,
-        fontSize=11,
-        leading=15,
-        spaceBefore=6,
-        spaceAfter=3,
+        fontSize=8.5,
+        leading=10.2,
+        spaceBefore=2,
+        spaceAfter=0,
     )
 
     body = ParagraphStyle(
         "Body",
         parent=base,
-        fontSize=10.5,
-        leading=14,
-        spaceAfter=6,
+        fontSize=8,
+        leading=9.6,
+        spaceAfter=2,
     )
 
     bullet = ParagraphStyle(
         "Bullet",
         parent=body,
-        spaceAfter=2,
-        leading=13.5,
+        spaceAfter=0,
+        leading=9.6,
     )
 
     return {
@@ -115,15 +117,15 @@ def make_styles():
 
 def bullets(items, style):
     return ListFlowable(
-        [ListItem(Paragraph(t, style), leftIndent=10) for t in items],
+        [ListItem(Paragraph(t, style), leftIndent=7) for t in items],
         bulletType="bullet",
-        start="\u2022",
-        leftIndent=14,
+        start="-",
+        leftIndent=9,
         bulletFontName=FONT,
-        bulletFontSize=10.5,
+        bulletFontSize=8,
         bulletOffsetY=0,
         spaceBefore=0,
-        spaceAfter=6,
+        spaceAfter=2,
     )
 
 
@@ -132,10 +134,10 @@ def build():
     doc = SimpleDocTemplate(
         str(OUT_PATH),
         pagesize=LETTER,
-        leftMargin=0.75 * inch,
-        rightMargin=0.75 * inch,
-        topMargin=0.7 * inch,
-        bottomMargin=0.7 * inch,
+        leftMargin=0.5 * inch,
+        rightMargin=0.5 * inch,
+        topMargin=0.4 * inch,
+        bottomMargin=0.4 * inch,
         title="Mike Simbarashe Ncube - AI Engineer CV",
         author="Mike Simbarashe Ncube",
         subject="Curriculum Vitae",
@@ -236,7 +238,7 @@ def build():
         )
     )
     social_bullets = [
-        "Built a three-agent Python pipeline (Research &rarr; Strategy &rarr; Content) "
+        "Built a three-agent Python pipeline (Research to Strategy to Content) "
         "that turns fresh AI-ecosystem signals into platform-specific social posts.",
         "Integrated a local Ollama runtime (llama3) via HTTP for all LLM calls, "
         "keeping iteration fast and free of external API dependencies.",
@@ -272,23 +274,14 @@ def build():
         )
     )
 
-    story.append(Paragraph("ADDITIONAL INFORMATION", styles["section"]))
+    story.append(Paragraph("KEYWORDS", styles["section"]))
     story.append(
         Paragraph(
-            "<b>ATS keyword coverage (evidence-backed):</b>",
-            styles["body"],
-        )
-    )
-    story.append(
-        Paragraph(
-            "AI Engineer &middot; Agentic AI &middot; multi-agent &middot; LLM &middot; "
-            "prompt engineering &middot; Ollama &middot; Python &middot; Flask &middot; "
-            "FastAPI &middot; SQLAlchemy &middot; Alembic &middot; PostgreSQL &middot; "
-            "Redis &middot; JWT &middot; bcrypt &middot; AES-256 &middot; encryption "
-            "&middot; PII &middot; multi-tenant &middot; rate limiting &middot; "
-            "OpenTelemetry &middot; Docker &middot; Docker Compose &middot; n8n "
-            "&middot; pytest &middot; MITRE ATT&amp;CK &middot; alert correlation "
-            "&middot; data pipelines",
+            "AI Engineer, Agentic AI, multi-agent, LLM, prompt engineering, Ollama, "
+            "Python, Flask, FastAPI, SQLAlchemy, Alembic, PostgreSQL, Redis, JWT, "
+            "bcrypt, AES-256, encryption, PII, multi-tenant, rate limiting, "
+            "OpenTelemetry, Docker, Docker Compose, n8n, pytest, MITRE ATT&amp;CK, "
+            "alert correlation, data pipelines.",
             styles["body"],
         )
     )
