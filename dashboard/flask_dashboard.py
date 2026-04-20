@@ -80,7 +80,7 @@ LOGIN_TEMPLATE = """
         </div>
         <div class="sub">Sign in to access the SOC dashboard.</div>
         <form method="POST" action="/login">
-            <input type="email" name="email" placeholder="admin@acme.com" required>
+            <input type="email" name="email" placeholder="you@example.com" required>
             <input type="password" name="password" placeholder="password" required>
             <button type="submit">Login</button>
         </form>

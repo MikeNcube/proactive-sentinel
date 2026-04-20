@@ -77,6 +77,10 @@ def main():
             "CREATE DATABASE sentinel_test;",
         ]
     )
+    # DATABASE_URL for the test DB is derived from POSTGRES_PASSWORD (set in
+    # your .env) rather than a hardcoded fallback. If POSTGRES_PASSWORD is
+    # unset inside the container, migrations will fail loudly, which is the
+    # intended behaviour -- it used to silently use 'dev_password'.
     run_command(
         [
             "docker-compose",
@@ -85,7 +89,13 @@ def main():
             "app",
             "bash",
             "-c",
-            "export DATABASE_URL=postgresql://sentinel:dev_password@postgres:5432/sentinel_test && python -m flask db upgrade",
+            (
+                'if [ -z "$POSTGRES_PASSWORD" ]; then '
+                'echo "POSTGRES_PASSWORD is not set" >&2; exit 1; fi; '
+                "export DATABASE_URL="
+                "postgresql://sentinel:${POSTGRES_PASSWORD}@postgres:5432/sentinel_test"
+                " && python -m flask db upgrade"
+            ),
         ]
     )
 

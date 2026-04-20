@@ -238,7 +238,7 @@
         <a class="nav-item" data-page="settings" href="#"><span>Settings</span></a>
       </nav>
       <div class="bottom">
-        <div style="display:flex;align-items:center;margin-bottom:8px"><span class="avatar">A</span><span>admin@zororo.co.za</span></div>
+        <div style="display:flex;align-items:center;margin-bottom:8px"><span class="avatar">A</span><span id="sidebar-user-email">signed in</span></div>
         <div><span class="dot"></span>System healthy</div>
         <button class="logout" id="logoutBtn">Logout</button>
       </div>
@@ -508,10 +508,11 @@
     }
 
     async function silentLogin(){
-      const res=await fetch(API_BASE+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:"admin@zororo.co.za",password:"Admin1234!"})});
-      const data=await res.json().catch(()=>({}));
-      if(!res.ok||!data.access_token) throw new Error("Login failed");
-      token=data.access_token;
+      // Hardcoded demo credentials ('admin@zororo.co.za / Admin1234!') were
+      // removed from this template for security reasons. Redirect the user
+      // to /login instead of silently authenticating as a known admin.
+      window.location.href="/login";
+      throw new Error("Not authenticated");
     }
 
     async function loadAlerts(){
@@ -608,7 +609,7 @@
       const flagged=alerts.filter(a=>["critical","high"].includes(String(a.severity).toLowerCase()));
       document.getElementById("anomBig").textContent=flagged.length;
       document.getElementById("anomFeed").innerHTML=flagged.slice(0,6).map(a=>`<div class="mini" style="padding:6px 0;border-bottom:1px solid var(--border)">${a.title||"-"} (${String(a.severity||"").toUpperCase()})</div>`).join("") || `<div class="mini">No active anomalies</div>`;
-      document.getElementById("riskyUsers").innerHTML=[["admin@zororo.co.za",82],["ops@zororo.co.za",67],["claims@zororo.co.za",54]].map(u=>`<div class="mini" style="padding:6px 0;border-bottom:1px solid var(--border)">${u[0]} - risk ${u[1]}</div>`).join("");
+      document.getElementById("riskyUsers").innerHTML="";
     }
 
     function destroyChart(name){
