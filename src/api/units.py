@@ -10,6 +10,7 @@ from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from sqlalchemy import or_
 
 from src.api.rate_limits import RATE_LIMITS, limiter
+from src.auth.tenant_context import TenantContextError, set_tenant_context
 from src.extensions import db
 from src.models.alert import Alert
 from src.models.tenant import Tenant
@@ -53,6 +54,16 @@ def _authenticate_unit() -> tuple[Unit | None, Any]:
     unit = Unit.query.filter_by(device_id=device_id).first()
     if not unit or unit.token_hash != _hash_value(token):
         return None, _json_error("Invalid unit token", 401)
+
+    # Pin the PostgreSQL tenant context from the unit's tenant_id so any
+    # subsequent INSERT/UPDATE against tenant-scoped tables satisfies the
+    # RLS ``WITH CHECK`` policy. Unit requests don't carry a JWT, so this
+    # is the sole place the GUC gets set for that code path.
+    try:
+        set_tenant_context(unit.tenant_id)
+    except TenantContextError as exc:
+        logger.error("Refusing unit request: tenant context unavailable: %s", exc)
+        return None, _json_error("Tenant context unavailable", 500)
     return unit, None
 
 
