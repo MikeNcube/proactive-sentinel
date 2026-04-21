@@ -150,7 +150,7 @@ def build():
     story.append(Paragraph("MIKE (SIMBARASHE) NCUBE", styles["name"]))
     story.append(
         Paragraph(
-            "AI Engineer &mdash; Agentic AI, RAG, Applied LLM Workflows, AWS Cloud, Python Backends",
+            "AI Engineer - Agentic AI, RAG, Applied LLM Workflows, AWS Cloud, Python Backends",
             styles["title"],
         )
     )
@@ -209,7 +209,7 @@ def build():
 
     story.append(
         Paragraph(
-            "Zororo Phumulani &mdash; Digital Policy Application Platform (FastAPI, regulated Insurtech)",
+            "Zororo Phumulani - Digital Policy Application Platform (FastAPI, regulated Insurtech)",
             styles["subsection"],
         )
     )
@@ -233,7 +233,7 @@ def build():
 
     story.append(
         Paragraph(
-            "Proactive Sentinel &mdash; Multi-tenant Python/Flask SOC Service",
+            "Proactive Sentinel - Multi-tenant Python/Flask SOC Service",
             styles["subsection"],
         )
     )
@@ -285,7 +285,7 @@ def build():
 
     story.append(
         Paragraph(
-            "Resilient Web Tier on AWS &mdash; ALB + Auto Scaling, Multi-AZ",
+            "Resilient Web Tier on AWS - ALB + Auto Scaling, Multi-AZ",
             styles["subsection"],
         )
     )
@@ -310,7 +310,7 @@ def build():
         )
     )
     cloud_mini = [
-        "Cloud Data Engineering Portfolio: compact end-to-end demo &mdash; "
+        "Cloud Data Engineering Portfolio: compact end-to-end demo - "
         "Terraform (AWS S3) IaC, Airflow DAG scaffold, Great Expectations YAML "
         "for data-quality, boto3 Kinesis producer, Neo4j + Pandas.",
         "RDS Connectivity Lab: hands-on troubleshooting of EC2-to-RDS "
@@ -319,26 +319,12 @@ def build():
     ]
     story.append(bullets(cloud_mini, styles["bullet"]))
 
-    story.append(Paragraph("EDUCATION", styles["section"]))
-    story.append(
-        Paragraph(
-            "[Degree, Institution, Year] &mdash; keep existing real entry",
-            styles["body"],
-        )
-    )
-
-    story.append(Paragraph("CERTIFICATIONS", styles["section"]))
-    certs = [
-        "Generative AI with Large Language Models &mdash; DeepLearning.AI",
-        "Retrieval-Augmented Generation (RAG) Systems &mdash; DeepLearning.AI",
-        "Agentic AI &mdash; DeepLearning.AI",
-        "LangChain for LLM Applications &mdash; DeepLearning.AI",
-        "AWS Generative AI Introduction",
-        "AWS Machine Learning Foundations",
-        "Data Engineering Bootcamp",
-        "Generative AI Introduction &mdash; Udacity",
+    story.append(Paragraph("EDUCATION - CERTIFICATIONS", styles["section"]))
+    edu_certs = [
+        "Front-End Development Certification, John Hopkins University (online Coursera)",
+        "Web Development Certification, Udemy (online)",
     ]
-    story.append(bullets(certs, styles["bullet"]))
+    story.append(bullets(edu_certs, styles["bullet"]))
 
     story.append(Paragraph("KEYWORDS", styles["section"]))
     story.append(

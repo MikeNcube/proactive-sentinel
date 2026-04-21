@@ -1,11 +1,11 @@
-# Mike (Simbarashe) Ncube — ATS CV (AI Engineer, Full-Time)
+# Mike (Simbarashe) Ncube - ATS CV (AI Engineer, Full-Time)
 
 > Evidence-based. Every claim is traceable to a repository on github.com/MikeNcube or to a listed certification on `mike-ncube-github-io.vercel.app`.
 
 ---
 
 **MIKE (SIMBARASHE) NCUBE**
-AI Engineer — Agentic AI, RAG, Applied LLM Workflows, AWS Cloud, Python Backends
+AI Engineer - Agentic AI, RAG, Applied LLM Workflows, AWS Cloud, Python Backends
 Johannesburg, Gauteng, South Africa | GitHub: github.com/MikeNcube | Portfolio: mike-ncube-github-io.vercel.app | Email: [add] | LinkedIn: [add]
 
 ## PROFESSIONAL SUMMARY
@@ -27,7 +27,7 @@ AI engineer who designs, ships, and operates production-grade AI and data system
 
 ## PROJECT EXPERIENCE
 
-### Zororo Phumulani — Digital Policy Application Platform (FastAPI, regulated Insurtech)
+### Zororo Phumulani - Digital Policy Application Platform (FastAPI, regulated Insurtech)
 
 - Built and deployed a 1,400+ line FastAPI application serving a POPIA-compliant funeral-insurance policy onboarding flow under FSP48558, underwritten by KGA Life FSP15980.
 - Implemented a 7-step workflow engine (identity verification, 18+ age validation, FIC-compliant ID upload, POPIA/FAIS consent capture, payment integration, automated policy generation, audit logging) with dependency enforcement between steps.
@@ -35,7 +35,7 @@ AI engineer who designs, ships, and operates production-grade AI and data system
 - Packaged the service with a Dockerfile + nixpacks.toml + Procfile and deployed it to Railway with zero-downtime releases.
 - Exposed a versioned REST API (`/api/v1/rates`, `/api/v1/policies`, `/api/v1/policies/{ref}`, `/api/health`) consumed by the web front-end.
 
-### Proactive Sentinel — Multi-tenant Python/Flask SOC Service
+### Proactive Sentinel - Multi-tenant Python/Flask SOC Service
 
 - Designed a Flask application-factory service with tenant-scoped auth, bcrypt password hashing, and JWT access + refresh tokens.
 - Implemented AES-256-GCM column-level encryption via a SQLAlchemy TypeDecorator for user PII fields (phone, full name, address, MFA secret) with a dedicated ENCRYPTION_KEY separate from JWT secrets.
@@ -52,7 +52,7 @@ AI engineer who designs, ships, and operates production-grade AI and data system
 - Implemented boto3 producers for AWS Kinesis streaming ingestion and staged Neo4j for graph-enriched ratings.
 - Organised the repo into `src/`, `api/`, `dags/`, `airflow/`, `scripts/` (batch + streaming ETL), `sql/`, `notebooks/`, and `tests/` for clean separation of concerns.
 
-### Resilient Web Tier on AWS — ALB + Auto Scaling, Multi-AZ
+### Resilient Web Tier on AWS - ALB + Auto Scaling, Multi-AZ
 
 - Designed a highly available AWS web tier: Application Load Balancer with health checks, EC2 Auto Scaling Group across multiple Availability Zones, CloudWatch-driven scale-out/scale-in on CPU and request metrics, VPC with private subnets, and IAM least-privilege roles.
 - Built the underlying Flask service (`app/server.py`) to expose an AZ-aware health endpoint that surfaces the serving host and Availability Zone for ALB target-health verification.
@@ -62,24 +62,14 @@ AI engineer who designs, ships, and operates production-grade AI and data system
 
 - Compact end-to-end demonstration of cloud data engineering: Terraform (AWS S3) IaC, Airflow DAG scaffold, Great Expectations YAML for data-quality, boto3 Kinesis producer, Neo4j + Pandas + Python dependencies.
 
-### Cloud Project Board — RDS Connectivity Lab
+### Cloud Project Board - RDS Connectivity Lab
 
 - Hands-on troubleshooting lab for EC2-to-RDS PostgreSQL connectivity using VPC configuration, subnet routing, Security Groups, NACLs, IAM roles, and boto3 automation.
 
-## EDUCATION
+## EDUCATION - CERTIFICATIONS
 
-[Degree, Institution, Year] — keep existing real entry
-
-## CERTIFICATIONS
-
-- Generative AI with Large Language Models — DeepLearning.AI
-- Retrieval-Augmented Generation (RAG) Systems — DeepLearning.AI
-- Agentic AI — DeepLearning.AI
-- LangChain for LLM Applications — DeepLearning.AI
-- AWS Generative AI Introduction
-- AWS Machine Learning Foundations
-- Data Engineering Bootcamp
-- Generative AI Introduction — Udacity
+- Front-End Development Certification, John Hopkins University (online Coursera)
+- Web Development Certification, Udemy (online)
 
 ## ADDITIONAL INFORMATION
 
