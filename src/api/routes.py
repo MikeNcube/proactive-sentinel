@@ -1,8 +1,9 @@
-from flask import Blueprint, g, jsonify
+from flask import Blueprint, g, jsonify, request
 
+from src.actions.dispatcher import BLOCKED_IP_PREFIX
 from src.api.decorators import require_auth, require_tenant
 from src.api.rate_limits import RATE_LIMITS, limiter
-from src.extensions import db
+from src.extensions import db, get_redis
 from src.models.alert import Alert
 from src.repositories.alert_repository import AlertRepository
 from sqlalchemy import text
@@ -104,3 +105,21 @@ def get_stats():
         "by_status": {status: count for status, count in status_counts},
     }
     return jsonify({"stats": stats}), 200
+
+
+@api_bp.route("/security/unban-ip", methods=["POST"])
+@require_auth
+@require_tenant
+@limiter.limit(RATE_LIMITS["security_unban"])
+def unban_ip():
+    """Manually remove a source IP from the Redis block list."""
+    data = request.get_json(silent=True) or {}
+    ip = (data.get("ip") or "").strip()
+    if not ip:
+        return jsonify({"error": "ip is required"}), 400
+    try:
+        r = get_redis()
+        deleted = r.delete(f"{BLOCKED_IP_PREFIX}{ip}")
+        return jsonify({"unbanned": bool(deleted), "ip": ip}), 200
+    except Exception as exc:
+        return jsonify({"error": "Redis unavailable", "detail": str(exc)}), 503

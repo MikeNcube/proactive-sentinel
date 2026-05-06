@@ -14,6 +14,7 @@ RATE_LIMITS = {
     "units_report": "60 per minute",
     "units_status": "60 per minute",
     "events_ingest": "120 per minute",
+    "security_unban": "20 per hour",
 }
 
 

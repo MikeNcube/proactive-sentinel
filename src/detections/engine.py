@@ -1,6 +1,7 @@
 import logging
 from typing import Dict, Optional
 
+from src.actions.dispatcher import ActionDispatcher
 from src.detections.correlation_engine import CorrelationEngine
 from src.extensions import db
 from src.models.alert import Alert
@@ -38,5 +39,10 @@ class DetectionEngine:
             db.session.rollback()
             logger.exception("Failed to persist alert: %s", exc)
             raise
+
+        try:
+            ActionDispatcher.dispatch(alert)
+        except Exception as exc:
+            logger.warning("ActionDispatcher.dispatch failed (non-fatal): %s", exc)
 
         return alert
