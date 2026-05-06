@@ -1,5 +1,6 @@
 import pytest
-from app import create_app, db
+from src import create_app
+from src.extensions import db
 from src.auth.jwt_manager import JWTManager
 from src.models.tenant import Tenant
 from src.models.user import User

@@ -52,12 +52,12 @@ def create_app(config_name=None) -> Flask:
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["MAX_CONTENT_LENGTH"] = int(os.environ.get("MAX_REQUEST_BYTES", "1048576"))
-    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-        "pool_pre_ping": True,
-        "pool_recycle": 1800,
-        "pool_size": int(os.environ.get("DB_POOL_SIZE", "5")),
-        "max_overflow": int(os.environ.get("DB_MAX_OVERFLOW", "10")),
-    }
+    _engine_options: dict = {"pool_pre_ping": True}
+    if not database_url.startswith("sqlite"):
+        _engine_options["pool_recycle"] = 1800
+        _engine_options["pool_size"] = int(os.environ.get("DB_POOL_SIZE", "5"))
+        _engine_options["max_overflow"] = int(os.environ.get("DB_MAX_OVERFLOW", "10"))
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = _engine_options
     jwt_secret = os.environ.get("JWT_SECRET_KEY", "")
     if not jwt_secret:
         raise RuntimeError("JWT_SECRET_KEY is required.")
@@ -238,11 +238,13 @@ def create_app(config_name=None) -> Flask:
         from src.auth.routes import auth_bp
         from src.api.audit_routes import audit_bp
         from src.api.units import units_bp
+        from src.api.events import events_bp
 
         app.register_blueprint(api_bp, url_prefix="/api")
         app.register_blueprint(auth_bp, url_prefix="/api/auth")
         app.register_blueprint(audit_bp)
         app.register_blueprint(units_bp, url_prefix="/api/units")
+        app.register_blueprint(events_bp, url_prefix="/api/events")
     except Exception as exc:
         logger.exception("Failed to register blueprints: %s", exc)
         raise

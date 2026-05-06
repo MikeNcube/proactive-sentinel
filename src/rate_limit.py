@@ -13,6 +13,7 @@ RATE_LIMITS = {
     "units_heartbeat": "120 per minute",
     "units_report": "60 per minute",
     "units_status": "60 per minute",
+    "events_ingest": "120 per minute",
 }
 
 

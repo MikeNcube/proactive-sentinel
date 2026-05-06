@@ -1,20 +1,42 @@
+import logging
 from typing import Dict, Optional
 
 from src.detections.correlation_engine import CorrelationEngine
+from src.extensions import db
 from src.models.alert import Alert
+
+logger = logging.getLogger(__name__)
 
 
 class DetectionEngine:
     def __init__(self):
         self.correlation = CorrelationEngine()
 
-    def process_alert(self, alert_data: Dict) -> Optional[Dict]:
-        # Check deduplication
-        if not self.correlation.should_alert(alert_data):
-            return None
+    def process_alert(self, alert_data: Dict) -> Optional[Alert]:
+        """Deduplicate, construct, persist, and return an Alert, or None if suppressed."""
+        # Dedup via Redis fingerprint — fail-open so a Redis outage never drops events.
+        try:
+            if not self.correlation.should_alert(alert_data):
+                return None
+        except Exception as exc:
+            logger.warning("Redis dedup unavailable, allowing alert through: %s", exc)
 
-        # Create alert
         valid_fields = {c.name for c in Alert.__table__.columns}
         clean_data = {k: v for k, v in alert_data.items() if k in valid_fields}
+        if not clean_data.get("title"):
+            category = clean_data.get("category") or "unknown"
+            source = clean_data.get("source") or "unknown"
+            clean_data["title"] = f"{category.replace('_', ' ').title()} from {source}"
+        if not clean_data.get("severity"):
+            clean_data["severity"] = "low"
         alert = Alert(**clean_data)
+
+        try:
+            db.session.add(alert)
+            db.session.commit()
+        except Exception as exc:
+            db.session.rollback()
+            logger.exception("Failed to persist alert: %s", exc)
+            raise
+
         return alert

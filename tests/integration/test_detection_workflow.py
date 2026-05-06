@@ -5,7 +5,22 @@ Integration tests for detection engine and alert workflow.
 import pytest
 import uuid
 
-from app import create_app
+import redis as _redis_lib
+
+
+def _redis_available() -> bool:
+    try:
+        _redis_lib.Redis(host="localhost", port=6379, socket_connect_timeout=1).ping()
+        return True
+    except Exception:
+        return False
+
+
+requires_redis = pytest.mark.skipif(
+    not _redis_available(), reason="Redis not available on localhost:6379"
+)
+
+from src import create_app
 from src.extensions import db
 from src.models.tenant import Tenant
 from src.detections.detection_engine import DetectionEngine
@@ -51,6 +66,7 @@ class TestDetectionEngine:
                 "status": tenant.status,
             }
 
+    @requires_redis
     def test_alert_deduplication(self, app, test_tenant):
         """Test that duplicate alerts are suppressed."""
         with app.app_context():
