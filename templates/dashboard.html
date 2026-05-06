@@ -1213,6 +1213,17 @@
     </section>
   </div>
 
+  <div id="loginOverlay" class="modal" style="display:flex;">
+    <div class="body" style="width:min(420px,94vw);">
+      <h3 style="text-align:center;margin-bottom:4px;color:var(--accent-teal);">SENTINEL</h3>
+      <div class="mini" style="text-align:center;margin-bottom:24px;">Security Operations Console</div>
+      <input id="loginEmail" type="email" placeholder="Email" style="width:100%;margin-bottom:12px;" />
+      <input id="loginPassword" type="password" placeholder="Password" style="width:100%;" />
+      <div class="mini" id="loginError" style="color:var(--status-critical);min-height:20px;margin:12px 0;"></div>
+      <button class="btn" id="loginBtn" style="width:100%;">Sign in</button>
+    </div>
+  </div>
+
   <div id="modal" class="modal">
     <div class="body">
       <h3 style="margin-bottom: 16px;">Alert Details</h3>
@@ -1222,7 +1233,7 @@
   </div>
 
   <script>
-    const API_BASE = "https://proactive-sentinel-production.up.railway.app";
+    const API_BASE = "";
     let token = null;
     let alerts = [];
     let units = [];
@@ -1267,15 +1278,35 @@
       if(token) headers.Authorization=`Bearer ${token}`;
       if(opts.body && !headers["Content-Type"]) headers["Content-Type"]="application/json";
       const res=await fetch(API_BASE+path,{...opts,headers});
-      if(res.status===401){await silentLogin();throw new Error("unauthorized");}
+      if(res.status===401){showLoginForm();throw new Error("unauthorized");}
       return res;
     }
 
-    async function silentLogin(){
-      const res=await fetch(API_BASE+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:"admin@zororo.co.za",password:"Admin1234!"})});
-      const data=await res.json().catch(()=>({}));
-      if(!res.ok||!data.access_token) throw new Error("Login failed");
-      token=data.access_token;
+    function showLoginForm(){
+      document.getElementById("loginOverlay").style.display="flex";
+    }
+
+    function hideLoginForm(){
+      document.getElementById("loginOverlay").style.display="none";
+      document.getElementById("loginError").textContent="";
+    }
+
+    async function doLogin(){
+      const email=document.getElementById("loginEmail").value.trim();
+      const password=document.getElementById("loginPassword").value;
+      const errEl=document.getElementById("loginError");
+      errEl.textContent="";
+      if(!email||!password){errEl.textContent="Email and password required";return;}
+      try{
+        const res=await fetch(API_BASE+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})});
+        const data=await res.json().catch(()=>({}));
+        if(!res.ok||!data.access_token){errEl.textContent=data.error||"Login failed";return;}
+        token=data.access_token;
+        hideLoginForm();
+        await refreshAll();
+      }catch(_e){
+        errEl.textContent="Connection error";
+      }
     }
 
     async function loadAlerts(){
@@ -1695,7 +1726,9 @@
     document.querySelectorAll(".nav-item").forEach(item=>item.onclick=(e)=>{e.preventDefault();go(item.dataset.page);});
     document.getElementById("socConsoleBtn").onclick=()=>go("alerts");
     document.getElementById("bell").onclick=()=>go("alerts");
-    document.getElementById("logoutBtn").onclick=async()=>{token=null;await silentLogin();await refreshAll();};
+    document.getElementById("loginBtn").onclick=doLogin;
+    document.getElementById("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter") doLogin();});
+    document.getElementById("logoutBtn").onclick=()=>{token=null;showLoginForm()};
     document.getElementById("registerUnitBtn").onclick=registerUnit;
     document.getElementById("changePwdBtn").onclick=changePassword;
     document.getElementById("closeModal").onclick=()=>document.getElementById("modal").style.display="none";
@@ -1714,11 +1747,10 @@
       },1500);
     });
     
-    document.addEventListener("DOMContentLoaded", async () => {
+    document.addEventListener("DOMContentLoaded", () => {
       initCharts();
       renderRules();
-      await silentLogin();
-      await refreshAll();
+      showLoginForm();
       setInterval(()=>{document.getElementById("utcClock").textContent=new Date().toISOString().replace("T"," ").slice(0,19)+" UTC";},1000);
       setInterval(()=>{if(token) refreshAll();},30000);
     });
