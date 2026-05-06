@@ -1,0 +1,13 @@
+You are a Research Agent monitoring AI infrastructure trends.
+Today's date: {current_date}
+
+Recent data from GitHub/ArXiv/Tech News:
+{research_data}
+
+Task: Summarize the top 3 most significant trends in AI infrastructure.
+Focus on: new models, deployment patterns, MLOps tools, or scaling techniques.
+
+Format your response as:
+1. [Trend Name] - [Brief description] - [Why it matters]
+2. [Trend Name] - [Brief description] - [Why it matters]
+3. [Trend Name] - [Brief description] - [Why it matters]

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Post - AI Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+        body {
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .back-btn {
+            padding: 10px 20px;
+            background: #0066FF;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        .post-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .post-content {
+            font-size: 16px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            color: #333;
+        }
+        .meta {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            color: #666;
+            border: 1px solid #eee;
+        }
+        .meta strong {
+            color: #333;
+        }
+        .actions {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+        .btn-approve { 
+            background: #4CAF50; 
+            color: white; 
+        }
+        .btn-reject { 
+            background: #f44336; 
+            color: white; 
+        }
+        .btn-schedule { 
+            background: #FF9800; 
+            color: white; 
+        }
+        .schedule-form {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        .schedule-form input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+        .btn-cancel {
+            background: #9e9e9e;
+            color: white;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+        .status-approved { background: #E8F5E9; color: #4CAF50; }
+        .status-scheduled { background: #E3F2FD; color: #2196F3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📄 View Post</h1>
+            <a href="/" class="back-btn">← Back to Dashboard</a>
+        </div>
+        
+        <div class="post-container">
+            <div class="meta">
+                <div style="margin-bottom: 8px;">
+                    <strong>Generated:</strong> {{ post.timestamp }}
+                    {% if approved %}
+                        <span class="status-badge status-approved">✓ APPROVED</span>
+                    {% endif %}
+                    {% if scheduled %}
+                        <span class="status-badge status-scheduled">📅 SCHEDULED</span>
+                    {% endif %}
+                </div>
+                <div><strong>Filename:</strong> {{ filename }}</div>
+                {% if scheduled %}
+                <div style="margin-top: 8px; color: #2196F3;">
+                    <strong>📅 Scheduled for:</strong> {{ scheduled }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="post-content">
+                {{ post.post if post.post else post.content }}
+            </div>
+            
+            <div class="actions">
+                {% if not approved and not scheduled %}
+                <form action="/approve/{{ filename }}" method="post" style="display: inline;">
+                    <button type="submit" class="btn-approve">✅ Approve Post</button>
+                </form>
+                <form action="/reject/{{ filename }}" method="post" style="display: inline;">
+                    <button type="submit" class="btn-reject" onclick="return confirm('Are you sure you want to reject this post?')">❌ Reject Post</button>
+                </form>
+                <button class="btn-schedule" onclick="toggleSchedule()">📅 Schedule Post</button>
+                {% elif approved and not scheduled %}
+                <button class="btn-schedule" onclick="toggleSchedule()">📅 Schedule Post</button>
+                {% endif %}
+            </div>
+            
+            <div id="schedule-form" class="schedule-form" style="display: none;">
+                <h3 style="margin-bottom: 15px;">Schedule Post</h3>
+                <form action="/schedule/{{ filename }}" method="post" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <input type="date" name="schedule_date" required>
+                    <input type="time" name="schedule_time" required>
+                    <button type="submit" class="btn-schedule">Save Schedule</button>
+                    <button type="button" class="btn-cancel" onclick="toggleSchedule()">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSchedule() {
+            const form = document.getElementById('schedule-form');
+            if (form.style.display === 'none' || form.style.display === '') {
+                form.style.display = 'block';
+            } else {
+                form.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

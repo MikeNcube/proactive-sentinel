@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Proactive Sentinel - Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0d1117;--tile:#161b27;--line:rgba(255,255,255,.08);--text:#e8edf5;--muted:#8b95a8;--teal:#00d4aa;--danger:#ff6b81}
+    *{box-sizing:border-box} html,body{margin:0}
+    body{min-height:100vh;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,sans-serif;display:grid;place-items:center;padding:20px}
+    .wrap{width:min(460px,100%);background:rgba(22,27,39,.72);border:1px solid var(--line);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:18px;padding:24px;box-shadow:0 14px 34px rgba(0,0,0,.35)}
+    h1{margin:0 0 8px;font-size:1.15rem}
+    p{margin:0 0 18px;color:var(--muted)}
+    .field{display:grid;gap:6px;margin-bottom:12px}
+    label{font-size:.82rem;color:var(--muted)}
+    input{width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:#111827;color:var(--text)}
+    .kimi-pill-button{width:100%;margin-top:8px;border:0;border-radius:999px;background:var(--teal);color:#0d1117;font-weight:700;padding:11px 14px;cursor:pointer}
+    .toast{margin-bottom:12px;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,107,129,.35);background:rgba(255,107,129,.14);color:#ffd9df;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+    .mono{font-family:"JetBrains Mono",monospace;font-size:.74rem;color:var(--muted);margin-top:14px}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    {% if error %}
+      <div class="toast">{{ error }}</div>
+    {% endif %}
+    <h1>Proactive Sentinel</h1>
+    <p>Sign in to access the SOC dashboard.</p>
+    <form method="post" action="/login">
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" name="email" required />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" type="password" name="password" required />
+      </div>
+      <button type="submit" class="kimi-pill-button">Login</button>
+    </form>
+    <div class="mono">API: http://localhost:5001/api/auth/login</div>
+  </main>
+</body>
+</html>
