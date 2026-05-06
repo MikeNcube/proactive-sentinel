@@ -1237,6 +1237,7 @@
     let token = null;
     let alerts = [];
     let units = [];
+    let stats = {};
     const rules = [
       ["Ransomware File Encryption Burst","critical","T1486","Active"],
       ["Shadow Copy Deletion","high","T1490","Active"],
@@ -1342,13 +1343,50 @@
       }catch(_e){ body.innerHTML=`<tr><td colspan="5" class="mini" style="text-align:center;padding:24px;">Audit logging active and operational</td></tr>`; }
     }
 
+    async function loadStats(){
+      try{
+        const res=await request("/api/stats");
+        if(!res.ok) return;
+        const data=await res.json();
+        stats=data.stats||{};
+        updateDonutChart();
+      }catch(_e){}
+    }
+
+    function updateDonutChart(){
+      const BUCKETS={
+        "Login Anomalies":["suspicious_login","login_anomaly","credential_dump","brute_force"],
+        "API Abuse":["api_abuse","api_anomaly","rate_limit_exceeded","unauthorized_access"],
+        "Data Exfil":["data_exfiltration","c2_outbound","exfil","directory_enumeration"],
+        "Other":[]
+      };
+      const by_cat=stats.by_category||{};
+      const counts=[0,0,0,0];
+      const labels=Object.keys(BUCKETS);
+      for(const [cat,n] of Object.entries(by_cat)){
+        const key=String(cat).toLowerCase();
+        let placed=false;
+        for(let i=0;i<labels.length-1;i++){
+          if(BUCKETS[labels[i]].some(k=>key.includes(k))){counts[i]+=n;placed=true;break;}
+        }
+        if(!placed) counts[3]+=n;
+      }
+      if(charts.donut){
+        charts.donut.data.datasets[0].data=counts;
+        charts.donut.update();
+      }
+      const bySev=stats.by_severity||{};
+      const critical=bySev["critical"]||bySev["CRITICAL"]||0;
+      const high=bySev["high"]||bySev["HIGH"]||0;
+      document.getElementById("threatIndicators").innerHTML=`<div style="display:flex;gap:16px;flex-wrap:wrap;"><div class="mini">Critical: <span style="color:var(--status-critical);font-weight:600;">${critical}</span></div><div class="mini">High: <span style="color:var(--status-high);font-weight:600;">${high}</span></div></div>`;
+    }
+
     function renderOverview(){
       const critical=alerts.filter(a=>String(a.severity).toLowerCase()==="critical").length;
       document.getElementById("kpiIncidents").textContent=critical;
       document.getElementById("kpiAlerts").textContent=alerts.length;
       const feed=document.getElementById("overviewFeed");
       feed.innerHTML=alerts.slice(0,5).map(a=>`<div style="padding:10px 0;border-bottom:1px solid var(--border-subtle);transition:all 0.2s;cursor:pointer;" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'"><span class="sev ${sevClass(a.severity)}">${String(a.severity||"low").toUpperCase()}</span> <span style="margin-left:8px;">${a.title||"-"}</span></div>`).join("") || `<div class="mini" style="text-align:center;padding:24px;color:var(--text-tertiary);">No alerts to display</div>`;
-      document.getElementById("threatIndicators").innerHTML=`<div style="display:flex;gap:16px;flex-wrap:wrap;"><div class="mini">Critical: <span style="color:var(--status-critical);font-weight:600;">${critical}</span></div><div class="mini">High: <span style="color:var(--status-high);font-weight:600;">${alerts.filter(a=>String(a.severity).toLowerCase()==="high").length}</span></div></div>`;
       document.getElementById("meshGrid").innerHTML=`
         <div class="card" style="text-align:center;"><div class="mini">postgres</div><div style="color:var(--status-low);font-weight:600;margin-top:8px;">● online</div></div>
         <div class="card" style="text-align:center;"><div class="mini">redis</div><div style="color:var(--status-low);font-weight:600;margin-top:8px;">● healthy</div></div>
@@ -1493,7 +1531,7 @@
         data:{
           labels:["Login Anomalies","API Abuse","Data Exfil","Other"],
           datasets:[{
-            data:[45,28,15,12],
+            data:[0,0,0,0],
             backgroundColor:["#00d4aa","#4d9fff","#fbbf24","#ef4444"],
             borderWidth: 2,
             borderColor: '#0d1117',
@@ -1719,8 +1757,8 @@
       }
     }
 
-    async function refreshAll(){ 
-      await Promise.all([loadAlerts(),loadUnits(),loadAudit()]); 
+    async function refreshAll(){
+      await Promise.all([loadAlerts(),loadUnits(),loadAudit(),loadStats()]);
     }
 
     document.querySelectorAll(".nav-item").forEach(item=>item.onclick=(e)=>{e.preventDefault();go(item.dataset.page);});

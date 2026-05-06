@@ -38,6 +38,7 @@ def get_alerts():
                         "title": alert.title,
                         "severity": alert.severity,
                         "status": alert.status,
+                        "category": alert.category,
                         "created_at": alert.created_at.isoformat() if alert.created_at else None,
                     }
                     for alert in alerts
@@ -98,11 +99,18 @@ def get_stats():
         .group_by(Alert.status)
         .all()
     )
+    category_counts = (
+        db.session.query(Alert.category, db.func.count(Alert.id))
+        .filter(Alert.tenant_id == g.tenant_id, Alert.category.isnot(None))
+        .group_by(Alert.category)
+        .all()
+    )
 
     stats = {
         "total": Alert.query.filter_by(tenant_id=g.tenant_id).count(),
         "by_severity": {severity: count for severity, count in severity_counts},
         "by_status": {status: count for status, count in status_counts},
+        "by_category": {cat: count for cat, count in category_counts},
     }
     return jsonify({"stats": stats}), 200
 
