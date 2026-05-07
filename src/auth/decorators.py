@@ -1,46 +1,66 @@
+import logging
 import uuid
 from functools import wraps
 from typing import Any, Callable, TypeVar
 
 from flask import g, jsonify, request
-from sqlalchemy import text
 
-from src.extensions import db
+from src.auth.tenant_context import TenantContextError, set_tenant_context
+
+logger = logging.getLogger(__name__)
 
 F = TypeVar("F", bound=Callable[..., Any])
 
 
 def require_tenant(f: F) -> F:
-    """Decorator that injects tenant_id from JWT or header."""
+    """Decorator that injects tenant_id from JWT or header.
+
+    Also pins the PostgreSQL ``app.current_tenant_id`` GUC so that
+    Row Level Security policies can enforce per-tenant isolation at the
+    database layer. If the GUC cannot be set (e.g. bad/missing tenant,
+    DB error), the request is rejected **before** any business query runs.
+    """
 
     @wraps(f)
     def decorated(*args, **kwargs):
-        # Get tenant_id from JWT first
+        # Prefer the tenant_id from the validated JWT; only fall back to the
+        # X-Tenant-ID header when no authenticated user context exists.
+        # Mixing the two is how horizontal privilege-escalation bugs appear.
         tenant_id = None
         if hasattr(g, "user") and g.user:
             tenant_id = g.user.get("tenant_id")
-
-        # Fallback to header
         if not tenant_id:
             tenant_id = request.headers.get("X-Tenant-ID")
 
         if not tenant_id:
             return jsonify({"error": "Tenant ID required"}), 400
 
-        # Validate tenant exists and is active
+        # Validate UUID shape before touching the DB. Otherwise the query
+        # below raises a raw psycopg2 cast error that we'd leak in the
+        # response body via the existing 401 handler.
+        try:
+            uuid.UUID(str(tenant_id))
+        except (TypeError, ValueError):
+            return jsonify({"error": "Invalid tenant ID"}), 400
+
         from src.models.tenant import Tenant
 
         tenant = Tenant.query.filter_by(id=tenant_id, status="active").first()
         if not tenant:
             return jsonify({"error": "Invalid or inactive tenant"}), 403
 
-        # Set tenant context for request
+        try:
+            set_tenant_context(tenant_id)
+        except TenantContextError as exc:
+            # Fail-closed: never run tenant-scoped queries without a pinned
+            # database tenant context. Returning 500 (not 400/403) because
+            # the caller cannot fix a server-side RLS wiring failure.
+            logger.error("Refusing request: tenant context unavailable: %s", exc)
+            return jsonify({"error": "Tenant context unavailable"}), 500
+
         g.tenant_id = tenant_id
         g.tenant = tenant
-
-        # Set PostgreSQL tenant context for RLS when supported.
-        if db.engine.dialect.name == "postgresql":
-            db.session.execute(text("SET app.current_tenant_id = :tenant_id"), {"tenant_id": str(tenant_id)})
+        g.tenant_context_set = True
 
         return f(*args, **kwargs)
 

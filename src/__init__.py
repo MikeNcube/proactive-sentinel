@@ -141,6 +141,19 @@ def create_app(config_name=None) -> Flask:
             )
         return response
 
+    @app.teardown_request
+    def _clear_tenant_context(exc):
+        """Reset the PostgreSQL tenant GUC so pooled connections never leak
+        tenant context across requests. RLS is only as strong as this reset."""
+        from src.auth.tenant_context import clear_tenant_context
+
+        try:
+            clear_tenant_context()
+        except Exception:
+            # Teardown must never raise; a failed reset will be corrected by
+            # the next BEGIN or by the connection being discarded.
+            logger.debug("tenant context teardown: swallowed exception", exc_info=True)
+
     @app.after_request
     def add_security_headers(response):
         response.headers["X-Content-Type-Options"] = "nosniff"
