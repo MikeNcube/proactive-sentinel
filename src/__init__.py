@@ -260,6 +260,15 @@ def create_app(config_name=None) -> Flask:
 
     @app.errorhandler(429)
     def ratelimit_error(error):
+        app.logger.warning(
+            "Rate limit exceeded",
+            extra={
+                "path": request.path,
+                "method": request.method,
+                "source_ip": request.headers.get("X-Forwarded-For", request.remote_addr),
+                "user_agent": request.headers.get("User-Agent", "unknown"),
+            },
+        )
         return jsonify({"error": "Rate limit exceeded", "retry_after": error.description}), 429
 
     return app

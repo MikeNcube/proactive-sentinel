@@ -14,11 +14,12 @@ from typing import Any
 from flask import Blueprint, g, jsonify, request
 from marshmallow import Schema, ValidationError, fields, validate
 
-from src.api.rate_limits import RATE_LIMITS, limiter
+from src.api.rate_limits import RATE_LIMITS, limiter, get_user_rate_limit_key
 from src.auth.decorators import require_auth, require_tenant
 from src.detections.engine import DetectionEngine
 from src.extensions import db
 from src.models.alert import Alert
+from src.services.audit_service import write_audit_event
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ _schema = IngestEventSchema()
 @events_bp.route("/ingest", methods=["POST"])
 @require_auth
 @require_tenant
-@limiter.limit(RATE_LIMITS["events_ingest"])
+@limiter.limit(RATE_LIMITS["events_ingest"], key_func=get_user_rate_limit_key)
 def ingest_event():
     """
     Ingest a security or operational event.
@@ -131,6 +132,16 @@ def ingest_event():
     if alert is None:
         return jsonify({"created": False, "reason": "duplicate suppressed"}), 200
 
+    write_audit_event(
+        tenant_id=jwt_tenant_id,
+        actor_id=g.user_id,
+        action="alert_created",
+        resource_type="alert",
+        resource_id=str(alert.id),
+        success=True,
+        details={"severity": alert.severity, "category": event_type},
+    )
+    db.session.commit()
     return jsonify({
         "created": True,
         "alert_id": str(alert.id),
@@ -184,6 +195,18 @@ def _handle_ux_event(
         db.session.rollback()
         logger.exception("Failed to persist UX alerts: %s", exc)
         return jsonify({"error": "Failed to persist alerts"}), 500
+
+    for created_id in created_ids:
+        write_audit_event(
+            tenant_id=tenant_id,
+            actor_id=g.user_id,
+            action="alert_created",
+            resource_type="alert",
+            resource_id=created_id,
+            success=True,
+            details={"category": event_type, "source": source},
+        )
+    db.session.commit()
 
     return jsonify({
         "created": True,

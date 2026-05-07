@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 
 from flask import Blueprint, Response, g, jsonify, request
 
-from src.api.rate_limits import RATE_LIMITS, limiter
+from src.api.rate_limits import RATE_LIMITS, limiter, get_user_rate_limit_key
+from src.api.validators import validate_string
 from src.auth.decorators import require_auth, require_tenant
 from src.models.audit_log import AuditLog
 
@@ -18,7 +19,7 @@ audit_bp = Blueprint("audit", __name__, url_prefix="/api/audit")
 @audit_bp.route("/logs", methods=["GET"])
 @require_auth
 @require_tenant
-@limiter.limit(RATE_LIMITS["audit_logs"])
+@limiter.limit(RATE_LIMITS["audit_logs"], key_func=get_user_rate_limit_key)
 def get_audit_logs():
     """Get audit logs for current tenant."""
     page = request.args.get("page", 1, type=int)
@@ -30,7 +31,11 @@ def get_audit_logs():
     query = AuditLog.query.filter_by(tenant_id=g.tenant_id)
 
     if action:
-        query = query.filter_by(action=action)
+        try:
+            cleaned_action = validate_string(action, "action", max_length=255)
+        except ValueError as exc:
+            return jsonify({"error": str(exc)}), 400
+        query = query.filter_by(action=cleaned_action)
     if start_date_raw:
         try:
             start_date = datetime.fromisoformat(start_date_raw)
@@ -65,10 +70,12 @@ def get_audit_logs():
 @audit_bp.route("/export", methods=["GET"])
 @require_auth
 @require_tenant
-@limiter.limit(RATE_LIMITS["audit_logs"])
+@limiter.limit(RATE_LIMITS["audit_logs"], key_func=get_user_rate_limit_key)
 def export_audit_logs():
     """Export audit logs as CSV for compliance audits."""
     days = request.args.get("days", 90, type=int)
+    if days < 1 or days > 3650:
+        return jsonify({"error": "days must be between 1 and 3650"}), 400
     start_date = datetime.utcnow() - timedelta(days=days)
 
     logs = (
@@ -124,7 +131,7 @@ def export_audit_logs():
 @audit_bp.route("/retention", methods=["GET"])
 @require_auth
 @require_tenant
-@limiter.limit(RATE_LIMITS["audit_logs"])
+@limiter.limit(RATE_LIMITS["audit_logs"], key_func=get_user_rate_limit_key)
 def get_retention_info():
     """Get data retention information for compliance."""
     retention_days = 365
