@@ -9,8 +9,8 @@ $ImageTag = (git rev-parse --short HEAD).Trim()
 $AwsAccount = (aws sts get-caller-identity --query Account --output text).Trim()
 $EcrUri = "$AwsAccount.dkr.ecr.$Region.amazonaws.com/$EcrRepo"
 
-if (-not $env:DATABASE_URL -or -not $env:SECRET_KEY) {
-  throw "DATABASE_URL and SECRET_KEY environment variables are required."
+if (-not $env:DATABASE_URL -or -not $env:SECRET_KEY -or -not $env:JWT_SECRET_KEY) {
+  throw "DATABASE_URL, SECRET_KEY, and JWT_SECRET_KEY environment variables are required."
 }
 
 Write-Host "Starting deployment for commit $ImageTag"
@@ -49,6 +49,7 @@ terraform apply `
   -var="image_uri=${EcrUri}:${ImageTag}" `
   -var="database_url=$env:DATABASE_URL" `
   -var="secret_key=$env:SECRET_KEY" `
+  -var="jwt_secret_key=$env:JWT_SECRET_KEY" `
   -auto-approve
 
 $ServiceUrl = terraform output -raw service_url

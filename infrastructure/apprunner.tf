@@ -39,7 +39,12 @@ variable "database_url" {
 }
 
 variable "secret_key" {
-  description = "Application secret key for JWT"
+  description = "Flask application secret key"
+  sensitive   = true
+}
+
+variable "jwt_secret_key" {
+  description = "JWT signing secret — must be a strong random value in production"
   sensitive   = true
 }
 
@@ -74,6 +79,15 @@ resource "aws_secretsmanager_secret" "secret_key" {
 resource "aws_secretsmanager_secret_version" "secret_key" {
   secret_id     = aws_secretsmanager_secret.secret_key.id
   secret_string = var.secret_key
+}
+
+resource "aws_secretsmanager_secret" "jwt_secret_key" {
+  name = "sentinel/${var.environment}/jwt_secret_key"
+}
+
+resource "aws_secretsmanager_secret_version" "jwt_secret_key" {
+  secret_id     = aws_secretsmanager_secret.jwt_secret_key.id
+  secret_string = var.jwt_secret_key
 }
 
 resource "aws_iam_role" "apprunner_ecr_access_role" {
@@ -129,7 +143,8 @@ resource "aws_iam_role_policy" "apprunner_secrets_access" {
         ]
         Resource = [
           aws_secretsmanager_secret.database_url.arn,
-          aws_secretsmanager_secret.secret_key.arn
+          aws_secretsmanager_secret.secret_key.arn,
+          aws_secretsmanager_secret.jwt_secret_key.arn
         ]
       }
     ]
@@ -155,8 +170,9 @@ resource "aws_apprunner_service" "sentinel" {
           PYTHONPATH  = "/app"
         }
         runtime_environment_secrets = {
-          DATABASE_URL = aws_secretsmanager_secret.database_url.arn
-          SECRET_KEY   = aws_secretsmanager_secret.secret_key.arn
+          DATABASE_URL   = aws_secretsmanager_secret.database_url.arn
+          SECRET_KEY     = aws_secretsmanager_secret.secret_key.arn
+          JWT_SECRET_KEY = aws_secretsmanager_secret.jwt_secret_key.arn
         }
       }
     }

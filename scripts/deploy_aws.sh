@@ -11,8 +11,8 @@ IMAGE_TAG=$(git rev-parse --short HEAD)
 AWS_ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
 ECR_URI="${AWS_ACCOUNT}.dkr.ecr.${REGION}.amazonaws.com/${ECR_REPO}"
 
-if [[ -z "${DATABASE_URL:-}" || -z "${SECRET_KEY:-}" ]]; then
-  echo "DATABASE_URL and SECRET_KEY must be set in environment."
+if [[ -z "${DATABASE_URL:-}" || -z "${SECRET_KEY:-}" || -z "${JWT_SECRET_KEY:-}" ]]; then
+  echo "DATABASE_URL, SECRET_KEY, and JWT_SECRET_KEY must be set in environment."
   exit 1
 fi
 
@@ -49,6 +49,7 @@ terraform apply \
   -var="image_uri=${ECR_URI}:${IMAGE_TAG}" \
   -var="database_url=${DATABASE_URL}" \
   -var="secret_key=${SECRET_KEY}" \
+  -var="jwt_secret_key=${JWT_SECRET_KEY}" \
   -auto-approve
 
 SERVICE_URL=$(terraform output -raw service_url)
