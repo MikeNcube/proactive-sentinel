@@ -119,11 +119,13 @@ class ActionDispatcher:
             result["flag"] = True
             result["block"] = cls.block(alert)
             result["report"] = cls.report(alert)
+            cls._notify(alert)
 
         elif severity == "high":
             cls.flag(alert)
             result["flag"] = True
             result["report"] = cls.report(alert)
+            cls._notify(alert)
 
         elif severity == "medium":
             cls.flag(alert)
@@ -133,3 +135,12 @@ class ActionDispatcher:
             logger.debug("LOW alert %s: log only, no automated action", alert.id)
 
         return result
+
+    @staticmethod
+    def _notify(alert) -> None:
+        """Send email notification. Failures are logged and never propagated."""
+        try:
+            from src.notifications.email_notifier import send_alert_email
+            send_alert_email(alert)
+        except Exception as exc:
+            logger.warning("Email notification failed for alert %s: %s", alert.id, exc)
