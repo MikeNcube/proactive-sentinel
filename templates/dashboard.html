@@ -1208,6 +1208,15 @@
             <button class="btn" id="changePwdBtn">Update Password</button>
             <div class="mini" id="pwdMsg" style="margin-top: 12px;"></div>
           </div>
+          <div class="card">
+            <h3>Unban IP Address</h3>
+            <div class="mini" style="margin-bottom: 12px; color: var(--text-secondary);">Remove a source IP from the Redis block list. Requires IT Admin or Security Analyst role.</div>
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+              <input id="unbanIp" placeholder="IP address (e.g. 192.168.1.1)" style="flex:1;min-width:200px;" />
+              <button class="btn" id="unbanBtn">Unban IP</button>
+            </div>
+            <div class="mini" id="unbanMsg" style="margin-top: 12px;"></div>
+          </div>
         </section>
       </main>
     </section>
@@ -1476,20 +1485,33 @@
         return okQ&&okS&&okT;
       });
       const body=document.getElementById("alertsBody");
-      body.innerHTML=rows.map((a,i)=>`<tr><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${String(a.id||i).slice(0,8)}</td><td>${a.title||"-"}</td><td><span class="sev ${sevClass(a.severity)}">${String(a.severity||"low").toUpperCase()}</span></td><td>${a.category||"-"}</td><td>${a.status||"-"}</td><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${a.created_at?new Date(a.created_at).toLocaleString():"-"}</td><td><button class="btn view-btn" data-id="${a.id||i}" style="padding:6px 12px;font-size:11px;">View</button></td></tr>`).join("") || `<tr><td colspan="7" class="mini" style="text-align:center;padding:24px;">No alerts match your filters</td></tr>`;
+      body.innerHTML=rows.map((a,i)=>`<tr><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${String(a.id||i).slice(0,8)}</td><td>${a.title||"-"}</td><td><span class="sev ${sevClass(a.severity)}">${String(a.severity||"low").toUpperCase()}</span></td><td>${a.category||"-"}</td><td>${a.status||"-"}</td><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${a.created_at?new Date(a.created_at).toLocaleString():"-"}</td><td style="display:flex;gap:6px;"><button class="btn view-btn" data-id="${a.id||i}" style="padding:6px 12px;font-size:11px;">View</button><button class="btn dismiss-btn" data-id="${a.id||i}" style="padding:6px 12px;font-size:11px;background:var(--bg-tertiary);border:1px solid var(--border-medium);">Dismiss</button></td></tr>`).join("") || `<tr><td colspan="7" class="mini" style="text-align:center;padding:24px;">No alerts match your filters</td></tr>`;
       document.querySelectorAll(".view-btn").forEach(btn=>{
         btn.onclick=()=>{
           const id=btn.dataset.id;
           const a=rows.find(x=>String(x.id)===id) || {};
+          document.querySelector("#modal h3").textContent="Alert Details";
           document.getElementById("modalText").textContent=JSON.stringify(a,null,2);
           document.getElementById("modal").style.display="flex";
+        };
+      });
+      document.querySelectorAll(".dismiss-btn").forEach(btn=>{
+        btn.onclick=async()=>{
+          const id=btn.dataset.id;
+          btn.disabled=true;
+          btn.textContent="...";
+          try{
+            const res=await request(`/api/alerts/${id}/dismiss`,{method:"POST"});
+            if(res.ok){await loadAlerts();}
+            else{btn.disabled=false;btn.textContent="Dismiss";}
+          }catch(_e){btn.disabled=false;btn.textContent="Dismiss";}
         };
       });
     }
 
     function renderUnits(){
       const body=document.getElementById("unitsBody");
-      body.innerHTML=units.map(u=>`<tr><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${u.device_id||"-"}</td><td>${u.name||"-"}</td><td style="color:${String(u.status).toLowerCase()==="online"?"var(--status-low)":"var(--status-critical)"};font-weight:600;">${u.status||"offline"}</td><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${u.last_seen_at?new Date(u.last_seen_at).toLocaleString():"-"}</td><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${u.tenant_id||"-"}</td><td><button class="btn" style="padding:6px 12px;font-size:11px;">Inspect</button></td></tr>`).join("") || `<tr><td colspan="6" class="mini" style="text-align:center;padding:24px;">No units registered</td></tr>`;
+      body.innerHTML=units.map(u=>`<tr><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${u.device_id||"-"}</td><td>${u.name||"-"}</td><td style="color:${String(u.status).toLowerCase()==="online"?"var(--status-low)":"var(--status-critical)"};font-weight:600;">${u.status||"offline"}</td><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${u.last_seen_at?new Date(u.last_seen_at).toLocaleString():"-"}</td><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${u.tenant_id||"-"}</td><td><button class="btn" onclick="showComingSoon('Unit Inspect')" style="padding:6px 12px;font-size:11px;">Inspect</button></td></tr>`).join("") || `<tr><td colspan="6" class="mini" style="text-align:center;padding:24px;">No units registered</td></tr>`;
     }
 
     function renderRules(){
@@ -1831,25 +1853,58 @@
     document.getElementById("bell").onclick=()=>go("alerts");
     document.getElementById("loginBtn").onclick=doLogin;
     document.getElementById("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter") doLogin();});
-    document.getElementById("logoutBtn").onclick=()=>{token=null;showLoginForm()};
+    document.getElementById("logoutBtn").onclick=async()=>{
+      try{await request("/api/auth/logout",{method:"POST"});}catch(_e){}
+      token=null;
+      showLoginForm();
+    };
     document.getElementById("registerUnitBtn").onclick=registerUnit;
     document.getElementById("changePwdBtn").onclick=changePassword;
-    document.getElementById("closeModal").onclick=()=>document.getElementById("modal").style.display="none";
+    document.getElementById("unbanBtn").onclick=async()=>{
+      const ip=document.getElementById("unbanIp").value.trim();
+      const msg=document.getElementById("unbanMsg");
+      if(!ip){msg.textContent="Enter an IP address";msg.style.color="var(--status-critical)";return;}
+      msg.textContent="Unbanning...";
+      msg.style.color="var(--accent-blue)";
+      try{
+        const res=await request("/api/security/unban-ip",{method:"POST",body:JSON.stringify({ip})});
+        const data=await res.json().catch(()=>({}));
+        if(res.ok){
+          msg.textContent=`IP ${ip} has been unbanned`;
+          msg.style.color="var(--status-low)";
+          document.getElementById("unbanIp").value="";
+        }else{
+          msg.textContent=data.error||"Unban failed";
+          msg.style.color="var(--status-critical)";
+        }
+      }catch(_e){
+        msg.textContent="Request failed";
+        msg.style.color="var(--status-critical)";
+      }
+    };
+    document.getElementById("closeModal").onclick=()=>{
+      document.getElementById("modal").style.display="none";
+      document.querySelector("#modal h3").textContent="Alert Details";
+    };
     document.getElementById("globalSearch").addEventListener("input",(e)=>{document.getElementById("alertSearch").value=e.target.value;go("alerts");renderAlerts();});
     ["alertSearch","severityFilter","statusFilter"].forEach(id=>document.getElementById(id).addEventListener("input",renderAlerts));
     document.querySelectorAll(".gen").forEach(btn=>btn.onclick=()=>{
-      const t=btn.textContent;
-      btn.textContent="⏳ Generating...";
+      const orig=btn.textContent;
+      btn.textContent="Coming soon";
       btn.disabled=true;
       btn.style.opacity="0.6";
-      setTimeout(()=>{
-        btn.textContent="✓ Ready - Download";
-        btn.disabled=false;
-        btn.style.opacity="1";
-        setTimeout(()=>{btn.textContent=t;},2000);
-      },1500);
+      setTimeout(()=>{btn.textContent=orig;btn.disabled=false;btn.style.opacity="1";},2000);
+    });
+    document.querySelectorAll(".pill").forEach(pill=>pill.onclick=()=>{
+      showComingSoon(pill.textContent.trim()+" module");
     });
     
+    function showComingSoon(feature){
+      document.querySelector("#modal h3").textContent="Coming Soon";
+      document.getElementById("modalText").textContent=(feature||"This feature")+" is scheduled for a future release.";
+      document.getElementById("modal").style.display="flex";
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
       initCharts();
       renderRules();
