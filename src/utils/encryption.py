@@ -1,9 +1,11 @@
 import base64
+import json
 import logging
 import os
 import warnings
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from sqlalchemy.types import Text, TypeDecorator
 
 logger = logging.getLogger(__name__)
 
@@ -65,3 +67,80 @@ class FieldEncryption:
 
 
 field_encryption = FieldEncryption()
+
+
+class EncryptedJSON(TypeDecorator):
+    """
+    SQLAlchemy TypeDecorator that stores JSON as AES-256-GCM encrypted text.
+
+    On INSERT/UPDATE: dict → json.dumps → encrypt → base64 string in DB.
+    On SELECT: base64 string → decrypt → json.loads → dict in Python.
+
+    Falls back to plain json.loads if decryption fails, so existing
+    unencrypted rows remain readable after adding this column type.
+    """
+
+    impl = Text
+    cache_ok = False  # key is runtime-generated; must not cache
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+        text = json.dumps(value) if not isinstance(value, str) else value
+        return field_encryption.encrypt(text)
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        try:
+            decrypted = field_encryption.decrypt(value)
+            return json.loads(decrypted)
+        except Exception:
+            # Fallback: handle unencrypted legacy rows transparently.
+            try:
+                return json.loads(value)
+            except Exception:
+                return None
+
+
+# Role sets that may receive raw_data in alert detail responses.
+_DISPLAY_ROLES = {"IT_ADMIN", "SECURITY_ANALYST", "ADMIN"}
+
+
+def _mask_ip_in_dict(data: dict) -> dict:
+    """Return a copy of data with source_ip / ip fields partially masked."""
+    masked = dict(data)
+    for field in ("source_ip", "ip"):
+        if field in masked:
+            parts = str(masked[field]).split(".")
+            if len(parts) == 4:
+                masked[field] = f"{parts[0]}.{parts[1]}.xxx.xxx"
+            else:
+                masked[field] = "xxx.xxx.xxx.xxx"
+    return masked
+
+
+def decrypt_for_display(alert, role: str) -> dict:
+    """
+    Return a safe alert dict for API responses.
+
+    raw_data is included only for IT_ADMIN, SECURITY_ANALYST, or admin roles,
+    with source_ip always masked. All other roles receive a redacted placeholder.
+    """
+    authorized = str(role or "").upper() in _DISPLAY_ROLES
+    raw = alert.raw_data or {}
+
+    return {
+        "id": str(alert.id),
+        "title": alert.title,
+        "severity": alert.severity,
+        "status": alert.status,
+        "category": alert.category,
+        "source": alert.source,
+        "description": alert.description,
+        "confidence": alert.confidence,
+        "created_at": alert.created_at.isoformat() if alert.created_at else None,
+        "raw_data": _mask_ip_in_dict(raw) if authorized else {
+            "_note": "raw_data requires IT_ADMIN or SECURITY_ANALYST role"
+        },
+    }

@@ -4,7 +4,8 @@ import uuid
 from sqlalchemy import DateTime, Enum, String
 
 from src.extensions import db
-from src.models.types import ArrayOfStrings, CrossJSON, UUID
+from src.models.types import ArrayOfStrings, UUID
+from src.utils.encryption import EncryptedJSON
 
 
 class Alert(db.Model):
@@ -27,7 +28,7 @@ class Alert(db.Model):
     mitre_techniques = db.Column(ArrayOfStrings(), default=list)  # T1046, T1570
     source = db.Column(String(255))  # detection_engine, ai_classifier, etc.
     description = db.Column(db.Text)
-    raw_data = db.Column(CrossJSON(), default=dict)
+    raw_data = db.Column(EncryptedJSON(), default=dict)
     confidence = db.Column(db.Float, default=0.5)  # 0-1
     assigned_to = db.Column(UUID(), db.ForeignKey("users.id"))
     created_at = db.Column(DateTime, default=datetime.utcnow)

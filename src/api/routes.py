@@ -9,6 +9,7 @@ from src.extensions import db, get_redis
 from src.models.alert import Alert
 from src.repositories.alert_repository import AlertRepository
 from src.services.audit_service import write_audit_event
+from src.utils.encryption import decrypt_for_display
 from sqlalchemy import text
 
 api_bp = Blueprint("api", __name__)
@@ -50,6 +51,27 @@ def get_alerts():
         ),
         200,
     )
+
+
+@api_bp.route("/alerts/<alert_id>", methods=["GET"])
+@require_auth
+@require_tenant
+@limiter.limit(RATE_LIMITS["alerts_list"], key_func=get_user_rate_limit_key)
+def get_alert_detail(alert_id):
+    """Get full alert detail. raw_data returned only for elevated roles."""
+    try:
+        cleaned_alert_id = validate_uuid_string(alert_id, "alert_id")
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    alert = Alert.query.filter_by(
+        id=cleaned_alert_id, tenant_id=g.tenant_id
+    ).first()
+    if not alert:
+        return jsonify({"error": "Alert not found"}), 404
+
+    role = g.user.get("role", "") if isinstance(g.user, dict) else ""
+    return jsonify(decrypt_for_display(alert, role)), 200
 
 
 @api_bp.route("/alerts/<alert_id>/dismiss", methods=["POST"])

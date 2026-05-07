@@ -1,3 +1,4 @@
+import base64
 import pytest
 import os
 
@@ -6,6 +7,11 @@ os.environ["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 os.environ["JWT_SECRET_KEY"] = "test-secret-key-not-for-production"
 os.environ["TESTING"] = "true"
+# Fixed 32-byte test key so EncryptedJSON works without RuntimeWarning.
+os.environ.setdefault(
+    "ENCRYPTION_KEY",
+    base64.b64encode(b"sentinel-test-encryption-key-32b").decode(),
+)
 
 from src import create_app
 from src.extensions import db
