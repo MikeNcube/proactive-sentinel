@@ -111,13 +111,14 @@ class TestIngestSecurityEvents:
         assert body["created"] in (True, False)
 
     def test_created_alert_has_id_and_severity(self, client, events_auth_headers):
+        # event_type "login_anomaly" maps to "high" via the severity rules engine.
+        # The sender does not claim any severity — the engine must set it by rule.
         resp = client.post(
             "/api/events/ingest",
             json={
                 "source": "test-source-unique",
-                "event_type": "data_exfil_unique",
-                "severity": "high",
-                "raw_data": {"host": "db-server", "bytes_sent": 50000},
+                "event_type": "login_anomaly",
+                "raw_data": {"host": "db-server", "attempt_count": 7},
             },
             headers=events_auth_headers,
         )
@@ -125,7 +126,7 @@ class TestIngestSecurityEvents:
         body = resp.get_json()
         if body.get("created"):
             assert "alert_id" in body
-            assert body["severity"] == "high"
+            assert body["severity"] == "high"  # set by rules engine, not claimed by sender
         else:
             assert body.get("reason") == "duplicate suppressed"
 
