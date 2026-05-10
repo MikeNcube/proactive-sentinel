@@ -16,6 +16,7 @@ from marshmallow import Schema, ValidationError, fields, validate
 
 from src.api.rate_limits import RATE_LIMITS, limiter
 from src.auth.decorators import require_auth, require_tenant
+from detections.vrl_filter import mask_text as _mask_text
 from src.detections.engine import DetectionEngine
 from src.extensions import db
 from src.models.alert import Alert
@@ -103,6 +104,16 @@ def ingest_event():
     confidence = data.get("confidence", 0.7)
     title = data.get("title") or f"{event_type.replace('_', ' ').title()} from {source}"
     description = data.get("description") or raw_data.get("description")
+
+    # Credential check: any credential detected in the raw payload forces critical severity.
+    _, _cred_report = _mask_text(str(raw_data))
+    _cred_types = [t for t in _cred_report.pii_types_found if t.startswith("CRED_")]
+    if _cred_types:
+        severity = "critical"
+        logger.warning(
+            "Credential detected in event from %s; severity forced to critical. types=%s",
+            source, _cred_types,
+        )
 
     if event_type in _UX_EVENT_TYPES:
         return _handle_ux_event(

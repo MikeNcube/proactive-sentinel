@@ -2,6 +2,34 @@ import re
 from typing import Any
 from dataclasses import dataclass
 
+# ── Credential detection patterns ─────────────────────────────────────────
+# Each pattern targets a self-identifying or labeled credential form.
+
+_CRED_AWS_KEY_RE = re.compile(r"\bAKIA[A-Z0-9]{16}\b")
+
+_CRED_AWS_SECRET_RE = re.compile(
+    r"(?i)(?:aws.{0,15}secret|secret.{0,10}access.{0,10}key)\s*[=:]\s*['\"]?[A-Za-z0-9/+=]{40}"
+)
+
+_CRED_API_KEY_RE = re.compile(
+    r"(?i)(?:api[-_]?key|apikey)\s*[=:]\s*['\"]?[A-Za-z0-9_\-]{20,64}"
+)
+
+_CRED_PRIVKEY_RE = re.compile(
+    r"-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----[\s\S]*?"
+    r"-----END (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----"
+)
+
+_CRED_GITHUB_RE = re.compile(r"\bgh[pousr]_[A-Za-z0-9_]{30,}\b")
+
+_CRED_JWT_RE = re.compile(
+    r"\beyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+"
+)
+
+_CRED_PASSWORD_RE = re.compile(
+    r"(?i)(?:password|passwd|pwd)\s*[=:]\s*[^\s'\"]{6,}"
+)
+
 
 class VRLFilter:
     """Enterprise-grade PII masking utility."""
@@ -121,6 +149,26 @@ def mask_text(text: str) -> tuple[str, MaskReport]:
         return f"{country}{'X' * (len(digits) - 2)}{digits[-2:]}"
 
     masked = pass_re.sub(pass_sub, masked)
+
+    # ── Credential masking ────────────────────────────────────────────────
+
+    def _cred_sub(cred_type: str):
+        tag = f"[REDACTED_{cred_type}]"
+        def _sub(match: re.Match[str]) -> str:
+            nonlocal replacements
+            replacements += 1
+            if cred_type not in pii_types:
+                pii_types.append(cred_type)
+            return tag
+        return _sub
+
+    masked = _CRED_AWS_KEY_RE.sub(_cred_sub("CRED_AWS_ACCESS_KEY"), masked)
+    masked = _CRED_AWS_SECRET_RE.sub(_cred_sub("CRED_AWS_SECRET_KEY"), masked)
+    masked = _CRED_API_KEY_RE.sub(_cred_sub("CRED_API_KEY"), masked)
+    masked = _CRED_PRIVKEY_RE.sub(_cred_sub("CRED_PRIVATE_KEY"), masked)
+    masked = _CRED_GITHUB_RE.sub(_cred_sub("CRED_GITHUB_TOKEN"), masked)
+    masked = _CRED_JWT_RE.sub(_cred_sub("CRED_JWT"), masked)
+    masked = _CRED_PASSWORD_RE.sub(_cred_sub("CRED_PASSWORD"), masked)
 
     return masked, MaskReport(pii_types_found=pii_types, total_replacements=replacements)
 
