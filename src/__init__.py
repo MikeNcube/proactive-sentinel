@@ -239,12 +239,14 @@ def create_app(config_name=None) -> Flask:
         from src.api.audit_routes import audit_bp
         from src.api.units import units_bp
         from src.api.events import events_bp
+        from src.api.integrations import integrations_bp
 
         app.register_blueprint(api_bp, url_prefix="/api")
         app.register_blueprint(auth_bp, url_prefix="/api/auth")
         app.register_blueprint(audit_bp)
         app.register_blueprint(units_bp, url_prefix="/api/units")
         app.register_blueprint(events_bp, url_prefix="/api/events")
+        app.register_blueprint(integrations_bp, url_prefix="/api/integrations")
     except Exception as exc:
         logger.exception("Failed to register blueprints: %s", exc)
         raise
@@ -260,6 +262,15 @@ def create_app(config_name=None) -> Flask:
 
     @app.errorhandler(429)
     def ratelimit_error(error):
+        app.logger.warning(
+            "Rate limit exceeded",
+            extra={
+                "path": request.path,
+                "method": request.method,
+                "source_ip": request.headers.get("X-Forwarded-For", request.remote_addr),
+                "user_agent": request.headers.get("User-Agent", "unknown"),
+            },
+        )
         return jsonify({"error": "Rate limit exceeded", "retry_after": error.description}), 429
 
     return app

@@ -32,6 +32,7 @@ class AuditLog(db.Model):
     )
 
     def to_dict(self) -> dict:
+        metadata = self.new_value if isinstance(self.new_value, dict) else {}
         return {
             'id': str(self.id),
             'actor_id': str(self.actor_id),
@@ -42,5 +43,8 @@ class AuditLog(db.Model):
             'new_value': self.new_value,
             'timestamp': self.timestamp.isoformat(),
             'source_ip': self.source_ip,
+            'ip_address': self.source_ip,
+            'success': bool(metadata.get("success")) if metadata else None,
+            'details': metadata.get("details"),
             'correlation_id': str(self.correlation_id) if self.correlation_id else None
         }

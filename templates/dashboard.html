@@ -1208,6 +1208,15 @@
             <button class="btn" id="changePwdBtn">Update Password</button>
             <div class="mini" id="pwdMsg" style="margin-top: 12px;"></div>
           </div>
+          <div class="card">
+            <h3>Unban IP Address</h3>
+            <div class="mini" style="margin-bottom: 12px; color: var(--text-secondary);">Remove a source IP from the Redis block list. Requires IT Admin or Security Analyst role.</div>
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+              <input id="unbanIp" placeholder="IP address (e.g. 192.168.1.1)" style="flex:1;min-width:200px;" />
+              <button class="btn" id="unbanBtn">Unban IP</button>
+            </div>
+            <div class="mini" id="unbanMsg" style="margin-top: 12px;"></div>
+          </div>
         </section>
       </main>
     </section>
@@ -1251,6 +1260,53 @@
       ["Anomaly Detection ML","low","Isolation Forest","Active"]
     ];
     let charts = {};
+
+    function getAnomalyBucket(alert){
+      const haystack = `${alert?.title || ""} ${alert?.description || ""} ${alert?.category || ""}`.toLowerCase();
+      if (
+        haystack.includes("login") ||
+        haystack.includes("auth") ||
+        haystack.includes("credential") ||
+        haystack.includes("brute")
+      ) return "login";
+      if (
+        haystack.includes("api") ||
+        haystack.includes("endpoint") ||
+        haystack.includes("token") ||
+        haystack.includes("rate limit") ||
+        haystack.includes("graphql") ||
+        haystack.includes("webhook")
+      ) return "api";
+      if (
+        haystack.includes("exfil") ||
+        haystack.includes("leak") ||
+        haystack.includes("dump") ||
+        haystack.includes("download") ||
+        haystack.includes("exposure") ||
+        haystack.includes("s3") ||
+        haystack.includes("pii") ||
+        haystack.includes("data")
+      ) return "exfil";
+      return "other";
+    }
+
+    function getAnomalyBreakdown(sourceAlerts){
+      const buckets={login:0,api:0,exfil:0,other:0};
+      (sourceAlerts||[]).forEach((a)=>{
+        const key=getAnomalyBucket(a);
+        buckets[key]+=1;
+      });
+      return buckets;
+    }
+
+    function getDemoAnomalySeries(){
+      // Frontend-only fallback so the chart remains visibly reactive when production data is empty.
+      const minuteBucket = new Date().getMinutes() % 4;
+      if (minuteBucket === 0) return [14, 8, 5, 3];
+      if (minuteBucket === 1) return [10, 11, 4, 2];
+      if (minuteBucket === 2) return [9, 6, 10, 3];
+      return [12, 7, 6, 5];
+    }
 
     function sevClass(sev){
       const s=String(sev||"low").toLowerCase();
@@ -1372,21 +1428,35 @@
         if(!placed) counts[3]+=n;
       }
       if(charts.donut){
-        charts.donut.data.datasets[0].data=counts;
+        const total = counts.reduce((sum, value) => sum + value, 0);
+        charts.donut.data.datasets[0].data = total > 0 ? counts : getDemoAnomalySeries();
         charts.donut.update();
       }
       const bySev=stats.by_severity||{};
       const critical=bySev["critical"]||bySev["CRITICAL"]||0;
       const high=bySev["high"]||bySev["HIGH"]||0;
-      document.getElementById("threatIndicators").innerHTML=`<div style="display:flex;gap:16px;flex-wrap:wrap;"><div class="mini">Critical: <span style="color:var(--status-critical);font-weight:600;">${critical}</span></div><div class="mini">High: <span style="color:var(--status-high);font-weight:600;">${high}</span></div></div>`;
+      const usingDemo = (critical + high) === 0 && (counts.reduce((sum, value) => sum + value, 0) === 0);
+      document.getElementById("threatIndicators").innerHTML=`<div style="display:flex;gap:16px;flex-wrap:wrap;"><div class="mini">Critical: <span style="color:var(--status-critical);font-weight:600;">${critical}</span></div><div class="mini">High: <span style="color:var(--status-high);font-weight:600;">${high}</span></div>${usingDemo ? '<div class="mini">Mode: <span style="color:var(--accent-amber);font-weight:600;">Demo data</span></div>' : ''}</div>`;
     }
 
     function renderOverview(){
       const critical=alerts.filter(a=>String(a.severity).toLowerCase()==="critical").length;
+      const high=alerts.filter(a=>String(a.severity).toLowerCase()==="high").length;
+      const anomalyBreakdown=getAnomalyBreakdown(alerts);
+      const anomalySeries=[
+        anomalyBreakdown.login,
+        anomalyBreakdown.api,
+        anomalyBreakdown.exfil,
+        anomalyBreakdown.other
+      ];
+      const totalAnomalies=anomalySeries.reduce((sum,v)=>sum+v,0);
+      const effectiveSeries = totalAnomalies > 0 ? anomalySeries : getDemoAnomalySeries();
+      const effectiveTotalAnomalies = effectiveSeries.reduce((sum,v)=>sum+v,0);
       document.getElementById("kpiIncidents").textContent=critical;
       document.getElementById("kpiAlerts").textContent=alerts.length;
       const feed=document.getElementById("overviewFeed");
       feed.innerHTML=alerts.slice(0,5).map(a=>`<div style="padding:10px 0;border-bottom:1px solid var(--border-subtle);transition:all 0.2s;cursor:pointer;" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'"><span class="sev ${sevClass(a.severity)}">${String(a.severity||"low").toUpperCase()}</span> <span style="margin-left:8px;">${a.title||"-"}</span></div>`).join("") || `<div class="mini" style="text-align:center;padding:24px;color:var(--text-tertiary);">No alerts to display</div>`;
+      document.getElementById("threatIndicators").innerHTML=`<div style="display:flex;gap:16px;flex-wrap:wrap;"><div class="mini">Critical: <span style="color:var(--status-critical);font-weight:600;">${critical}</span></div><div class="mini">High: <span style="color:var(--status-high);font-weight:600;">${high}</span></div><div class="mini">Anomalies: <span style="color:var(--accent-teal);font-weight:600;">${effectiveTotalAnomalies}</span></div>${totalAnomalies === 0 ? '<div class="mini">Mode: <span style="color:var(--accent-amber);font-weight:600;">Demo data</span></div>' : ''}</div>`;
       document.getElementById("meshGrid").innerHTML=`
         <div class="card" style="text-align:center;"><div class="mini">postgres</div><div style="color:var(--status-low);font-weight:600;margin-top:8px;">● online</div></div>
         <div class="card" style="text-align:center;"><div class="mini">redis</div><div style="color:var(--status-low);font-weight:600;margin-top:8px;">● healthy</div></div>
@@ -1397,6 +1467,10 @@
         const high=alerts.filter(a=>String(a.severity).toLowerCase()==="high").length;
         charts.overviewThreat.data.datasets[0].data=[med,high,critical,Math.max(0,alerts.length-med-high-critical)];
         charts.overviewThreat.update();
+      }
+      if(charts.donut){
+        charts.donut.data.datasets[0].data = effectiveSeries;
+        charts.donut.update();
       }
     }
 
@@ -1411,20 +1485,33 @@
         return okQ&&okS&&okT;
       });
       const body=document.getElementById("alertsBody");
-      body.innerHTML=rows.map((a,i)=>`<tr><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${String(a.id||i).slice(0,8)}</td><td>${a.title||"-"}</td><td><span class="sev ${sevClass(a.severity)}">${String(a.severity||"low").toUpperCase()}</span></td><td>${a.category||"-"}</td><td>${a.status||"-"}</td><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${a.created_at?new Date(a.created_at).toLocaleString():"-"}</td><td><button class="btn view-btn" data-id="${a.id||i}" style="padding:6px 12px;font-size:11px;">View</button></td></tr>`).join("") || `<tr><td colspan="7" class="mini" style="text-align:center;padding:24px;">No alerts match your filters</td></tr>`;
+      body.innerHTML=rows.map((a,i)=>`<tr><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${String(a.id||i).slice(0,8)}</td><td>${a.title||"-"}</td><td><span class="sev ${sevClass(a.severity)}">${String(a.severity||"low").toUpperCase()}</span></td><td>${a.category||"-"}</td><td>${a.status||"-"}</td><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${a.created_at?new Date(a.created_at).toLocaleString():"-"}</td><td style="display:flex;gap:6px;"><button class="btn view-btn" data-id="${a.id||i}" style="padding:6px 12px;font-size:11px;">View</button><button class="btn dismiss-btn" data-id="${a.id||i}" style="padding:6px 12px;font-size:11px;background:var(--bg-tertiary);border:1px solid var(--border-medium);">Dismiss</button></td></tr>`).join("") || `<tr><td colspan="7" class="mini" style="text-align:center;padding:24px;">No alerts match your filters</td></tr>`;
       document.querySelectorAll(".view-btn").forEach(btn=>{
         btn.onclick=()=>{
           const id=btn.dataset.id;
           const a=rows.find(x=>String(x.id)===id) || {};
+          document.querySelector("#modal h3").textContent="Alert Details";
           document.getElementById("modalText").textContent=JSON.stringify(a,null,2);
           document.getElementById("modal").style.display="flex";
+        };
+      });
+      document.querySelectorAll(".dismiss-btn").forEach(btn=>{
+        btn.onclick=async()=>{
+          const id=btn.dataset.id;
+          btn.disabled=true;
+          btn.textContent="...";
+          try{
+            const res=await request(`/api/alerts/${id}/dismiss`,{method:"POST"});
+            if(res.ok){await loadAlerts();}
+            else{btn.disabled=false;btn.textContent="Dismiss";}
+          }catch(_e){btn.disabled=false;btn.textContent="Dismiss";}
         };
       });
     }
 
     function renderUnits(){
       const body=document.getElementById("unitsBody");
-      body.innerHTML=units.map(u=>`<tr><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${u.device_id||"-"}</td><td>${u.name||"-"}</td><td style="color:${String(u.status).toLowerCase()==="online"?"var(--status-low)":"var(--status-critical)"};font-weight:600;">${u.status||"offline"}</td><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${u.last_seen_at?new Date(u.last_seen_at).toLocaleString():"-"}</td><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${u.tenant_id||"-"}</td><td><button class="btn" style="padding:6px 12px;font-size:11px;">Inspect</button></td></tr>`).join("") || `<tr><td colspan="6" class="mini" style="text-align:center;padding:24px;">No units registered</td></tr>`;
+      body.innerHTML=units.map(u=>`<tr><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${u.device_id||"-"}</td><td>${u.name||"-"}</td><td style="color:${String(u.status).toLowerCase()==="online"?"var(--status-low)":"var(--status-critical)"};font-weight:600;">${u.status||"offline"}</td><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${u.last_seen_at?new Date(u.last_seen_at).toLocaleString():"-"}</td><td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${u.tenant_id||"-"}</td><td><button class="btn" onclick="showComingSoon('Unit Inspect')" style="padding:6px 12px;font-size:11px;">Inspect</button></td></tr>`).join("") || `<tr><td colspan="6" class="mini" style="text-align:center;padding:24px;">No units registered</td></tr>`;
     }
 
     function renderRules(){
@@ -1766,25 +1853,58 @@
     document.getElementById("bell").onclick=()=>go("alerts");
     document.getElementById("loginBtn").onclick=doLogin;
     document.getElementById("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter") doLogin();});
-    document.getElementById("logoutBtn").onclick=()=>{token=null;showLoginForm()};
+    document.getElementById("logoutBtn").onclick=async()=>{
+      try{await request("/api/auth/logout",{method:"POST"});}catch(_e){}
+      token=null;
+      showLoginForm();
+    };
     document.getElementById("registerUnitBtn").onclick=registerUnit;
     document.getElementById("changePwdBtn").onclick=changePassword;
-    document.getElementById("closeModal").onclick=()=>document.getElementById("modal").style.display="none";
+    document.getElementById("unbanBtn").onclick=async()=>{
+      const ip=document.getElementById("unbanIp").value.trim();
+      const msg=document.getElementById("unbanMsg");
+      if(!ip){msg.textContent="Enter an IP address";msg.style.color="var(--status-critical)";return;}
+      msg.textContent="Unbanning...";
+      msg.style.color="var(--accent-blue)";
+      try{
+        const res=await request("/api/security/unban-ip",{method:"POST",body:JSON.stringify({ip})});
+        const data=await res.json().catch(()=>({}));
+        if(res.ok){
+          msg.textContent=`IP ${ip} has been unbanned`;
+          msg.style.color="var(--status-low)";
+          document.getElementById("unbanIp").value="";
+        }else{
+          msg.textContent=data.error||"Unban failed";
+          msg.style.color="var(--status-critical)";
+        }
+      }catch(_e){
+        msg.textContent="Request failed";
+        msg.style.color="var(--status-critical)";
+      }
+    };
+    document.getElementById("closeModal").onclick=()=>{
+      document.getElementById("modal").style.display="none";
+      document.querySelector("#modal h3").textContent="Alert Details";
+    };
     document.getElementById("globalSearch").addEventListener("input",(e)=>{document.getElementById("alertSearch").value=e.target.value;go("alerts");renderAlerts();});
     ["alertSearch","severityFilter","statusFilter"].forEach(id=>document.getElementById(id).addEventListener("input",renderAlerts));
     document.querySelectorAll(".gen").forEach(btn=>btn.onclick=()=>{
-      const t=btn.textContent;
-      btn.textContent="⏳ Generating...";
+      const orig=btn.textContent;
+      btn.textContent="Coming soon";
       btn.disabled=true;
       btn.style.opacity="0.6";
-      setTimeout(()=>{
-        btn.textContent="✓ Ready - Download";
-        btn.disabled=false;
-        btn.style.opacity="1";
-        setTimeout(()=>{btn.textContent=t;},2000);
-      },1500);
+      setTimeout(()=>{btn.textContent=orig;btn.disabled=false;btn.style.opacity="1";},2000);
+    });
+    document.querySelectorAll(".pill").forEach(pill=>pill.onclick=()=>{
+      showComingSoon(pill.textContent.trim()+" module");
     });
     
+    function showComingSoon(feature){
+      document.querySelector("#modal h3").textContent="Coming Soon";
+      document.getElementById("modalText").textContent=(feature||"This feature")+" is scheduled for a future release.";
+      document.getElementById("modal").style.display="flex";
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
       initCharts();
       renderRules();

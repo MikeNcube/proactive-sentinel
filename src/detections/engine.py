@@ -3,6 +3,7 @@ from typing import Dict, Optional
 
 from src.actions.dispatcher import ActionDispatcher
 from src.detections.correlation_engine import CorrelationEngine
+from src.detections.rules import classify_severity
 from src.extensions import db
 from src.models.alert import Alert
 
@@ -28,8 +29,8 @@ class DetectionEngine:
             category = clean_data.get("category") or "unknown"
             source = clean_data.get("source") or "unknown"
             clean_data["title"] = f"{category.replace('_', ' ').title()} from {source}"
-        if not clean_data.get("severity"):
-            clean_data["severity"] = "low"
+        # Severity override: rules engine classifies by event_type, ignoring sender's claim.
+        clean_data["severity"] = classify_severity(clean_data.get("category") or "")
         alert = Alert(**clean_data)
 
         try:

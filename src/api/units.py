@@ -10,6 +10,7 @@ from sqlalchemy.exc import OperationalError, SQLAlchemyError
 from sqlalchemy import or_
 
 from src.api.rate_limits import RATE_LIMITS, limiter
+from src.api.validators import validate_string, validate_tenant_id
 from src.extensions import db
 from src.models.alert import Alert
 from src.models.tenant import Tenant
@@ -60,7 +61,10 @@ def _resolve_tenant_id(raw_tenant_identifier: str) -> tuple[str | None, Any]:
     """Resolve tenant identifier to canonical tenant UUID string."""
     if not raw_tenant_identifier:
         return None, _json_error("tenant_id is required", 400)
-    normalized = raw_tenant_identifier.strip()
+    try:
+        normalized = validate_tenant_id(raw_tenant_identifier)
+    except ValueError:
+        normalized = str(raw_tenant_identifier).strip()
 
     try:
         return str(uuid.UUID(normalized)), None
@@ -96,11 +100,12 @@ def register_unit():
     if payload_err:
         return payload_err
     data = request.get_json(silent=True) or {}
-    tenant_id_raw = data.get("tenant_id")
-    device_id = data.get("device_id")
-    secret_key = data.get("secret_key")
-    if not tenant_id_raw or not device_id or not secret_key:
-        return _json_error("tenant_id, device_id and secret_key required", 400)
+    try:
+        tenant_id_raw = validate_string(data.get("tenant_id"), "tenant_id", max_length=64)
+        device_id = validate_string(data.get("device_id"), "device_id", max_length=128)
+        secret_key = validate_string(data.get("secret_key"), "secret_key", max_length=512)
+    except ValueError as exc:
+        return _json_error(str(exc), 400)
     tenant_id, tenant_err = _resolve_tenant_id(str(tenant_id_raw))
     if tenant_err:
         return tenant_err
@@ -115,7 +120,7 @@ def register_unit():
             unit = Unit(
                 tenant_id=tenant_id,
                 device_id=device_id,
-                name=data.get("name"),
+                name=validate_string(data.get("name"), "name", max_length=128) if data.get("name") else None,
                 token_hash=_hash_value(token_plain),
                 secret_key_hash=_hash_value(secret_key),
             )
@@ -170,6 +175,15 @@ def unit_report():
     required = ["title", "category", "source_ip", "event_type"]
     if any(not data.get(k) for k in required):
         return _json_error("Missing required report fields", 400)
+    try:
+        data["title"] = validate_string(data.get("title"), "title", max_length=500)
+        data["category"] = validate_string(data.get("category"), "category", max_length=120)
+        data["source_ip"] = validate_string(data.get("source_ip"), "source_ip", max_length=64)
+        data["event_type"] = validate_string(data.get("event_type"), "event_type", max_length=120)
+        if data.get("description"):
+            data["description"] = validate_string(data.get("description"), "description", max_length=1000)
+    except ValueError as exc:
+        return _json_error(str(exc), 400)
 
     rep = threat_detector.evaluate_ip_reputation(data.get("source_ip", ""))
     vel = threat_detector.evaluate_request_velocity(request.remote_addr or "unknown")

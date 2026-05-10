@@ -1240,6 +1240,53 @@
     ];
     let charts = {};
 
+    function getAnomalyBucket(alert){
+      const haystack = `${alert?.title || ""} ${alert?.description || ""} ${alert?.category || ""}`.toLowerCase();
+      if (
+        haystack.includes("login") ||
+        haystack.includes("auth") ||
+        haystack.includes("credential") ||
+        haystack.includes("brute")
+      ) return "login";
+      if (
+        haystack.includes("api") ||
+        haystack.includes("endpoint") ||
+        haystack.includes("token") ||
+        haystack.includes("rate limit") ||
+        haystack.includes("graphql") ||
+        haystack.includes("webhook")
+      ) return "api";
+      if (
+        haystack.includes("exfil") ||
+        haystack.includes("leak") ||
+        haystack.includes("dump") ||
+        haystack.includes("download") ||
+        haystack.includes("exposure") ||
+        haystack.includes("s3") ||
+        haystack.includes("pii") ||
+        haystack.includes("data")
+      ) return "exfil";
+      return "other";
+    }
+
+    function getAnomalyBreakdown(sourceAlerts){
+      const buckets={login:0,api:0,exfil:0,other:0};
+      (sourceAlerts||[]).forEach((a)=>{
+        const key=getAnomalyBucket(a);
+        buckets[key]+=1;
+      });
+      return buckets;
+    }
+
+    function getDemoAnomalySeries(){
+      // Frontend-only fallback so the chart remains visibly reactive when production data is empty.
+      const minuteBucket = new Date().getMinutes() % 4;
+      if (minuteBucket === 0) return [14, 8, 5, 3];
+      if (minuteBucket === 1) return [10, 11, 4, 2];
+      if (minuteBucket === 2) return [9, 6, 10, 3];
+      return [12, 7, 6, 5];
+    }
+
     function sevClass(sev){
       const s=String(sev||"low").toLowerCase();
       if(s==="critical") return "sev-critical";
@@ -1313,11 +1360,22 @@
 
     function renderOverview(){
       const critical=alerts.filter(a=>String(a.severity).toLowerCase()==="critical").length;
+      const high=alerts.filter(a=>String(a.severity).toLowerCase()==="high").length;
+      const anomalyBreakdown=getAnomalyBreakdown(alerts);
+      const anomalySeries=[
+        anomalyBreakdown.login,
+        anomalyBreakdown.api,
+        anomalyBreakdown.exfil,
+        anomalyBreakdown.other
+      ];
+      const totalAnomalies=anomalySeries.reduce((sum,v)=>sum+v,0);
+      const effectiveSeries = totalAnomalies > 0 ? anomalySeries : getDemoAnomalySeries();
+      const effectiveTotalAnomalies = effectiveSeries.reduce((sum,v)=>sum+v,0);
       document.getElementById("kpiIncidents").textContent=critical;
       document.getElementById("kpiAlerts").textContent=alerts.length;
       const feed=document.getElementById("overviewFeed");
       feed.innerHTML=alerts.slice(0,5).map(a=>`<div style="padding:10px 0;border-bottom:1px solid var(--border-subtle);transition:all 0.2s;cursor:pointer;" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'"><span class="sev ${sevClass(a.severity)}">${String(a.severity||"low").toUpperCase()}</span> <span style="margin-left:8px;">${a.title||"-"}</span></div>`).join("") || `<div class="mini" style="text-align:center;padding:24px;color:var(--text-tertiary);">No alerts to display</div>`;
-      document.getElementById("threatIndicators").innerHTML=`<div style="display:flex;gap:16px;flex-wrap:wrap;"><div class="mini">Critical: <span style="color:var(--status-critical);font-weight:600;">${critical}</span></div><div class="mini">High: <span style="color:var(--status-high);font-weight:600;">${alerts.filter(a=>String(a.severity).toLowerCase()==="high").length}</span></div></div>`;
+      document.getElementById("threatIndicators").innerHTML=`<div style="display:flex;gap:16px;flex-wrap:wrap;"><div class="mini">Critical: <span style="color:var(--status-critical);font-weight:600;">${critical}</span></div><div class="mini">High: <span style="color:var(--status-high);font-weight:600;">${high}</span></div><div class="mini">Anomalies: <span style="color:var(--accent-teal);font-weight:600;">${effectiveTotalAnomalies}</span></div>${totalAnomalies === 0 ? '<div class="mini">Mode: <span style="color:var(--accent-amber);font-weight:600;">Demo data</span></div>' : ''}</div>`;
       document.getElementById("meshGrid").innerHTML=`
         <div class="card" style="text-align:center;"><div class="mini">postgres</div><div style="color:var(--status-low);font-weight:600;margin-top:8px;">● online</div></div>
         <div class="card" style="text-align:center;"><div class="mini">redis</div><div style="color:var(--status-low);font-weight:600;margin-top:8px;">● healthy</div></div>
@@ -1328,6 +1386,10 @@
         const high=alerts.filter(a=>String(a.severity).toLowerCase()==="high").length;
         charts.overviewThreat.data.datasets[0].data=[med,high,critical,Math.max(0,alerts.length-med-high-critical)];
         charts.overviewThreat.update();
+      }
+      if(charts.donut){
+        charts.donut.data.datasets[0].data = effectiveSeries;
+        charts.donut.update();
       }
     }
 
@@ -1462,7 +1524,7 @@
         data:{
           labels:["Login Anomalies","API Abuse","Data Exfil","Other"],
           datasets:[{
-            data:[45,28,15,12],
+            data:[0,0,0,0],
             backgroundColor:["#00d4aa","#4d9fff","#fbbf24","#ef4444"],
             borderWidth: 2,
             borderColor: '#0d1117',

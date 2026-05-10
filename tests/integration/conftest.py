@@ -1,8 +1,13 @@
+import base64
 import pytest
 import os
 
 os.environ.setdefault('DATABASE_URL', 'sqlite:///:memory:')
 os.environ.setdefault('JWT_SECRET_KEY', 'test-secret-key')
+os.environ.setdefault(
+    'ENCRYPTION_KEY',
+    base64.b64encode(b'sentinel-test-encryption-key-32b').decode(),
+)
 
 from src import create_app
 from src.extensions import db

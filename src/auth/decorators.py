@@ -70,10 +70,36 @@ def require_auth(f: F) -> F:
             g.tenant_id = payload["tenant_id"]
 
             return f(*args, **kwargs)
-        except Exception as e:
-            return jsonify({"error": str(e)}), 401
+        except Exception:
+            return jsonify({"error": "Invalid or expired token"}), 401
 
     return decorated  # type: ignore[return-value]
+
+
+def require_role(allowed_roles: list[str]) -> Callable[[F], F]:
+    """Decorator for role-based access checks with normalized role mapping."""
+    normalized_allowed = {role.strip().lower() for role in allowed_roles}
+    legacy_map = {
+        "it_admin": "admin",
+        "security_analyst": "analyst",
+        "management": "admin",
+        "standard_user": "viewer",
+    }
+
+    def decorator(f: F) -> F:
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            user = getattr(g, "user", {}) or {}
+            role = str(user.get("role", "")).strip().lower()
+            mapped = legacy_map.get(role, role)
+            allowed_mapped = {legacy_map.get(item, item) for item in normalized_allowed}
+            if mapped not in allowed_mapped:
+                return jsonify({"error": "Forbidden"}), 403
+            return f(*args, **kwargs)
+
+        return wrapped  # type: ignore[return-value]
+
+    return decorator
 
 
 def generate_correlation_id() -> str:

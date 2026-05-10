@@ -30,10 +30,7 @@ class TestingConfig(Config):
     """Testing configuration for containerized CI/integration runs."""
 
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "DATABASE_TEST_URL",
-        os.environ.get("DATABASE_URL", "postgresql://sentinel:dev_password@postgres:5432/sentinel"),
-    )
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_TEST_URL", os.environ.get("DATABASE_URL"))
 
 
 class ProductionConfig(Config):
