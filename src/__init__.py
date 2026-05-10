@@ -251,6 +251,24 @@ def create_app(config_name=None) -> Flask:
         logger.exception("Failed to register blueprints: %s", exc)
         raise
 
+    # ── Background health checker ──────────────────────────────────────────
+    # Not started in TESTING mode to avoid interfering with test isolation.
+    # Check both app.config and the TESTING env var: conftest sets the env
+    # var before calling create_app() but sets app.config["TESTING"] after.
+    _is_testing = app.config.get("TESTING") or os.environ.get("TESTING", "").lower() in ("true", "1")
+    if not _is_testing and not os.environ.get("HEALTH_CHECK_DISABLED"):
+        import threading
+        from src.monitoring.health_checker import run_health_loop
+
+        hc_thread = threading.Thread(
+            target=run_health_loop,
+            args=(app,),
+            daemon=True,
+            name="health-checker",
+        )
+        hc_thread.start()
+        logger.info("Health checker background thread started (interval=60s)")
+
     @app.errorhandler(404)
     def not_found(error):
         return jsonify({"error": "Resource not found"}), 404
