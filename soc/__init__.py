@@ -9,11 +9,15 @@ Subpackages
   Pure function over (event, policy, risk, manifest); no I/O, no
   state, no clocks, no randoms. Maps inputs to ALLOW / MONITOR /
   REQUIRE_APPROVAL / BLOCK following the spec branch order verbatim.
+- :mod:`soc.audit`    --- Hash-chained tamper-evident audit logger
+  (canonical spec section 10). Pure-core / side-effecting-wrapper
+  split: chain.py, verify.py, types.py, redaction.py are pure;
+  sinks.py and logger.py hold state and I/O. See
+  ``docs/architecture/audit-logger.md``.
 - :mod:`soc.dlp`      --- DLP scanner INTERFACE STUB ONLY. Priority 1
   work is parked; production implementation per canonical spec
   section 6 is not yet present. See ``soc/dlp/__init__.py``.
 
 Future subpackages (placeholders, not yet implemented):
 - ``soc.policy`` --- OPA policy client (canonical spec section 7)
-- ``soc.audit``  --- Hash-chained audit logger (canonical spec section 10)
 """
