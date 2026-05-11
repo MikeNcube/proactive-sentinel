@@ -24,11 +24,16 @@ SEVERITY_LEVELS: tuple[str, ...] = ("info", "low", "medium", "high", "critical")
 
 @dataclass(frozen=True)
 class SecurityEvent:
-    """Input event scored by the Risk Engine.
+    """Input event scored by the Risk Engine and the Decision Engine.
 
-    Only the fields the engine actually reads are declared here.
+    Only the fields the engines actually read are declared here.
     Upstream code MAY use a richer Event class; it just has to expose
     these attributes (duck typing is fine).
+
+    The ``action`` and ``classification`` fields are consumed by the
+    Decision Engine (canonical spec section 8). They default to safe
+    values so existing Risk-Engine-only callers stay backward
+    compatible.
     """
 
     event_id: str
@@ -40,6 +45,9 @@ class SecurityEvent:
         default_factory=lambda: datetime.now(timezone.utc),
     )
     metadata: Mapping[str, Any] = field(default_factory=dict)
+    # Read by Decision Engine (spec section 8)
+    action: str = ""                  # e.g. "mcp.tool_execute", "rag.query"
+    classification: str = "internal"  # special | personal | internal | public
 
 
 @dataclass(frozen=True)
@@ -78,11 +86,19 @@ class DLPResult:
 
 @dataclass(frozen=True)
 class PolicyResult:
-    """OPA policy evaluation output (subset the engine reads)."""
+    """OPA policy evaluation output (subset the engines read).
+
+    ``deny_reason`` is consumed by the Decision Engine (canonical spec
+    section 8: ``BLOCK`` records ``reason=policy.deny_reason``). It
+    defaults to an empty string so existing Risk-Engine-only callers
+    stay backward compatible; the Decision Engine substitutes a
+    fallback when the field is empty.
+    """
 
     allowed: bool
     policy_version: str = "unversioned"
     violations: tuple[str, ...] = ()
+    deny_reason: str = ""
 
 
 @dataclass(frozen=True)
