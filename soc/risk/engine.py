@@ -1,4 +1,4 @@
-"""Risk Engine implementation.
+﻿"""Risk Engine implementation.
 
 Implements the ``risk`` dependency of the SOCPipeline declared in
 canonical spec section 5.2 (``docs/AI_OS_v3_SPEC.md``):
@@ -429,3 +429,4 @@ def _sigmoid(z: float, k: float) -> float:
     if arg < -700.0:
         return 1.0
     return 1.0 / (1.0 + math.exp(arg))
+

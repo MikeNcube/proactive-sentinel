@@ -1,4 +1,4 @@
-"""
+﻿"""
 Input validation helpers for Proactive Sentinel API.
 All user input must pass through these validators
 before reaching business logic or database.
@@ -58,3 +58,4 @@ def validate_uuid_string(value: Any, field_name: str) -> str:
     if not re.match(r"^[a-fA-F0-9\-]{8,64}$", candidate):
         raise ValueError(f"{field_name} contains invalid characters")
     return candidate
+

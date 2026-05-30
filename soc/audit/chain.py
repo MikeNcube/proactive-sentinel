@@ -1,4 +1,4 @@
-"""Audit Logger pure-core primitives.
+﻿"""Audit Logger pure-core primitives.
 
 Canonical JSON + SHA-256 hashing + record construction. No I/O, no
 state, no clocks, no randoms. Every function here is deterministic
@@ -124,3 +124,4 @@ def build_record(
         prev_hash=prev_hash,
         this_hash=this_hash,
     )
+

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Seeds the live Proactive Sentinel demo environment via the REST API.
 
 Creates two tenants and one admin user each:
@@ -57,7 +57,7 @@ def register(client: httpx.Client, account: dict) -> str:
 
     raise RuntimeError(
         f"Registration failed for {account['email']}: "
-        f"HTTP {resp.status_code} — {resp.text[:200]}"
+        f"HTTP {resp.status_code} â€” {resp.text[:200]}"
     )
 
 
@@ -76,7 +76,7 @@ def login_and_verify(client: httpx.Client, email: str) -> str:
     if resp.status_code != 200:
         raise RuntimeError(
             f"Login failed for {email}: "
-            f"HTTP {resp.status_code} — {resp.text[:200]}"
+            f"HTTP {resp.status_code} â€” {resp.text[:200]}"
         )
 
     token = resp.json().get("access_token")
@@ -111,7 +111,7 @@ def main() -> None:
             if outcome == "created":
                 print(f"  Tenant created.")
             else:
-                print(f"  Tenant already exists — skipping registration.")
+                print(f"  Tenant already exists â€” skipping registration.")
 
             # Brief pause so the login rate limiter doesn't see a burst
             time.sleep(1)
@@ -157,3 +157,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

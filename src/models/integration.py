@@ -1,4 +1,4 @@
-from datetime import datetime
+﻿from datetime import datetime
 
 from sqlalchemy import Boolean, DateTime, String
 
@@ -34,3 +34,4 @@ class Integration(db.Model):
             "builtin": False,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
+

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Content Scheduler for AI Social Media Agent
 Posts approved content on weekdays only
 """
@@ -14,14 +14,14 @@ import sys
 class ContentScheduler:
     def __init__(self):
         self.posted_today = []
-        print("🚀 Content Scheduler Initialized")
+        print("ðŸš€ Content Scheduler Initialized")
         
     def is_weekday(self):
         """Check if today is Monday-Friday"""
         weekday = datetime.now().weekday()
         days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         is_weekday = weekday < 5
-        print(f"📅 Today is {days[weekday]} - {'Weekday' if is_weekday else 'Weekend'}")
+        print(f"ðŸ“… Today is {days[weekday]} - {'Weekday' if is_weekday else 'Weekend'}")
         return is_weekday
     
     def get_pending_posts(self):
@@ -77,7 +77,7 @@ class ContentScheduler:
                     'content': content,
                     'filepath': filepath
                 })
-                print(f"📝 Found pending post: {filename}")
+                print(f"ðŸ“ Found pending post: {filename}")
             except Exception as e:
                 print(f"Error reading {filename}: {e}")
         
@@ -109,64 +109,64 @@ class ContentScheduler:
     
     def post_to_linkedin(self, content):
         """Post to LinkedIn (simulated)"""
-        print(f"📱 LinkedIn post would be: {content[:100]}...")
-        print("✅ LinkedIn post successful (simulated)")
+        print(f"ðŸ“± LinkedIn post would be: {content[:100]}...")
+        print("âœ… LinkedIn post successful (simulated)")
         return True
     
     def post_to_x(self, content):
         """Post to X/Twitter (simulated)"""
-        print(f"🐦 X post would be: {content[:100]}...")
-        print("✅ X post successful (simulated)")
+        print(f"ðŸ¦ X post would be: {content[:100]}...")
+        print("âœ… X post successful (simulated)")
         return True
     
     def post_to_instagram(self, content):
         """Post to Instagram (simulated)"""
-        print(f"📸 Instagram post would be: {content[:100]}...")
-        print("✅ Instagram post successful (simulated)")
+        print(f"ðŸ“¸ Instagram post would be: {content[:100]}...")
+        print("âœ… Instagram post successful (simulated)")
         return True
     
     def post_to_tiktok(self, content):
         """Post to TikTok (simulated)"""
-        print(f"🎵 TikTok post would be: {content[:100]}...")
-        print("✅ TikTok post successful (simulated)")
+        print(f"ðŸŽµ TikTok post would be: {content[:100]}...")
+        print("âœ… TikTok post successful (simulated)")
         return True
     
     def run_daily(self):
         """Run daily at scheduled time on weekdays"""
         print(f"\n{'='*60}")
-        print(f"🕐 Running scheduler at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"ðŸ• Running scheduler at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print('='*60)
         
         if not self.is_weekday():
-            print("📅 Weekend - skipping posts")
+            print("ðŸ“… Weekend - skipping posts")
             return
         
         # First, check for scheduled posts
         scheduled = self.get_scheduled_posts()
         if scheduled:
-            print(f"\n📅 Found {len(scheduled)} posts scheduled for today")
+            print(f"\nðŸ“… Found {len(scheduled)} posts scheduled for today")
             for post in scheduled:
                 print(f"   - {post['platform']}: {post['filename']} at {post['scheduled_time']}")
         
         # Then check for approved posts to schedule
         pending = self.get_pending_posts()
         if pending:
-            print(f"\n📝 Found {len(pending)} approved posts ready for scheduling")
+            print(f"\nðŸ“ Found {len(pending)} approved posts ready for scheduling")
             for post in pending:
                 print(f"   - {post['platform']}: {post['filename']}")
         
-        print("\n✅ Daily check complete")
-        print(f"💡 Use dashboard to schedule posts for specific dates/times")
+        print("\nâœ… Daily check complete")
+        print(f"ðŸ’¡ Use dashboard to schedule posts for specific dates/times")
 
 # Run the scheduler
 if __name__ == "__main__":
     scheduler = ContentScheduler()
     
     print("\n" + "="*60)
-    print("🚀 AI CONTENT SCHEDULER")
+    print("ðŸš€ AI CONTENT SCHEDULER")
     print("="*60)
-    print("📅 Running in SIMULATION mode (no real posting)")
-    print("⏰ Checking for scheduled posts...")
+    print("ðŸ“… Running in SIMULATION mode (no real posting)")
+    print("â° Checking for scheduled posts...")
     print("Press Ctrl+C to stop\n")
     
     # Run once immediately
@@ -182,4 +182,4 @@ if __name__ == "__main__":
             schedule.run_pending()
             time.sleep(60)  # Check every minute
     except KeyboardInterrupt:
-        print("\n\n👋 Scheduler stopped")
+        print("\n\nðŸ‘‹ Scheduler stopped")

@@ -1,4 +1,4 @@
-from typing import Dict, List
+﻿from typing import Dict, List
 
 
 class UXObserver:
@@ -186,3 +186,4 @@ class UXObserver:
         alerts.extend(UXObserver.detect_zendesk_latency(logs))
         alerts.extend(UXObserver.detect_lead_leakage(logs))
         return alerts
+

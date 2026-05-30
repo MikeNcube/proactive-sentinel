@@ -1,4 +1,4 @@
-"""
+﻿"""
 Tests for src/monitoring/health_checker.py.
 
 Covers:
@@ -19,7 +19,7 @@ import httpx
 import pytest
 
 
-# ── check_system_health ───────────────────────────────────────────────────
+# â”€â”€ check_system_health â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 def test_check_system_health_returns_healthy_on_200():
@@ -133,7 +133,7 @@ def test_check_system_health_uses_url_field_not_base_url():
         assert called_url == "http://valid.local/ping"
 
 
-# ── check_all_systems ─────────────────────────────────────────────────────
+# â”€â”€ check_all_systems â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 def test_check_all_systems_skips_disabled_entries():
@@ -162,7 +162,7 @@ def test_check_all_systems_skips_disabled_entries():
     assert "disabled_svc" not in system_keys
 
 
-# ── _get_failure_severity ─────────────────────────────────────────────────
+# â”€â”€ _get_failure_severity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 def test_get_failure_severity_returns_high_as_default():
@@ -195,14 +195,14 @@ def test_get_failure_severity_case_insensitive_critical():
 
 
 def test_get_failure_severity_high_when_only_non_availability_critical():
-    """audit_chain_break is CRITICAL but is not an availability event — should still return high."""
+    """audit_chain_break is CRITICAL but is not an availability event â€” should still return high."""
     from src.monitoring.health_checker import _get_failure_severity
 
     config = {"event_severities": {"audit_chain_break": "CRITICAL", "pipeline_failure": "HIGH"}}
     assert _get_failure_severity(config) == "high"
 
 
-# ── report_failure ────────────────────────────────────────────────────────
+# â”€â”€ report_failure â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 def test_report_failure_creates_alert_with_correct_severity(app, monkeypatch):
@@ -312,7 +312,7 @@ def test_report_failure_uses_env_tenant_id(app, monkeypatch):
             monkeypatch.delenv("HEALTH_CHECK_TENANT_ID", raising=False)
 
 
-# ── Thread / app integration ──────────────────────────────────────────────
+# â”€â”€ Thread / app integration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 def test_health_checker_thread_not_started_in_testing_mode(app):
@@ -327,3 +327,4 @@ def test_health_checker_thread_not_started_in_testing_mode(app):
     assert len(hc_threads) == 0, (
         "health-checker thread should not start when TESTING=True"
     )
+

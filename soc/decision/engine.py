@@ -1,4 +1,4 @@
-"""Decision Engine implementation.
+﻿"""Decision Engine implementation.
 
 Pure function over (event, policy, risk, manifest) -> DecisionRecord
 per canonical spec section 8. The branch order is fixed by the spec
@@ -181,3 +181,4 @@ class DecisionEngine:
         # right now.
         del event, manifest
         return ("designated_approver",)
+

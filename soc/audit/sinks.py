@@ -1,4 +1,4 @@
-"""Audit Logger sinks --- where records get written.
+﻿"""Audit Logger sinks --- where records get written.
 
 Three concrete sinks (this commit ships two):
 
@@ -123,3 +123,4 @@ class JSONLFileSink:
         for record in self.read_all():
             last = record
         return last
+

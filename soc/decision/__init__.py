@@ -1,4 +1,4 @@
-"""Decision Engine package.
+﻿"""Decision Engine package.
 
 Implements the ``decision`` dependency of the SOCPipeline contract
 declared in canonical spec section 5.2 (``docs/AI_OS_v3_SPEC.md``):
@@ -40,3 +40,4 @@ __all__ = [
     "DecisionRecord",
     "Manifest",
 ]
+

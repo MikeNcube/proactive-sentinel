@@ -1,4 +1,4 @@
-"""
+﻿"""
 Tests for severity classification rules and DetectionEngine override behaviour.
 """
 import uuid
@@ -10,7 +10,7 @@ from src.detections.rules import SEVERITY_RULES, classify_severity
 
 
 class TestClassifySeverity:
-    """Pure unit tests — no app context needed."""
+    """Pure unit tests â€” no app context needed."""
 
     def test_all_critical_event_types(self):
         for ev in SEVERITY_RULES["critical"]:
@@ -46,7 +46,7 @@ class TestClassifySeverity:
 
 
 class TestEngineOverride:
-    """Integration test — requires app context via conftest fixture."""
+    """Integration test â€” requires app context via conftest fixture."""
 
     def test_sender_severity_is_overridden_by_rules(self, app):
         """Engine must classify by rule, ignoring whatever severity the sender claims."""
@@ -80,7 +80,7 @@ class TestEngineOverride:
                 "tenant_id": str(tenant.id),
                 "source": "test-agent",
                 "category": "ransomware",   # maps to critical
-                "severity": "low",          # sender claims low — must be overridden
+                "severity": "low",          # sender claims low â€” must be overridden
                 "raw_data": {},
                 "confidence": 0.9,
             }
@@ -95,3 +95,4 @@ class TestEngineOverride:
                 f"Expected 'critical' (rule-based), got '{alert.severity}' "
                 f"(sender claimed 'low')"
             )
+

@@ -1,4 +1,4 @@
-Write-Host "🚀 Starting Proactive Sentinel Dashboard..." -ForegroundColor Cyan
+﻿Write-Host "ðŸš€ Starting Proactive Sentinel Dashboard..." -ForegroundColor Cyan
 
 cd C:\Users\gpcal\proactive-sentinel
 
@@ -18,13 +18,14 @@ $env:PYTHONPATH = "."
 
 # Verify critical variables
 if (-not $env:DASHBOARD_SECRET_KEY) {
-    Write-Host "⚠️  DASHBOARD_SECRET_KEY not found in .env, generating temporary key..." -ForegroundColor Yellow
+    Write-Host "âš ï¸  DASHBOARD_SECRET_KEY not found in .env, generating temporary key..." -ForegroundColor Yellow
     $env:DASHBOARD_SECRET_KEY = python -c "import secrets; print(secrets.token_hex(32))"
 }
 
-Write-Host "✅ Environment ready!" -ForegroundColor Green
-Write-Host "🌐 Starting dashboard at http://localhost:5000..." -ForegroundColor Cyan
+Write-Host "âœ… Environment ready!" -ForegroundColor Green
+Write-Host "ðŸŒ Starting dashboard at http://localhost:5000..." -ForegroundColor Cyan
 
 # Start the dashboard
 python dashboard/flask_dashboard.py
+
 

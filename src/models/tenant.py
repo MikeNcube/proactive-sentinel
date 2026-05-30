@@ -1,4 +1,4 @@
-from datetime import datetime
+﻿from datetime import datetime
 import uuid
 
 from sqlalchemy import DateTime, Enum, JSON, String
@@ -30,3 +30,4 @@ class Tenant(db.Model):
     users = db.relationship("User", backref="tenant", lazy="dynamic")
     alerts = db.relationship("Alert", backref="tenant", lazy="dynamic")
     audit_logs = db.relationship("AuditLog", backref="tenant", lazy="dynamic")
+

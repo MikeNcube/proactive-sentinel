@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 
 from datetime import datetime
 import json
@@ -36,3 +36,4 @@ if __name__ == "__main__":
     sentinel.ingest_logs()
     alerts = print('?? DETECTIONS FOUND:', sentinel.run_detection())
     print(json.dumps(alerts, indent=2))
+

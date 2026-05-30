@@ -1,4 +1,4 @@
-import os
+﻿import os
 import sys
 sys.path.insert(0, ".")
 
@@ -22,14 +22,14 @@ with app.app_context():
         db.session.flush()
 
         admin = User(
-            email="admin@zororo.co.za",
-            password_hash=generate_password_hash("Admin1234!"),
+            email="demo@example.com",
+            password_hash=generate_password_hash("YOUR_PASSWORD_HERE"),
             tenant_id=tenant.id,
             role="admin",
         )
         db.session.add(admin)
         db.session.commit()
-        print("Seed complete: admin@zororo.co.za / Admin1234!")
+        print("Seed complete: demo@example.com / YOUR_PASSWORD_HERE")
     else:
         zororo = Tenant.query.filter_by(slug="zororo").first()
         if zororo and zororo.status != "active":
@@ -38,3 +38,4 @@ with app.app_context():
             print("Updated zororo tenant -> active")
         else:
             print("Already seeded - skipping")
+

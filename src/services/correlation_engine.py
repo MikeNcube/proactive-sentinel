@@ -1,4 +1,4 @@
-"""
+﻿"""
 Alert correlation and deduplication engine.
 """
 
@@ -87,3 +87,4 @@ class CorrelationEngine:
                 )
 
         return attack_chains
+

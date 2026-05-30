@@ -1,4 +1,4 @@
-"""
+﻿"""
 Proactive Sentinel - Application Factory
 """
 
@@ -251,7 +251,7 @@ def create_app(config_name=None) -> Flask:
         logger.exception("Failed to register blueprints: %s", exc)
         raise
 
-    # ── Background health checker ──────────────────────────────────────────
+    # â”€â”€ Background health checker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # Not started in TESTING mode to avoid interfering with test isolation.
     # Check both app.config and the TESTING env var: conftest sets the env
     # var before calling create_app() but sets app.config["TESTING"] after.
@@ -295,3 +295,4 @@ def create_app(config_name=None) -> Flask:
 
 
 __all__ = ["create_app", "db"]
+

@@ -1,4 +1,4 @@
-import sys
+﻿import sys
 sys.path.insert(0, '/app')
 from app import create_app
 from src.extensions import db
@@ -42,18 +42,18 @@ with app.app_context():
         print(f'Created {admin.email}')
     
     # Create zororo user using set_password method
-    zororo = User.query.filter_by(email='admin@zororo.co.za').first()
+    zororo = User.query.filter_by(email='demo@example.com').first()
     if zororo:
-        zororo.set_password('Admin1234!')
+        zororo.set_password('YOUR_PASSWORD_HERE')
         print(f'Updated password for {zororo.email}')
     else:
         zororo = User(
             id=uuid.uuid4(),
             tenant_id=tenant.id,
-            email='admin@zororo.co.za',
+            email='demo@example.com',
             role='admin'
         )
-        zororo.set_password('Admin1234!')
+        zororo.set_password('YOUR_PASSWORD_HERE')
         db.session.add(zororo)
         print(f'Created {zororo.email}')
     
@@ -65,5 +65,6 @@ with app.app_context():
     
     print('\nLogin credentials:')
     print('  admin@acme.com / password123')
-    print('  admin@zororo.co.za / Admin1234!')
+    print('  demo@example.com / YOUR_PASSWORD_HERE')
     print('\nPasswords hashed with Werkzeug format (pbkdf2:sha256)')
+

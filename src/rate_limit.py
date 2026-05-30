@@ -1,4 +1,4 @@
-from flask import g
+﻿from flask import g
 from src.extensions import get_remote_address, limiter
 
 
@@ -31,3 +31,4 @@ def get_user_rate_limit_key():
     if hasattr(g, "user_id") and g.user_id:
         return f"user:{g.user_id}"
     return get_remote_address()
+

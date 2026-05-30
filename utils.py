@@ -1,4 +1,4 @@
-import re
+﻿import re
 
 
 class VRLFilter:
@@ -29,3 +29,4 @@ class ResponseSimulator:
 
 def mask_pii(log_data):
     return VRLFilter.mask_pii(log_data)
+

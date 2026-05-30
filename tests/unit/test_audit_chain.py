@@ -1,4 +1,4 @@
-"""Unit tests for the Audit Logger pure-core primitives.
+﻿"""Unit tests for the Audit Logger pure-core primitives.
 
 Covers ``soc.audit.chain`` and ``soc.audit.types``:
 
@@ -256,3 +256,4 @@ class TestAuditRecordImmutability:
         )
         # frozen dataclass with hashable fields is hashable
         {record}
+

@@ -1,8 +1,8 @@
-"""
+﻿"""
 Plugin registry API.
 
-GET  /api/integrations          — list all systems (static + DB)
-POST /api/integrations/register — add a new system at runtime (IT_ADMIN only)
+GET  /api/integrations          â€” list all systems (static + DB)
+POST /api/integrations/register â€” add a new system at runtime (IT_ADMIN only)
 
 No code deploy is needed to add a new integration: POST the config and it is
 persisted to the integrations table and immediately visible via GET.
@@ -52,10 +52,10 @@ def register_integration():
     Register a new integration system at runtime.
 
     Body (JSON):
-      key             (str, required) — unique slug, e.g. "kga_life_api"
-      name            (str, required) — human-readable name
-      url             (str, optional) — base URL of the system
-      webhook_secret  (str, optional) — shared secret for inbound webhooks
+      key             (str, required) â€” unique slug, e.g. "kga_life_api"
+      name            (str, required) â€” human-readable name
+      url             (str, optional) â€” base URL of the system
+      webhook_secret  (str, optional) â€” shared secret for inbound webhooks
       alert_thresholds (dict, optional)
       pii_fields      (list, optional)
       enabled         (bool, optional, default true)
@@ -116,3 +116,4 @@ def register_integration():
 
     logger.info("Integration '%s' registered by user %s", key, g.user_id)
     return jsonify({"registered": True, "key": key, "name": name}), 201
+

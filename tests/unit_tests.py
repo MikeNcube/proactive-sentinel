@@ -1,4 +1,4 @@
-import unittest
+﻿import unittest
 from detections.detection_engine import DetectionEngine
 from utils import VRLFilter
 from proactivesentinel import ProactiveSentinel

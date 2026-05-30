@@ -1,4 +1,4 @@
-import base64
+﻿import base64
 import pytest
 import os
 
@@ -62,7 +62,7 @@ def test_user(app, test_tenant):
             user = User(
                 id=str(uuid.uuid4()),
                 email='integration@zororo.co.za',
-                password_hash=generate_password_hash('Admin1234!'),
+                password_hash=generate_password_hash('YOUR_PASSWORD_HERE'),
                 tenant_id=test_tenant.id,
                 role='admin',
             )
@@ -75,9 +75,10 @@ def test_user(app, test_tenant):
 def auth_headers(client, test_tenant, test_user):
     resp = client.post('/api/auth/login', json={
         'email': 'integration@zororo.co.za',
-        'password': 'Admin1234!'
+        'password': 'YOUR_PASSWORD_HERE'
     })
     data = resp.get_json()
     assert data is not None, f"Login failed. Status: {resp.status_code}, Body: {resp.data}"
     assert 'access_token' in data, f"No token in: {data}"
     return {'Authorization': f'Bearer {data["access_token"]}'}
+

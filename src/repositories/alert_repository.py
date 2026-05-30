@@ -1,4 +1,4 @@
-from datetime import datetime
+﻿from datetime import datetime
 from typing import Any, Optional
 
 from flask import g, request
@@ -54,3 +54,4 @@ class AlertRepository(BaseRepository):
                 raise
 
         return alert
+

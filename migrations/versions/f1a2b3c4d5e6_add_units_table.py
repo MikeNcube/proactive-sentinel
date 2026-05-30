@@ -1,4 +1,4 @@
-"""add units table
+﻿"""add units table
 
 Revision ID: f1a2b3c4d5e6
 Revises: 69cb9583f7c6
@@ -45,3 +45,4 @@ def downgrade():
         batch_op.drop_index("idx_units_status")
         batch_op.drop_index("idx_units_tenant_last_seen")
     op.drop_table("units")
+

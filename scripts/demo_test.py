@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
-Proactive Sentinel — end-to-end demo test.
+Proactive Sentinel â€” end-to-end demo test.
 
 Registers a fresh test tenant, logs in, ingests a CRITICAL security event,
 and confirms the alert appears in GET /api/alerts.  Prints a PASS/FAIL
@@ -57,10 +57,10 @@ def run(base_url: str) -> bool:
     def check(label: str, passed: bool, detail: str = "") -> bool:
         results.append((label, passed, detail))
         marker = "PASS" if passed else "FAIL"
-        print(f"  [{marker}] {label}" + (f"  — {detail}" if detail else ""))
+        print(f"  [{marker}] {label}" + (f"  â€” {detail}" if detail else ""))
         return passed
 
-    print(f"\nProactive Sentinel — end-to-end demo")
+    print(f"\nProactive Sentinel â€” end-to-end demo")
     print(f"Target : {base_url}")
     print(f"Time   : {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}")
     print("-" * 60)
@@ -88,7 +88,7 @@ def run(base_url: str) -> bool:
     check(
         "Tenant registered",
         status == 201,
-        f"HTTP {status}" + (f" — {body.get('error', '')}" if status != 201 else f" — tenant_id={body.get('tenant_id', '')[:8]}…"),
+        f"HTTP {status}" + (f" â€” {body.get('error', '')}" if status != 201 else f" â€” tenant_id={body.get('tenant_id', '')[:8]}â€¦"),
     )
     if status != 201:
         _print_summary(results)
@@ -121,9 +121,9 @@ def run(base_url: str) -> bool:
             "host": "demo-server-01",
             "source_ip": "10.99.0.1",
             "pid": 4812,
-            "description": "Mass file encryption detected — 1 400 files in 12 seconds",
+            "description": "Mass file encryption detected â€” 1 400 files in 12 seconds",
         },
-        "title": "Ransomware Burst — Demo Server",
+        "title": "Ransomware Burst â€” Demo Server",
     }
     status, body = _request("POST", f"{base_url}/api/events/ingest", event_payload, token)
     ingest_ok = status in (200, 201) and "created" in body
@@ -135,14 +135,14 @@ def run(base_url: str) -> bool:
 
     created = body.get("created", False)
     alert_id = body.get("alert_id", "")
-    check("Alert created (not duplicate)", created is True, f"alert_id={alert_id[:8] if alert_id else 'n/a'}…")
+    check("Alert created (not duplicate)", created is True, f"alert_id={alert_id[:8] if alert_id else 'n/a'}â€¦")
     check("Severity preserved", body.get("severity") == "critical", f"got '{body.get('severity')}'")
 
     # ------------------------------------------------------------------
     # 5. Verify alert appears in GET /api/alerts
     # ------------------------------------------------------------------
     print("\n[5] Verify alert in alerts list")
-    time.sleep(0.3)   # brief pause — not needed for SQLite but polite for Postgres
+    time.sleep(0.3)   # brief pause â€” not needed for SQLite but polite for Postgres
     status, body = _request("GET", f"{base_url}/api/alerts", token=token)
     check("Alerts endpoint reachable", status == 200, f"HTTP {status}")
 
@@ -186,3 +186,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     ok = run(args.base_url.rstrip("/"))
     sys.exit(0 if ok else 1)
+

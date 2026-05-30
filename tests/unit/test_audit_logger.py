@@ -1,4 +1,4 @@
-"""Unit tests for :class:`soc.audit.AuditLogger`.
+﻿"""Unit tests for :class:`soc.audit.AuditLogger`.
 
 Covers the stateful wrapper: seq monotonicity, prev_hash linkage,
 deterministic timestamps via injected clock, redactor invocation,
@@ -439,3 +439,4 @@ class TestFailureSemantics:
         assert logger.next_seq == 1
         assert logger.prev_hash == GENESIS_PREV_HASH
         assert list(sink.read_all()) == []
+

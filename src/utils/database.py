@@ -1,4 +1,4 @@
-import logging
+﻿import logging
 import os
 import time
 from urllib.parse import urlparse, urlunparse
@@ -68,3 +68,4 @@ def wait_for_database(url: str, timeout_seconds: int = 20, interval_seconds: int
     raise RuntimeError(
         f"Database is not reachable after {timeout_seconds} seconds."
     ) from last_error
+

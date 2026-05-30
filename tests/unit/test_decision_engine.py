@@ -1,4 +1,4 @@
-"""Unit tests for the SOC Decision Engine.
+﻿"""Unit tests for the SOC Decision Engine.
 
 Spec references:
 - canonical spec: ``docs/AI_OS_v3_SPEC.md`` sections 5.2, 5.3, 8, 8.1.
@@ -560,3 +560,4 @@ class TestEnginePurity:
             manifest=_manifest(),
         )
         assert first == last
+

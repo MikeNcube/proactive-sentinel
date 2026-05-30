@@ -1,4 +1,4 @@
-from flask import Flask, render_template_string, request, redirect, url_for, session, flash, Response
+﻿from flask import Flask, render_template_string, request, redirect, url_for, session, flash, Response
 import requests
 import os
 import json
@@ -579,7 +579,7 @@ DASHBOARD_TEMPLATE = """
                 </div>
                 <div class="user-info">
                     <span id="live-status" class="live-status"><span class="live-dot"></span><span id="live-status-text">LIVE</span></span>
-                    <span class="popia-badge">POPIA §18</span>
+                    <span class="popia-badge">POPIA Â§18</span>
                     <span class="user-email">{{ user.email }}</span>
                     <a href="/logout" class="logout-btn">SOC Console</a>
                 </div>
@@ -1442,3 +1442,4 @@ def logout():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
+

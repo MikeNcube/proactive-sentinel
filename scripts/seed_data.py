@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 """Seed database with test data for development"""
 
 import sys
@@ -58,8 +58,8 @@ def seed():
             {"tenant": "acme", "email": "analyst@acme.com", "password": "password123", "role": "analyst"},
             {"tenant": "acme", "email": "viewer@acme.com", "password": "password123", "role": "viewer"},
             # Zororo Phumulani users
-            {"tenant": "zororo", "email": "admin@zororo.co.za", "password": "Admin1234!", "role": "admin"},
-            {"tenant": "zororo", "email": "analyst@zororo.co.za", "password": "Admin1234!", "role": "analyst"},
+            {"tenant": "zororo", "email": "demo@example.com", "password": "YOUR_PASSWORD_HERE", "role": "admin"},
+            {"tenant": "zororo", "email": "analyst@zororo.co.za", "password": "YOUR_PASSWORD_HERE", "role": "analyst"},
         ]
 
         for u_data in users_data:
@@ -128,3 +128,4 @@ def seed():
 
 if __name__ == "__main__":
     seed()
+

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Integration tests for detection engine and alert workflow.
 """
 
@@ -101,3 +101,4 @@ class TestDetectionEngine:
             assert len(chains) > 0
             assert chains[0]["severity"] == "critical"
             assert len(chains[0]["stages"]) >= 3
+

@@ -1,4 +1,4 @@
-from datetime import datetime
+﻿from datetime import datetime
 import uuid
 
 from sqlalchemy import DateTime, String
@@ -48,3 +48,4 @@ class AuditLog(db.Model):
             'details': metadata.get("details"),
             'correlation_id': str(self.correlation_id) if self.correlation_id else None
         }
+

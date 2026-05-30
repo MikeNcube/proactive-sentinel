@@ -1,4 +1,4 @@
-"""initial schema
+﻿"""initial schema
 
 Revision ID: 81c60ae2d0bd
 Revises: a7231945d146
@@ -40,3 +40,4 @@ def downgrade():
         batch_op.drop_column('slug')
 
     # ### end Alembic commands ###
+

@@ -1,4 +1,4 @@
-import uuid
+﻿import uuid
 import json
 
 from sqlalchemy import String
@@ -104,3 +104,4 @@ class CrossJSON(TypeDecorator):
             return json.loads(value)
         except (json.JSONDecodeError, TypeError):
             return None
+

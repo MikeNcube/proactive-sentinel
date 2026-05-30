@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+﻿from datetime import datetime, timedelta
 from typing import Any, Dict
 
 import jwt
@@ -74,3 +74,4 @@ class JWTManager:
             raise Exception("Token expired") from exc
         except jwt.InvalidTokenError as exc:
             raise Exception("Invalid token") from exc
+

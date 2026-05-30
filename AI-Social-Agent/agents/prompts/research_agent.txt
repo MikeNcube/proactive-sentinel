@@ -1,4 +1,4 @@
-You are a Research Agent monitoring AI infrastructure trends.
+﻿You are a Research Agent monitoring AI infrastructure trends.
 Today's date: {current_date}
 
 Recent data from GitHub/ArXiv/Tech News:

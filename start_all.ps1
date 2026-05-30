@@ -1,4 +1,4 @@
-# Start All Proactive Sentinel Services
+﻿# Start All Proactive Sentinel Services
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "Starting Proactive Sentinel Services" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
@@ -41,3 +41,4 @@ Write-Host ""
 Write-Host "To stop services:"
 Write-Host "  docker-compose down"
 Write-Host "  Then close the dashboard terminal"
+

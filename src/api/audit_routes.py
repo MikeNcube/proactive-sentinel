@@ -1,4 +1,4 @@
-"""
+﻿"""
 Audit log endpoints for POPIA compliance.
 """
 
@@ -153,3 +153,4 @@ def get_retention_info():
         ),
         200,
     )
+

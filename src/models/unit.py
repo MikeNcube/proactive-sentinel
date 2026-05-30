@@ -1,4 +1,4 @@
-from datetime import datetime
+﻿from datetime import datetime
 import uuid
 
 from sqlalchemy import DateTime, String
@@ -26,3 +26,4 @@ class Unit(db.Model):
         db.Index("idx_units_tenant_last_seen", "tenant_id", "last_seen_at"),
         db.Index("idx_units_status", "status"),
     )
+

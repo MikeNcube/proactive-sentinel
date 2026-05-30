@@ -1,4 +1,4 @@
-"""SOC pipeline components (per docs/AI_OS_v3_SPEC.md section 5).
+﻿"""SOC pipeline components (per docs/AI_OS_v3_SPEC.md section 5).
 
 Subpackages
 -----------
@@ -21,3 +21,4 @@ Subpackages
 Future subpackages (placeholders, not yet implemented):
 - ``soc.policy`` --- OPA policy client (canonical spec section 7)
 """
+

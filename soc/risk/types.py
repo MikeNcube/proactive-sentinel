@@ -1,4 +1,4 @@
-"""Lightweight data shapes consumed and produced by the Risk Engine.
+﻿"""Lightweight data shapes consumed and produced by the Risk Engine.
 
 These types intentionally mirror only the fields the Risk Engine
 reads. Full Event / DLP / Policy domain models live in their own
@@ -143,3 +143,4 @@ class RiskAssessment:
             "sample_count": self.sample_count,
             "window_size": self.window_size,
         }
+

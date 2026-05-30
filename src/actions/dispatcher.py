@@ -1,11 +1,11 @@
-"""
-Action Dispatcher — post-detection automated response.
+﻿"""
+Action Dispatcher â€” post-detection automated response.
 
 Severity routing:
-  CRITICAL  →  FLAG + BLOCK + REPORT
-  HIGH      →  FLAG + REPORT
-  MEDIUM    →  FLAG
-  LOW       →  log only
+  CRITICAL  â†’  FLAG + BLOCK + REPORT
+  HIGH      â†’  FLAG + REPORT
+  MEDIUM    â†’  FLAG
+  LOW       â†’  log only
 """
 
 import logging
@@ -34,7 +34,7 @@ class ActionDispatcher:
 
     @staticmethod
     def flag(alert) -> None:
-        """FLAG: the persisted alert is the dashboard entry — log the dispatch."""
+        """FLAG: the persisted alert is the dashboard entry â€” log the dispatch."""
         logger.info(
             "FLAG: alert %s (severity=%s, category=%s) visible on dashboard",
             alert.id,
@@ -65,7 +65,7 @@ class ActionDispatcher:
         """REPORT: write a structured AuditLog entry. Returns True on success."""
         from src.models.user import User
 
-        # AuditLog.actor_id is a non-nullable FK → look up the tenant's first user.
+        # AuditLog.actor_id is a non-nullable FK â†’ look up the tenant's first user.
         try:
             user = User.query.filter_by(tenant_id=str(alert.tenant_id)).first()
         except Exception as exc:
@@ -144,3 +144,4 @@ class ActionDispatcher:
             send_alert_email(alert)
         except Exception as exc:
             logger.warning("Email notification failed for alert %s: %s", alert.id, exc)
+

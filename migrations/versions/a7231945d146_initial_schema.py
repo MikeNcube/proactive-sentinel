@@ -1,4 +1,4 @@
-"""initial schema
+﻿"""initial schema
 
 Revision ID: a7231945d146
 Revises: 
@@ -116,3 +116,4 @@ def downgrade():
     op.drop_table('users')
     op.drop_table('tenants')
     # ### end Alembic commands ###
+

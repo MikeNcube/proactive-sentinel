@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 """
 Cross-platform setup script for Proactive Sentinel
 Runs database migrations and seeds data
@@ -104,3 +104,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -1,4 +1,4 @@
-import os
+﻿import os
 from typing import Dict, Type
 
 
@@ -45,3 +45,4 @@ CONFIG_MAP: Dict[str, Type[Config]] = {
     "testing": TestingConfig,
     "production": ProductionConfig,
 }
+

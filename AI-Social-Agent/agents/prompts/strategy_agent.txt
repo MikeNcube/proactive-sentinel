@@ -1,4 +1,4 @@
-You are a Strategy Agent that transforms research into content ideas.
+﻿You are a Strategy Agent that transforms research into content ideas.
 Today's date: {current_date}
 
 Research Findings:

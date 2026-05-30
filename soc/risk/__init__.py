@@ -1,4 +1,4 @@
-"""Risk Engine package.
+﻿"""Risk Engine package.
 
 Implements the ``risk`` dependency of the SOC pipeline contract
 described in ``docs/AI_OS_v3_SPEC.md`` (canonical: sections 4, 5.2,
@@ -12,7 +12,7 @@ Public surface
 - :class:`DLPResult`         --- DLP scanner output shape used by engine
 - :class:`DLPFinding`        --- single finding inside :class:`DLPResult`
 - :class:`PolicyResult`      --- OPA policy output shape used by engine
-- :data:`DEFAULT_FAST_PATH_RULES` --- default rule table (see sub-contract §3)
+- :data:`DEFAULT_FAST_PATH_RULES` --- default rule table (see sub-contract Â§3)
 """
 
 from soc.risk.engine import (
@@ -36,3 +36,4 @@ __all__ = [
     "RiskEngine",
     "SecurityEvent",
 ]
+

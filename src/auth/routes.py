@@ -1,4 +1,4 @@
-from datetime import datetime
+﻿from datetime import datetime
 import time
 import traceback
 
@@ -272,3 +272,4 @@ def change_password():
     )
     db.session.commit()
     return jsonify({"message": "Password updated"}), 200
+

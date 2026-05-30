@@ -1,4 +1,4 @@
-"""Audit chain verification (canonical spec section 10.3 F1).
+﻿"""Audit chain verification (canonical spec section 10.3 F1).
 
 Pure function over an iterable of record dicts. Reports the first
 integrity break found (if any) along with the index and reason. No
@@ -91,3 +91,4 @@ def verify_chain(records: Iterable[Mapping[str, Any]]) -> VerificationResult:
         expected_seq += 1
 
     return VerificationResult(ok=True)
+

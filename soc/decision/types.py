@@ -1,4 +1,4 @@
-"""Decision Engine types.
+﻿"""Decision Engine types.
 
 Implements the data shapes referenced by canonical spec section 8 and
 the DecisionRecord field list in section 5.3 A4. Frozen dataclasses
@@ -100,3 +100,4 @@ class DecisionRecord:
         record["action"] = self.action.value
         # asdict turns tuples into lists already; nothing else to do.
         return record
+

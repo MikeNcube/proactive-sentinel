@@ -1,4 +1,4 @@
-from typing import List, Dict
+﻿from typing import List, Dict
 from utils import VRLFilter, ResponseSimulator
 
 class DetectionEngine:
@@ -43,3 +43,4 @@ class DetectionEngine:
                     })
                     ResponseSimulator.isolate_user(user)
         return alerts
+

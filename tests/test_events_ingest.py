@@ -1,4 +1,4 @@
-"""
+﻿"""
 Tests for POST /api/events/ingest.
 
 Uses the session-scoped app/client fixtures from tests/conftest.py,
@@ -112,7 +112,7 @@ class TestIngestSecurityEvents:
 
     def test_created_alert_has_id_and_severity(self, client, events_auth_headers):
         # event_type "login_anomaly" maps to "high" via the severity rules engine.
-        # The sender does not claim any severity — the engine must set it by rule.
+        # The sender does not claim any severity â€” the engine must set it by rule.
         resp = client.post(
             "/api/events/ingest",
             json={
@@ -213,7 +213,7 @@ class TestIngestUXEvents:
         )
         assert resp.status_code in (200, 201)
         body = resp.get_json()
-        # UXObserver may return signals — either created or no-signal
+        # UXObserver may return signals â€” either created or no-signal
         assert "created" in body
 
     def test_whatsapp_frustration_detected(self, client, events_auth_headers):
@@ -250,7 +250,7 @@ class TestIngestUXEvents:
         assert resp.status_code in (200, 201)
 
     def test_ux_event_no_signal_returns_200_not_created(self, client, events_auth_headers):
-        # A slow_claims event with processing_time below threshold (2.0) → no signal
+        # A slow_claims event with processing_time below threshold (2.0) â†’ no signal
         resp = client.post(
             "/api/events/ingest",
             json={
@@ -264,3 +264,4 @@ class TestIngestUXEvents:
         body = resp.get_json()
         # Might be created=False (no signal) or created=True from a different detector
         assert "created" in body
+

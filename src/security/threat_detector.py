@@ -1,4 +1,4 @@
-import ipaddress
+﻿import ipaddress
 import os
 import time
 from collections import defaultdict, deque
@@ -77,4 +77,5 @@ class ThreatDetector:
             self.blocked_ips.add(ip)
             return {"allowed": False, "reason": f"auto_ban:{reason}", "banned": True}
         return {"allowed": False, "reason": reason, "banned": False}
+
 

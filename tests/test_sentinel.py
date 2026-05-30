@@ -1,4 +1,4 @@
-import pytest
+﻿import pytest
 
 class TestUniversalIDMasking:
     """Validates cross-border identity masking for SADC region compliance."""
@@ -87,3 +87,4 @@ class TestUniversalIDMasking:
         assert "200" in masked
         assert "8443" in masked
         assert "2.1" in masked
+

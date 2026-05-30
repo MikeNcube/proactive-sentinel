@@ -1,1 +1,2 @@
-"""Integration registry package."""
+﻿"""Integration registry package."""
+

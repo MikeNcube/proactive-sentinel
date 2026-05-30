@@ -1,7 +1,7 @@
-"""
+﻿"""
 Tests for ActionDispatcher (FLAG / BLOCK / REPORT) and the unban endpoint.
 
-All Redis calls are mocked — no live Redis required.
+All Redis calls are mocked â€” no live Redis required.
 """
 
 import uuid
@@ -218,3 +218,4 @@ class TestUnbanEndpoint:
     def test_unban_unauthenticated_returns_401(self, client):
         resp = client.post("/api/security/unban-ip", json={"ip": "1.2.3.4"})
         assert resp.status_code == 401
+

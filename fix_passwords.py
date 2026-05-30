@@ -45,8 +45,8 @@ with app.app_context():
         print(f"Created {admin_email}")
     
     # Create/update zororo user with bcrypt
-    zororo_email = 'admin@zororo.co.za'
-    zororo_password = 'Admin1234!'
+    zororo_email = 'demo@example.com'
+    zororo_password = 'YOUR_PASSWORD_HERE'
     zororo_hash = bcrypt.hashpw(zororo_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     
     zororo = User.query.filter_by(email=zororo_email).first()
@@ -89,5 +89,6 @@ with app.app_context():
     
     print("\nTest credentials:")
     print(f"  admin@acme.com / password123")
-    print(f"  admin@zororo.co.za / Admin1234!")
+    print(f"  demo@example.com / YOUR_PASSWORD_HERE")
     print(f"  test@acme.com / test123")
+

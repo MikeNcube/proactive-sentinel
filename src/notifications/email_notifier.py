@@ -1,17 +1,17 @@
-"""
+﻿"""
 Email notification for CRITICAL and HIGH severity alerts.
 
 Configuration (all from environment):
-  SMTP_HOST                 — SMTP server hostname (required to enable email)
-  SMTP_PORT                 — port, default 587
-  SMTP_USER                 — login username (optional for relays that trust source IP)
-  SMTP_PASSWORD             — login password
-  SMTP_FROM                 — From address, defaults to SMTP_USER
-  ALERT_EMAIL_RECIPIENTS    — comma-separated list of recipient addresses
-  SENTINEL_URL              — dashboard base URL for the alert link
+  SMTP_HOST                 â€” SMTP server hostname (required to enable email)
+  SMTP_PORT                 â€” port, default 587
+  SMTP_USER                 â€” login username (optional for relays that trust source IP)
+  SMTP_PASSWORD             â€” login password
+  SMTP_FROM                 â€” From address, defaults to SMTP_USER
+  ALERT_EMAIL_RECIPIENTS    â€” comma-separated list of recipient addresses
+  SENTINEL_URL              â€” dashboard base URL for the alert link
 
 If SMTP_HOST is not set, send_alert_email() logs a warning and returns False.
-It never raises — a notification failure must never crash the dispatch pipeline.
+It never raises â€” a notification failure must never crash the dispatch pipeline.
 """
 
 import logging
@@ -52,7 +52,7 @@ def _recipients() -> list:
 
 
 def _mask_ip(ip: str) -> str:
-    """Partially mask an IP address. 192.168.1.100 → 192.168.xxx.xxx"""
+    """Partially mask an IP address. 192.168.1.100 â†’ 192.168.xxx.xxx"""
     parts = str(ip or "").split(".")
     if len(parts) == 4:
         return f"{parts[0]}.{parts[1]}.xxx.xxx"
@@ -85,7 +85,7 @@ def send_alert_email(alert) -> bool:
         return False
 
     severity = str(alert.severity or "").upper()
-    subject = f"[{severity}] Proactive Sentinel Alert — {alert.title}"
+    subject = f"[{severity}] Proactive Sentinel Alert â€” {alert.title}"
 
     raw = alert.raw_data or {}
     source_ip = raw.get("source_ip") or raw.get("ip") or "unknown"
@@ -136,3 +136,4 @@ def send_alert_email(alert) -> bool:
             exc,
         )
         return False
+

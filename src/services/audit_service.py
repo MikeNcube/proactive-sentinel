@@ -1,4 +1,4 @@
-"""Centralized audit logging helpers."""
+﻿"""Centralized audit logging helpers."""
 
 from __future__ import annotations
 
@@ -42,3 +42,4 @@ def write_audit_event(
         correlation_id=getattr(g, "correlation_id", None),
     )
     db.session.add(entry)
+

@@ -1,4 +1,4 @@
-"""Audit Logger types.
+﻿"""Audit Logger types.
 
 Mirrors the record format specified in canonical spec section 10.1
 verbatim --- field names, types, and order. Frozen dataclass so audit
@@ -54,3 +54,4 @@ class AuditRecord:
             "prev_hash": self.prev_hash,
             "this_hash": self.this_hash,
         }
+

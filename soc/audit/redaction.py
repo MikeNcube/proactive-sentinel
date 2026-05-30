@@ -1,4 +1,4 @@
-"""Audit Logger redaction protocol (canonical spec section 5.3 A5).
+﻿"""Audit Logger redaction protocol (canonical spec section 5.3 A5).
 
 Spec section 5.3 A5: "PII findings logged to the audit trail MUST be
 redacted using Presidio's anonymizer. **Original PII never appears
@@ -56,3 +56,4 @@ class PassthroughRedactor:
 
     def redact(self, payload: Mapping[str, Any]) -> Mapping[str, Any]:
         return dict(payload)
+

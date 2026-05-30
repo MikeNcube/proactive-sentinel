@@ -1,4 +1,4 @@
-Write-Host "=== Proactive Sentinel Docker Verification ===" -ForegroundColor Cyan
+﻿Write-Host "=== Proactive Sentinel Docker Verification ===" -ForegroundColor Cyan
 
 # Health check
 Write-Host "`n[1] Health check..."
@@ -7,7 +7,7 @@ Write-Host "Status: $($health.status)" -ForegroundColor Green
 
 # Login
 Write-Host "`n[2] Login test..."
-$loginBody = '{"email":"admin@zororo.co.za","password":"Admin1234!"}'
+$loginBody = '{"email":"demo@example.com","password":"YOUR_PASSWORD_HERE"}'
 $login = curl.exe -s -X POST http://localhost:5001/api/auth/login `
     -H "Content-Type: application/json" -d $loginBody | ConvertFrom-Json
 $token = $login.access_token
@@ -34,3 +34,4 @@ Write-Host "`n[4] Rate limit test (6 rapid requests)..."
 }
 
 Write-Host "`n=== Verification Complete ===" -ForegroundColor Cyan
+

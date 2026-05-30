@@ -1,4 +1,4 @@
-"""DLP scanner interface stub.
+﻿"""DLP scanner interface stub.
 
 This module exists ONLY to give downstream pipeline stages a typed
 handle to bind against until the real scanner from canonical spec
@@ -55,3 +55,4 @@ class NotImplementedDLPScanner:
             "for the resolution path (Priority 1 in the SOC pipeline "
             "roadmap)."
         )
+

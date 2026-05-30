@@ -1,4 +1,4 @@
-"""Hash-chained tamper-evident Audit Logger (canonical spec section 10).
+﻿"""Hash-chained tamper-evident Audit Logger (canonical spec section 10).
 
 The logger is the only stateful, side-effecting component in the
 ``soc.audit`` package. State held:
@@ -167,3 +167,4 @@ class AuditLogger:
     @property
     def prev_hash(self) -> str:
         return self._prev_hash
+

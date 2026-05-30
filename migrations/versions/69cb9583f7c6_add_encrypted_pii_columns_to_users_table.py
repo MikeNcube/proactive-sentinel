@@ -1,4 +1,4 @@
-"""Add encrypted PII columns to users table
+﻿"""Add encrypted PII columns to users table
 
 Revision ID: 69cb9583f7c6
 Revises: 81c60ae2d0bd
@@ -50,3 +50,4 @@ def downgrade():
         batch_op.drop_column('phone_encrypted')
 
     # ### end Alembic commands ###
+

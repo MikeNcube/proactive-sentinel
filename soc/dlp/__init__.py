@@ -1,4 +1,4 @@
-"""DLP scanner package --- INTERFACE STUB ONLY.
+﻿"""DLP scanner package --- INTERFACE STUB ONLY.
 
 [STATUS] TODO --- implementation parked. The concrete Presidio-based
 scanner described in ``docs/AI_OS_v3_SPEC.md`` section 6 is not yet
@@ -47,3 +47,4 @@ implementation contract.
 from soc.dlp.scanner import DLPScannerProtocol, NotImplementedDLPScanner
 
 __all__ = ["DLPScannerProtocol", "NotImplementedDLPScanner"]
+

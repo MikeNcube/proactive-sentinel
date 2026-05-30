@@ -1,4 +1,4 @@
-from typing import Any, Generic, Optional, TypeVar
+﻿from typing import Any, Generic, Optional, TypeVar
 
 from flask import g, has_request_context, request
 from sqlalchemy.orm import Query
@@ -71,3 +71,4 @@ class BaseRepository(Generic[T]):
                 self.db.session.rollback()
                 raise
         return False
+

@@ -1,8 +1,8 @@
-import re
+﻿import re
 from typing import Any
 from dataclasses import dataclass
 
-# ── Credential detection patterns ─────────────────────────────────────────
+# â”€â”€ Credential detection patterns â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Each pattern targets a self-identifying or labeled credential form.
 
 _CRED_AWS_KEY_RE = re.compile(r"\bAKIA[A-Z0-9]{16}\b")
@@ -150,7 +150,7 @@ def mask_text(text: str) -> tuple[str, MaskReport]:
 
     masked = pass_re.sub(pass_sub, masked)
 
-    # ── Credential masking ────────────────────────────────────────────────
+    # â”€â”€ Credential masking â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     def _cred_sub(cred_type: str):
         tag = f"[REDACTED_{cred_type}]"
@@ -178,3 +178,4 @@ class PIIMasker:
 
     def mask(self, text: str) -> tuple[str, MaskReport]:
         return mask_text(text)
+

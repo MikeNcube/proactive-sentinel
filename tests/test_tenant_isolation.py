@@ -1,4 +1,4 @@
-import pytest
+﻿import pytest
 from src import create_app
 from src.extensions import db
 from src.auth.jwt_manager import JWTManager
@@ -95,3 +95,4 @@ class TestTenantIsolation:
                 assert audit.action == "alert_dismissed"
                 assert audit.old_value["status"] == "open"
                 assert audit.new_value["status"] == "dismissed"
+

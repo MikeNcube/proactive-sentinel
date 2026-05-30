@@ -1,4 +1,4 @@
-"""
+﻿"""
 Zororo Systems Integration Registry.
 
 Static baseline registry of all systems that Proactive Sentinel monitors.
@@ -7,15 +7,15 @@ Runtime additions are stored in the integrations DB table and merged in
 by get_all_systems().
 
 Schema notes:
-  monitor_events   — semantic event names this system is expected to emit.
-  event_severities — alert level to assign when a named event is detected.
-  status           — "active" (default) or "pending-authority".
-  enabled          — False entries appear in the dashboard as planned but
+  monitor_events   â€” semantic event names this system is expected to emit.
+  event_severities â€” alert level to assign when a named event is detected.
+  status           â€” "active" (default) or "pending-authority".
+  enabled          â€” False entries appear in the dashboard as planned but
                      inactive; no probes or alerts are generated for them.
 """
 
 ZORORO_SYSTEMS = {
-    # ── Zororo AI OS ──────────────────────────────────────────────────────
+    # â”€â”€ Zororo AI OS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     "zororo_ai_os": {
         "name": "Zororo AI OS",
         "description": "AI-augmented SOC pipeline, MCP gateway, and audit chain",
@@ -49,7 +49,7 @@ ZORORO_SYSTEMS = {
         "builtin": True,
     },
 
-    # ── Zororo Claims ─────────────────────────────────────────────────────
+    # â”€â”€ Zororo Claims â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     "zororo_claims": {
         "name": "Zororo Claims System",
         "description": "Funeral claims operations platform",
@@ -93,10 +93,10 @@ ZORORO_SYSTEMS = {
         "builtin": True,
     },
 
-    # ── Proactive Sentinel (self) ─────────────────────────────────────────
+    # â”€â”€ Proactive Sentinel (self) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     "proactive_sentinel": {
         "name": "Proactive Sentinel (self)",
-        "description": "Security monitoring platform — self-monitoring entry",
+        "description": "Security monitoring platform â€” self-monitoring entry",
         "url": "http://localhost:5000",
         "webhook_secret": "",
         "health_endpoint": "/health",
@@ -125,7 +125,7 @@ ZORORO_SYSTEMS = {
         "builtin": True,
     },
 
-    # ── AI Social Agent ───────────────────────────────────────────────────
+    # â”€â”€ AI Social Agent â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     "ai_social_agent": {
         "name": "AI Social Agent",
         "description": "LinkedIn and social media automation",
@@ -148,13 +148,13 @@ ZORORO_SYSTEMS = {
         "builtin": True,
     },
 
-    # ── IT Manager Systems (placeholder) ─────────────────────────────────
+    # â”€â”€ IT Manager Systems (placeholder) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # Integration designed and reserved. Activation requires IT manager to
     # grant access approval. No probes, webhooks, or alerts are generated
     # while enabled=False.
     "it_manager_systems": {
         "name": "IT Manager Systems",
-        "description": "IT manager's systems — reserved for future integration",
+        "description": "IT manager's systems â€” reserved for future integration",
         "url": "",
         "webhook_secret": "",
         "health_endpoint": "",
@@ -199,3 +199,4 @@ def get_all_systems() -> dict:
     except Exception:
         pass
     return result
+

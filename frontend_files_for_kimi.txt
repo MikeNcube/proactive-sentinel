@@ -240,7 +240,7 @@
         <a class="nav-item" data-page="settings" href="#"><span>Settings</span></a>
       </nav>
       <div class="bottom">
-        <div style="display:flex;align-items:center;margin-bottom:8px"><span class="avatar">A</span><span>admin@zororo.co.za</span></div>
+        <div style="display:flex;align-items:center;margin-bottom:8px"><span class="avatar">A</span><span>demo@example.com</span></div>
         <div><span class="dot"></span>System healthy</div>
         <button class="logout" id="logoutBtn">Logout</button>
       </div>
@@ -510,7 +510,7 @@
     }
 
     async function silentLogin(){
-      const res=await fetch(API_BASE+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:"admin@zororo.co.za",password:"Admin1234!"})});
+      const res=await fetch(API_BASE+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:"demo@example.com",password:"YOUR_PASSWORD_HERE"})});
       const data=await res.json().catch(()=>({}));
       if(!res.ok||!data.access_token) throw new Error("Login failed");
       token=data.access_token;
@@ -610,7 +610,7 @@
       const flagged=alerts.filter(a=>["critical","high"].includes(String(a.severity).toLowerCase()));
       document.getElementById("anomBig").textContent=flagged.length;
       document.getElementById("anomFeed").innerHTML=flagged.slice(0,6).map(a=>`<div class="mini" style="padding:6px 0;border-bottom:1px solid var(--border)">${a.title||"-"} (${String(a.severity||"").toUpperCase()})</div>`).join("") || `<div class="mini">No active anomalies</div>`;
-      document.getElementById("riskyUsers").innerHTML=[["admin@zororo.co.za",82],["ops@zororo.co.za",67],["claims@zororo.co.za",54]].map(u=>`<div class="mini" style="padding:6px 0;border-bottom:1px solid var(--border)">${u[0]} - risk ${u[1]}</div>`).join("");
+      document.getElementById("riskyUsers").innerHTML=[["demo@example.com",82],["ops@zororo.co.za",67],["claims@zororo.co.za",54]].map(u=>`<div class="mini" style="padding:6px 0;border-bottom:1px solid var(--border)">${u[0]} - risk ${u[1]}</div>`).join("");
     }
 
     function destroyChart(name){
@@ -819,3 +819,4 @@ FILE DOES NOT EXIST
 
 === FILE: static/js/dashboard.js ===
 FILE DOES NOT EXIST
+

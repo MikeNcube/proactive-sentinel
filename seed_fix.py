@@ -1,4 +1,4 @@
-import sys
+﻿import sys
 sys.path.insert(0, '/app')
 from app import create_app
 from src.extensions import db
@@ -39,18 +39,18 @@ with app.app_context():
         print('Created admin@acme.com')
     
     # Create zororo user
-    zororo = User.query.filter_by(email='admin@zororo.co.za').first()
+    zororo = User.query.filter_by(email='demo@example.com').first()
     if not zororo:
-        zororo_hash = bcrypt.hashpw(b'Admin1234!', bcrypt.gensalt()).decode()
+        zororo_hash = bcrypt.hashpw(b'YOUR_PASSWORD_HERE', bcrypt.gensalt()).decode()
         zororo = User(
             id=uuid.uuid4(),
             tenant_id=tenant.id,
-            email='admin@zororo.co.za',
+            email='demo@example.com',
             password_hash=zororo_hash,
             role='admin'
         )
         db.session.add(zororo)
-        print('Created admin@zororo.co.za')
+        print('Created demo@example.com')
     
     db.session.commit()
     print('\nUsers in database:')
@@ -59,4 +59,5 @@ with app.app_context():
     
     print('\nLogin credentials:')
     print('  admin@acme.com / password123')
-    print('  admin@zororo.co.za / Admin1234!')
+    print('  demo@example.com / YOUR_PASSWORD_HERE')
+

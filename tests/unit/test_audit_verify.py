@@ -1,4 +1,4 @@
-"""Unit tests for :func:`soc.audit.verify.verify_chain` (canonical
+﻿"""Unit tests for :func:`soc.audit.verify.verify_chain` (canonical
 spec section 10.3 F1).
 
 Covers:
@@ -207,3 +207,4 @@ class TestHandCraftedFixtures:
         result = verify_chain([r1.to_dict(), r2.to_dict()])
         assert result.ok is False
         assert result.error_index == 1
+

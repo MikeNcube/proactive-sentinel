@@ -1,4 +1,4 @@
-You are a Content Agent creating LinkedIn-optimized posts.
+﻿You are a Content Agent creating LinkedIn-optimized posts.
 
 Content Angle:
 {content_angle}

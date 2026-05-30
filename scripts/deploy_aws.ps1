@@ -1,4 +1,4 @@
-# Proactive Sentinel — AWS deployment script (PowerShell)
+﻿# Proactive Sentinel â€” AWS deployment script (PowerShell)
 # Run this on Windows to build and deploy to AWS
 
 $ErrorActionPreference = "Stop"
@@ -55,3 +55,4 @@ terraform apply `
 $ServiceUrl = terraform output -raw service_url
 Write-Host "Deployment complete"
 Write-Host "Service URL: https://$ServiceUrl"
+

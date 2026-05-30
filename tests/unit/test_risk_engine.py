@@ -1,4 +1,4 @@
-"""Unit tests for the SOC Risk Engine.
+﻿"""Unit tests for the SOC Risk Engine.
 
 Spec references:
 - canonical spec: ``docs/AI_OS_v3_SPEC.md`` (sections 4, 5.2, 5.3, 6.3, 8)
@@ -588,3 +588,4 @@ class TestDeterminism:
             for e in events
         ]
         assert first_pass == second_pass
+

@@ -1,7 +1,7 @@
-"""
+﻿"""
 Tests for src/notifications/email_notifier.py
 
-All SMTP calls are mocked — no live mail server required.
+All SMTP calls are mocked â€” no live mail server required.
 """
 
 import os
@@ -14,7 +14,7 @@ from src.notifications.email_notifier import _mask_ip, send_alert_email
 
 
 # ---------------------------------------------------------------------------
-# Minimal alert stub — avoids needing a full DB-backed Alert object
+# Minimal alert stub â€” avoids needing a full DB-backed Alert object
 # ---------------------------------------------------------------------------
 
 class _FakeAlert:
@@ -128,3 +128,4 @@ class TestSendAlertEmailSend:
             with patch("smtplib.SMTP", side_effect=ConnectionRefusedError("SMTP down")):
                 result = send_alert_email(alert)
         assert result is False
+

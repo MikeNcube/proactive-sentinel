@@ -1,4 +1,4 @@
-"""
+﻿"""
 Unit tests for credential masking in detections/vrl_filter.py.
 
 Verifies that mask_text() detects and masks all seven credential patterns
@@ -11,7 +11,7 @@ import pytest
 from detections.vrl_filter import mask_text
 
 
-# ── AWS Access Key ID ─────────────────────────────────────────────────────
+# â”€â”€ AWS Access Key ID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_aws_access_key_masked():
     text = "Configured key AKIAIOSFODNN7EXAMPLE here"
@@ -22,14 +22,14 @@ def test_aws_access_key_masked():
 
 
 def test_aws_access_key_not_false_positive_on_short_akia():
-    # AKIA followed by fewer than 16 uppercase alphanumeric chars — must not match
+    # AKIA followed by fewer than 16 uppercase alphanumeric chars â€” must not match
     text = "AKIA123"
     masked, report = mask_text(text)
     assert "CRED_AWS_ACCESS_KEY" not in report.pii_types_found
     assert masked == "AKIA123"
 
 
-# ── AWS Secret Access Key ─────────────────────────────────────────────────
+# â”€â”€ AWS Secret Access Key â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_aws_secret_key_masked():
     text = "aws_secret_access_key='wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'"
@@ -45,7 +45,7 @@ def test_aws_secret_key_case_insensitive():
     assert "CRED_AWS_SECRET_KEY" in report.pii_types_found
 
 
-# ── Generic API Key ───────────────────────────────────────────────────────
+# â”€â”€ Generic API Key â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_api_key_masked():
     text = "api_key=abcdefghij1234567890ABCDEF"
@@ -68,7 +68,7 @@ def test_api_key_too_short_not_masked():
     assert "CRED_API_KEY" not in report.pii_types_found
 
 
-# ── PEM Private Key ───────────────────────────────────────────────────────
+# â”€â”€ PEM Private Key â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_private_key_block_masked():
     text = (
@@ -92,7 +92,7 @@ def test_ec_private_key_block_masked():
     assert "CRED_PRIVATE_KEY" in report.pii_types_found
 
 
-# ── GitHub Token ──────────────────────────────────────────────────────────
+# â”€â”€ GitHub Token â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_github_pat_masked():
     token = "ghp_" + "A" * 36
@@ -115,7 +115,7 @@ def test_github_server_token_masked():
     assert "CRED_GITHUB_TOKEN" in report.pii_types_found
 
 
-# ── JWT Token ─────────────────────────────────────────────────────────────
+# â”€â”€ JWT Token â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_jwt_masked():
     jwt = (
@@ -130,7 +130,7 @@ def test_jwt_masked():
     assert "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" not in masked
 
 
-# ── Plaintext Password ────────────────────────────────────────────────────
+# â”€â”€ Plaintext Password â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_password_masked():
     text = "password=Sup3rS3cr3tPass!"
@@ -147,13 +147,13 @@ def test_passwd_variant_masked():
 
 
 def test_password_too_short_not_masked():
-    # Fewer than 6 chars after separator — should not trigger
+    # Fewer than 6 chars after separator â€” should not trigger
     text = "password=abc"
     masked, report = mask_text(text)
     assert "CRED_PASSWORD" not in report.pii_types_found
 
 
-# ── Multi-credential and replacement count ────────────────────────────────
+# â”€â”€ Multi-credential and replacement count â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_multiple_credentials_all_masked():
     aws_key = "AKIAIOSFODNN7EXAMPLE"
@@ -193,3 +193,4 @@ def test_existing_pii_masking_still_works_alongside_credentials():
     assert "SA_ID" in report.pii_types_found
     assert "CRED_AWS_ACCESS_KEY" in report.pii_types_found
     assert report.total_replacements >= 2
+

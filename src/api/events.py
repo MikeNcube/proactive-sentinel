@@ -1,4 +1,4 @@
-"""
+﻿"""
 Generic event ingest endpoint.
 
 Accepts telemetry from any authenticated source (log shippers, internal services,
@@ -38,7 +38,7 @@ _UX_EVENT_TYPES = frozenset({
 
 _VALID_SEVERITIES = {"critical", "high", "medium", "low"}
 
-# Module-level engine instance — CorrelationEngine lazily connects to Redis on first use.
+# Module-level engine instance â€” CorrelationEngine lazily connects to Redis on first use.
 _detection_engine = DetectionEngine()
 
 
@@ -71,20 +71,20 @@ def ingest_event():
     Ingest a security or operational event.
 
     Request body (JSON):
-      source      (str, required)  — origin of the event, e.g. "wazuh", "app-server-01"
-      event_type  (str, required)  — e.g. "ransomware", "slow_claims", "web_error"
-      severity    (str, optional)  — critical | high | medium | low  (default: low)
-      raw_data    (dict, optional) — full event payload
-      tenant_id   (str, optional)  — must match the JWT tenant when supplied
-      title       (str, optional)  — human-readable title (derived from event_type if absent)
-      description (str, optional)  — free-text detail
-      confidence  (float, optional)— 0.0–1.0 (default: 0.7)
+      source      (str, required)  â€” origin of the event, e.g. "wazuh", "app-server-01"
+      event_type  (str, required)  â€” e.g. "ransomware", "slow_claims", "web_error"
+      severity    (str, optional)  â€” critical | high | medium | low  (default: low)
+      raw_data    (dict, optional) â€” full event payload
+      tenant_id   (str, optional)  â€” must match the JWT tenant when supplied
+      title       (str, optional)  â€” human-readable title (derived from event_type if absent)
+      description (str, optional)  â€” free-text detail
+      confidence  (float, optional)â€” 0.0â€“1.0 (default: 0.7)
 
     Returns:
-      201 { created: true, alert_id, severity }           — new alert persisted
-      200 { created: false, reason: "duplicate suppressed" } — dedup hit
-      400 { error, details }                              — validation failure
-      403 { error }                                       — tenant mismatch
+      201 { created: true, alert_id, severity }           â€” new alert persisted
+      200 { created: false, reason: "duplicate suppressed" } â€” dedup hit
+      400 { error, details }                              â€” validation failure
+      403 { error }                                       â€” tenant mismatch
     """
     raw_body = request.get_json(silent=True) or {}
     try:
@@ -224,3 +224,4 @@ def _handle_ux_event(
         "alert_ids": created_ids,
         "count": len(created_ids),
     }), 201
+

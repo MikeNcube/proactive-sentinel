@@ -1,4 +1,4 @@
-import requests
+﻿import requests
 import feedparser
 from datetime import datetime, timedelta
 import json
@@ -20,7 +20,7 @@ class DataSources:
             
             results = []
             for repo in repos:
-                results.append(f"- {repo['name']}: {repo['description']} (⭐ {repo['stargazers_count']})")
+                results.append(f"- {repo['name']}: {repo['description']} (â­ {repo['stargazers_count']})")
             
             return "\n".join(results)
         except Exception as e:
@@ -57,7 +57,7 @@ class DataSources:
     
     def collect_all(self, topic="AI infrastructure"):
         """Collect data from all sources"""
-        print("📡 Collecting data from multiple sources...")
+        print("ðŸ“¡ Collecting data from multiple sources...")
         
         data = {
             "github": self.get_github_trends("ai"),
@@ -88,4 +88,4 @@ if __name__ == "__main__":
     ds = DataSources()
     data, filepath = ds.collect_all()
     print(data)
-    print(f"\n💾 Saved to: {filepath}")
+    print(f"\nðŸ’¾ Saved to: {filepath}")

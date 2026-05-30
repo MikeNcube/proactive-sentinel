@@ -1,4 +1,4 @@
-import os
+﻿import os
 import base64
 import logging
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -108,3 +108,4 @@ class EncryptedString(TypeDecorator):
         if value is None:
             return None
         return self.encryption.decrypt(value)
+

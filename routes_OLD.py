@@ -1,4 +1,4 @@
-"""Compatibility route blueprints for app bootstrap."""
+﻿"""Compatibility route blueprints for app bootstrap."""
 
 from flask import Blueprint, jsonify
 
@@ -19,3 +19,4 @@ def auth_health():
 def alerts_index():
     """Expose alert list endpoint under /api/alerts."""
     return get_alerts()
+

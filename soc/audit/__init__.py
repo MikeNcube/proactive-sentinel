@@ -1,4 +1,4 @@
-"""Audit Logger package (canonical spec section 10).
+﻿"""Audit Logger package (canonical spec section 10).
 
 Hash-chained, tamper-evident audit logging. Used by the SOC pipeline
 (canonical spec section 5.2):
@@ -49,3 +49,4 @@ __all__ = [
     "hash_payload",
     "verify_chain",
 ]
+

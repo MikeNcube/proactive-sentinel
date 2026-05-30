@@ -1,4 +1,4 @@
-import base64
+﻿import base64
 import json
 import logging
 import os
@@ -73,8 +73,8 @@ class EncryptedJSON(TypeDecorator):
     """
     SQLAlchemy TypeDecorator that stores JSON as AES-256-GCM encrypted text.
 
-    On INSERT/UPDATE: dict → json.dumps → encrypt → base64 string in DB.
-    On SELECT: base64 string → decrypt → json.loads → dict in Python.
+    On INSERT/UPDATE: dict â†’ json.dumps â†’ encrypt â†’ base64 string in DB.
+    On SELECT: base64 string â†’ decrypt â†’ json.loads â†’ dict in Python.
 
     Falls back to plain json.loads if decryption fails, so existing
     unencrypted rows remain readable after adding this column type.
@@ -144,3 +144,4 @@ def decrypt_for_display(alert, role: str) -> dict:
             "_note": "raw_data requires IT_ADMIN or SECURITY_ANALYST role"
         },
     }
+

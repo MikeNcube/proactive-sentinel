@@ -1,4 +1,4 @@
-from flask import Blueprint, g, jsonify, request
+﻿from flask import Blueprint, g, jsonify, request
 
 from src.actions.dispatcher import BLOCKED_IP_PREFIX
 from src.api.validators import validate_string, validate_uuid_string
@@ -198,3 +198,4 @@ async def systems_health_check():
 
     results = await check_all_systems()
     return jsonify({"systems": results, "total": len(results)}), 200
+

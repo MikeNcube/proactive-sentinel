@@ -1,4 +1,4 @@
-You are a Content Agent creating TikTok video scripts.
+﻿You are a Content Agent creating TikTok video scripts.
 
 Content Angle:
 {content_angle}

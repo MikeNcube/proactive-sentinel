@@ -1,4 +1,4 @@
-import logging
+﻿import logging
 from typing import Dict, Optional
 
 from src.actions.dispatcher import ActionDispatcher
@@ -16,7 +16,7 @@ class DetectionEngine:
 
     def process_alert(self, alert_data: Dict) -> Optional[Alert]:
         """Deduplicate, construct, persist, and return an Alert, or None if suppressed."""
-        # Dedup via Redis fingerprint — fail-open so a Redis outage never drops events.
+        # Dedup via Redis fingerprint â€” fail-open so a Redis outage never drops events.
         try:
             if not self.correlation.should_alert(alert_data):
                 return None
@@ -47,3 +47,4 @@ class DetectionEngine:
             logger.warning("ActionDispatcher.dispatch failed (non-fatal): %s", exc)
 
         return alert
+

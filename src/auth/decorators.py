@@ -1,4 +1,4 @@
-import uuid
+﻿import uuid
 from functools import wraps
 from typing import Any, Callable, TypeVar
 
@@ -109,3 +109,4 @@ def generate_correlation_id() -> str:
         correlation_id = str(uuid.uuid4())
     g.correlation_id = correlation_id
     return correlation_id
+

@@ -1,4 +1,4 @@
-"""Integration tests for :class:`soc.audit.JSONLFileSink`.
+﻿"""Integration tests for :class:`soc.audit.JSONLFileSink`.
 
 Exercises the real filesystem path with ``tmp_path``:
 
@@ -222,3 +222,4 @@ class TestOnDiskTamperDetection:
         result = verify_chain(list(sink2.read_all()))
         assert result.ok is False
         assert result.error_index == 2
+

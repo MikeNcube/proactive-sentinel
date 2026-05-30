@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -124,8 +124,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📄 View Post</h1>
-            <a href="/" class="back-btn">← Back to Dashboard</a>
+            <h1>ðŸ“„ View Post</h1>
+            <a href="/" class="back-btn">â† Back to Dashboard</a>
         </div>
         
         <div class="post-container">
@@ -133,16 +133,16 @@
                 <div style="margin-bottom: 8px;">
                     <strong>Generated:</strong> {{ post.timestamp }}
                     {% if approved %}
-                        <span class="status-badge status-approved">✓ APPROVED</span>
+                        <span class="status-badge status-approved">âœ“ APPROVED</span>
                     {% endif %}
                     {% if scheduled %}
-                        <span class="status-badge status-scheduled">📅 SCHEDULED</span>
+                        <span class="status-badge status-scheduled">ðŸ“… SCHEDULED</span>
                     {% endif %}
                 </div>
                 <div><strong>Filename:</strong> {{ filename }}</div>
                 {% if scheduled %}
                 <div style="margin-top: 8px; color: #2196F3;">
-                    <strong>📅 Scheduled for:</strong> {{ scheduled }}
+                    <strong>ðŸ“… Scheduled for:</strong> {{ scheduled }}
                 </div>
                 {% endif %}
             </div>
@@ -154,14 +154,14 @@
             <div class="actions">
                 {% if not approved and not scheduled %}
                 <form action="/approve/{{ filename }}" method="post" style="display: inline;">
-                    <button type="submit" class="btn-approve">✅ Approve Post</button>
+                    <button type="submit" class="btn-approve">âœ… Approve Post</button>
                 </form>
                 <form action="/reject/{{ filename }}" method="post" style="display: inline;">
-                    <button type="submit" class="btn-reject" onclick="return confirm('Are you sure you want to reject this post?')">❌ Reject Post</button>
+                    <button type="submit" class="btn-reject" onclick="return confirm('Are you sure you want to reject this post?')">âŒ Reject Post</button>
                 </form>
-                <button class="btn-schedule" onclick="toggleSchedule()">📅 Schedule Post</button>
+                <button class="btn-schedule" onclick="toggleSchedule()">ðŸ“… Schedule Post</button>
                 {% elif approved and not scheduled %}
-                <button class="btn-schedule" onclick="toggleSchedule()">📅 Schedule Post</button>
+                <button class="btn-schedule" onclick="toggleSchedule()">ðŸ“… Schedule Post</button>
                 {% endif %}
             </div>
             

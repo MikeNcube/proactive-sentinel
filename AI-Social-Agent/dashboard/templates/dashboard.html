@@ -984,7 +984,7 @@
         <a class="nav-item" data-page="settings" href="#"><span>Settings</span></a>
       </nav>
       <div class="bottom">
-        <div style="display:flex;align-items:center;margin-bottom:12px"><span class="avatar">A</span><span>admin@zororo.co.za</span></div>
+        <div style="display:flex;align-items:center;margin-bottom:12px"><span class="avatar">A</span><span>demo@example.com</span></div>
         <div><span class="dot"></span>System healthy</div>
         <button class="logout" id="logoutBtn">Logout</button>
       </div>
@@ -1273,7 +1273,7 @@
     }
 
     async function silentLogin(){
-      const res=await fetch(API_BASE+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:"admin@zororo.co.za",password:"Admin1234!"})});
+      const res=await fetch(API_BASE+"/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:"demo@example.com",password:"YOUR_PASSWORD_HERE"})});
       const data=await res.json().catch(()=>({}));
       if(!res.ok||!data.access_token) throw new Error("Login failed");
       token=data.access_token;
@@ -1377,7 +1377,7 @@
       const flagged=alerts.filter(a=>["critical","high"].includes(String(a.severity).toLowerCase()));
       document.getElementById("anomBig").textContent=flagged.length;
       document.getElementById("anomFeed").innerHTML=flagged.slice(0,6).map(a=>`<div class="mini" style="padding:12px 0;border-bottom:1px solid var(--border-subtle);transition:all 0.2s;cursor:pointer;" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'"><span class="sev ${sevClass(a.severity)}">${String(a.severity||"").toUpperCase()}</span> <span style="margin-left:8px;">${a.title||"-"}</span></div>`).join("") || `<div class="mini" style="text-align:center;padding:24px;color:var(--text-tertiary);">No active anomalies detected</div>`;
-      document.getElementById("riskyUsers").innerHTML=[["admin@zororo.co.za",82],["ops@zororo.co.za",67],["claims@zororo.co.za",54]].map(u=>`<div class="mini" style="padding:12px 0;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;"><span>${u[0]}</span><span style="color:${u[1]>75?'var(--status-high)':'var(--status-medium)'};font-weight:600;">Risk: ${u[1]}</span></div>`).join("");
+      document.getElementById("riskyUsers").innerHTML=[["demo@example.com",82],["ops@zororo.co.za",67],["claims@zororo.co.za",54]].map(u=>`<div class="mini" style="padding:12px 0;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;"><span>${u[0]}</span><span style="color:${u[1]>75?'var(--status-high)':'var(--status-medium)'};font-weight:600;">Risk: ${u[1]}</span></div>`).join("");
     }
 
     function destroyChart(name){
@@ -1726,3 +1726,4 @@
   </script>
 </body>
 </html>
+

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 """
 Lightweight dependency audit helper.
 Flags unpinned packages and recommends running pip-audit for CVEs.
@@ -31,3 +31,4 @@ def main():
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

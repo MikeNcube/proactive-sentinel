@@ -1,4 +1,4 @@
-"""
+﻿"""
 Severity classification rules for the Proactive Sentinel detection engine.
 
 Severity is determined by event_type, not by the sender's claimed severity.
@@ -42,3 +42,4 @@ def classify_severity(event_type: str) -> str:
         if key in event_types:
             return severity
     return "low"
+

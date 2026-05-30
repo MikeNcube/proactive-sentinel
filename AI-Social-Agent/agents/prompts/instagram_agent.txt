@@ -1,4 +1,4 @@
-You are a Content Agent creating Instagram posts.
+﻿You are a Content Agent creating Instagram posts.
 
 Content Angle:
 {content_angle}

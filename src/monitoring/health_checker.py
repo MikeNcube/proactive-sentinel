@@ -1,4 +1,4 @@
-"""
+﻿"""
 Health checker for all Zororo integrated systems.
 
 Probes each enabled system's health endpoint on a configurable interval.
@@ -134,12 +134,12 @@ def report_failure(app, system_key: str, config: dict, result: dict) -> None:
             tenant = Tenant.query.first()
         except Exception:
             logger.warning(
-                "DB unavailable — cannot persist health alert for %s", system_key
+                "DB unavailable â€” cannot persist health alert for %s", system_key
             )
             return
         if not tenant:
             logger.warning(
-                "No tenants registered — cannot persist health alert for %s", system_key
+                "No tenants registered â€” cannot persist health alert for %s", system_key
             )
             return
         tenant_id = str(tenant.id)
@@ -173,7 +173,7 @@ def report_failure(app, system_key: str, config: dict, result: dict) -> None:
 
 def run_health_loop(app, interval_seconds: int = 60) -> None:
     """
-    Blocking health check loop — run in a dedicated daemon thread.
+    Blocking health check loop â€” run in a dedicated daemon thread.
 
     Sleeps for interval_seconds before the first probe so startup logs are
     not polluted with immediate health noise. On each tick, probes all
@@ -188,7 +188,7 @@ def run_health_loop(app, interval_seconds: int = 60) -> None:
         try:
             results = asyncio.run(check_all_systems())
         except Exception:
-            logger.exception("Health check cycle error — will retry next interval")
+            logger.exception("Health check cycle error â€” will retry next interval")
             continue
 
         failures = [r for r in results if r.get("status") in _FAILURE_STATUSES]
@@ -203,3 +203,4 @@ def run_health_loop(app, interval_seconds: int = 60) -> None:
                 system_key = result.get("system", "")
                 cfg = systems.get(system_key, {})
                 report_failure(app, system_key, cfg, result)
+

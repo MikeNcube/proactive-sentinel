@@ -1,4 +1,4 @@
-# Proactive Sentinel - Verification Script (Windows PowerShell)
+﻿# Proactive Sentinel - Verification Script (Windows PowerShell)
 # Usage: .\scripts\verify.ps1
 
 $ErrorActionPreference = "Stop"
@@ -151,3 +151,4 @@ Write-Host "2. Access API: http://localhost:5000"
 Write-Host "3. Run specific tests: docker-compose exec app pytest tests/test_tenant_isolation.py -v"
 Write-Host "4. Stop services: docker-compose down"
 Write-Host ""
+

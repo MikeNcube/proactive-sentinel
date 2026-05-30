@@ -1,4 +1,4 @@
-import hashlib
+﻿import hashlib
 import logging
 import os
 import uuid
@@ -253,3 +253,4 @@ def units_status():
         )
     db.session.commit()
     return jsonify({"units": out}), 200
+

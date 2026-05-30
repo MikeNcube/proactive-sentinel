@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`soc.audit.redaction` (canonical spec section
+﻿"""Unit tests for :mod:`soc.audit.redaction` (canonical spec section
 5.3 A5).
 
 Covers:
@@ -140,3 +140,4 @@ def test_f3_audit_records_contain_no_recognizer_detectable_pii():
     assert not _contains_pii(serialised), (
         "F3: PII pattern detected in serialised audit chain"
     )
+

@@ -1,4 +1,4 @@
-from datetime import datetime
+﻿from datetime import datetime
 import uuid
 
 from sqlalchemy import DateTime, Enum, String
@@ -39,3 +39,4 @@ class Alert(db.Model):
         db.Index("idx_alert_tenant_status", "tenant_id", "status"),
         db.Index("idx_alert_created", "created_at"),
     )
+
