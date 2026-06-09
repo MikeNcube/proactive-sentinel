@@ -8,3 +8,15 @@ __pycache__/
 *.pyd
 .Python
 AI-Social-Agent/.history/.env_*
+
+# Claude Code local settings (contains DB URLs/tokens)
+.claude/settings.json
+
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+.env
+*.env
+!.env.example
