@@ -20,3 +20,9 @@ __pycache__/
 .env
 *.env
 !.env.example
+
+.claude/
+.cursor/
+CLAUDE.md
+.coverage
+.env.local
