@@ -163,7 +163,7 @@ class TestUnbanEndpoint:
         client.post(
             "/api/auth/register",
             json={
-                "email": "unban-test@zororo.co.za",
+                "email": "unban-test@example.com",
                 "password": "Unban1234!Xz",
                 "tenant_name": "Unban Test Tenant",
                 "tenant_slug": "unban-test-tenant",
@@ -171,7 +171,7 @@ class TestUnbanEndpoint:
         )
         resp = client.post(
             "/api/auth/login",
-            json={"email": "unban-test@zororo.co.za", "password": "Unban1234!Xz"},
+            json={"email": "unban-test@example.com", "password": "Unban1234!Xz"},
         )
         data = resp.get_json()
         token = data.get("access_token", "")

@@ -2,7 +2,7 @@
 
 **Document type:** Spec-driven development manifest for Claude Code, Cursor, Codex, and any compliant coding agent.
 **Owner:** Simbarashe G. — AI Automation Engineer, Johannesburg.
-**Primary deployment context:** Zororo-Phumulani Funeral Insurance (underwritten by KGA Life) — *enterprise tier*. Personal projects — *standard tier*.
+**Primary deployment context:** a regulated South African insurer (policies underwritten by a third-party life insurer) — *enterprise tier*. Personal projects — *standard tier*.
 **Status:** v3.0 — supersedes v2.3 and v2.5. Read this file end-to-end before generating any code.
 **Last updated:** 2026-04-30
 
@@ -29,7 +29,7 @@ v2.3 and v2.5 had the right intuitions — event-driven SOC, POPIA-first thinkin
 
 - Is **executable by spec-driven coding agents** without ambiguity.
 - Treats **Vercel/Railway as legitimate prototyping targets** with a clean promotion path to **AWS af-south-1** for production.
-- Distinguishes **enterprise compliance posture** (Zororo-Phumulani / KGA Life) from **standard posture** (personal projects), via a single config flag.
+- Distinguishes **enterprise compliance posture** (regulated insurer / underwriter) from **standard posture** (personal projects), via a single config flag.
 - Marks every component as **[BUILD]**, **[ADOPT]**, or **[CONFIGURE]** so the agent knows when to write code and when to wire up something that already exists.
 - Has a **threat model** (Appendix A) so each control has a defensible reason to exist.
 
@@ -41,9 +41,9 @@ Every project on this OS has a `MANIFEST.yaml` at its root. The agent reads this
 
 ```yaml
 project:
-  name: zororo-claims-triage
+  name: claims-triage
   owner: maketekete
-  description: "Funeral claim intake and triage assistant"
+  description: "Insurance claim intake and triage assistant"
 
 compliance_tier: enterprise   # enterprise | standard
 data_classification: special  # special | personal | internal | public
@@ -67,7 +67,7 @@ storage:
   object: s3-af-south-1
 
 integrations:
-  - name: kga-policy-system
+  - name: underwriter-policy-system
     direction: read-only
     auth: oauth2-client-credentials
     pii_in_scope: true
@@ -121,7 +121,7 @@ approvals:
    ┌──────────▼─────────┐
    │  Tool Execution    │  Each tool: scoped IAM role, KMS data key,
    │  (LLM, DB, Email,  │  rate limit, cost cap, timeout
-   │   KGA API, etc.)   │
+   │   underwriter API)   │
    └────────────────────┘
 ```
 
@@ -141,7 +141,7 @@ This is the table the agent must consult before writing any module.
 | # | Component | Status | Implementation |
 |---|---|---|---|
 | 1 | Event Bus | `[ADOPT]` | NATS JetStream (dev/Railway), SNS+SQS (AWS prod). Wrap behind `events/bus.py` interface. |
-| 2 | PII/DLP Scanner | `[ADOPT]` + `[BUILD]` | Microsoft Presidio (analyzer + anonymizer). **Build** SA-specific recognizers: SA ID (with Luhn-equivalent checksum), SA passport, SARS tax ref, medical aid number, CIPC company reg, KGA policy number format. |
+| 2 | PII/DLP Scanner | `[ADOPT]` + `[BUILD]` | Microsoft Presidio (analyzer + anonymizer). **Build** SA-specific recognizers: SA ID (with Luhn-equivalent checksum), SA passport, SARS tax ref, medical aid number, CIPC company reg, underwriter policy number format. |
 | 3 | Policy Engine | `[ADOPT]` | Open Policy Agent (OPA) with Rego policies. Policies live in `policies/` and are version-controlled. |
 | 4 | Risk Engine | `[BUILD]` | Hybrid: deterministic rules (fast path) + sliding-window anomaly stats per actor (z-score on request rate, novel-tool usage, off-hours activity). No ML in v3.0; ML is v3.1 (Appendix B). |
 | 5 | Decision Engine | `[BUILD]` | Pure function: `(policy_result, risk_score, manifest) → decision_record`. Deterministic, fully unit-tested. |
@@ -226,7 +226,7 @@ class SOCPipeline:
 
 Presidio handles the engine. You must extend it with these recognizers. Each one needs unit tests covering positive cases, false-positive traps, and edge cases.
 
-**Role of the recognizer suite:** Detection and classification only — not document validity. The recognizer identifies what *type* of identifier is present and with what confidence. Trained Zororo staff determine whether the document is genuine, current, and matches the holder. See SA-002 and `docs/architecture/zororo-context.md` "ID verification model."
+**Role of the recognizer suite:** Detection and classification only — not document validity. The recognizer identifies what *type* of identifier is present and with what confidence. Trained insurer staff determine whether the document is genuine, current, and matches the holder. See SA-002 and the deployment context notes ("ID verification model").
 
 **Scope (v3.0):** SA ID, ZW National ID, SA asylum/refugee permits. ~80% of policyholders present Zimbabwean documentation — the recognizer suite must cover the full customer base, not only SA IDs. See MANIFEST.yaml `identifiers_supported`.
 
@@ -254,7 +254,7 @@ The recognizer must also **validate the date** (YYMMDD must be a real calendar d
 |---|---|---|
 | SA passport | `[A-Z]\d{8}` | None beyond pattern; flag as medium confidence |
 | SARS tax ref | 10 digits, starts with 0/1/2/3/9 | Modulo-10 checksum (SARS publishes the algorithm) |
-| KGA policy no. | (Confirm format with KGA — likely prefix + numeric) | Pattern + prefix whitelist |
+| Underwriter policy no. | (Confirm format with the underwriter — likely prefix + numeric) | Pattern + prefix whitelist |
 | Medical aid no. | Scheme-specific; whitelist top 10 SA schemes' formats | Pattern + scheme prefix |
 | Bank account | 9-11 digits | Branch code cross-check against SARB list |
 | Phone | `(\+27|0)\d{9}` | Length + leading-digit validity |
@@ -264,7 +264,7 @@ The recognizer must also **validate the date** (YYMMDD must be a real calendar d
 
 - B1. Test corpus of **at least 200 examples per recognizer** (mix of true positives, true negatives, near-misses).
 - B2. False-positive rate on a held-out corpus of generic SA business text: **< 2%**.
-- B3. Recognizer confidence expresses *recognition certainty* — how sure we are that we have correctly identified the *type* of identifier — not document validity (which is determined by trained Zororo staff, not the system). Confidence levels:
+- B3. Recognizer confidence expresses *recognition certainty* — how sure we are that we have correctly identified the *type* of identifier — not document validity (which is determined by trained insurer staff, not the system). Confidence levels:
     - `high` — all available structural checks pass (pattern + checksum/date validation where applicable)
     - `medium` — pattern matches but no structural check is available or implemented for this format
     - `low` — partial or ambiguous pattern match
@@ -287,10 +287,10 @@ policies/
 │   ├── popia_purpose_limitation.rego # action must match the consent purpose
 │   ├── popia_retention.rego         # data older than retention_days → access denied
 │   └── tenant_isolation.rego        # cross-tenant access forbidden
-├── zororo/
+├── enterprise/
 │   ├── claim_payout_authority.rego  # who can authorise payout, by amount band
 │   ├── beneficiary_changes.rego     # cooling-off + dual-control
-│   └── kga_data_egress.rego         # what can leave KGA's data perimeter
+│   └── underwriter_data_egress.rego # what can leave the underwriter's data perimeter
 └── personal/
     └── relaxed.rego                 # standard tier defaults
 ```
@@ -359,7 +359,7 @@ When the Decision Engine returns `ALLOW` for an MCP action, it issues a JWT:
 {
   "sub": "actor_id",
   "aud": "mcp.gateway",
-  "tool": "kga.policy.read",
+  "tool": "underwriter.policy.read",
   "resource": "policy/123456",
   "scope": "read",
   "exp": 1730000060,            // 60s TTL
@@ -422,7 +422,7 @@ class MCPGateway:
 ### 10.2 Storage
 
 - **Dev (Railway):** local JSONL file, rotated daily, `prev_hash` chain maintained.
-- **Prod (AWS):** writes go to CloudWatch Logs (operational) AND S3 with **Object Lock in compliance mode** (legal). S3 is the legal record. Retention: 7 years for Zororo (FSCA + POPIA), configurable for personal projects.
+- **Prod (AWS):** writes go to CloudWatch Logs (operational) AND S3 with **Object Lock in compliance mode** (legal). S3 is the legal record. Retention: 7 years for enterprise-tier clients (FSCA + POPIA), configurable for personal projects.
 
 ### 10.3 Acceptance criteria (Audit)
 
@@ -448,11 +448,11 @@ class MCPGateway:
 | Audit log (legal record) | ❌ (dev-only chain) | S3 Object Lock |
 | Special data (POPIA s.26) | ❌ **forbidden** | ✅ |
 
-### 11.2 Hard rule for Zororo work
+### 11.2 Hard rule for enterprise-tier work
 
-**No Zororo-Phumulani or KGA Life data of any kind — including dev fixtures, synthetic samples derived from real data, or screenshots of real records — may touch Vercel or Railway.** Use synthetic-only test data generated by a SA ID generator script (`scripts/synth_sa_data.py`).
+**No enterprise-tier client or underwriter data of any kind — including dev fixtures, synthetic samples derived from real data, or screenshots of real records — may touch Vercel or Railway.** Use synthetic-only test data generated by a SA ID generator script (`scripts/synth_sa_data.py`).
 
-For Zororo prototyping, use a **dedicated AWS dev account in af-south-1** behind SSO. The agent must refuse to scaffold Zororo projects pointing at Railway/Vercel runtimes.
+For enterprise-tier prototyping, use a **dedicated AWS dev account in af-south-1** behind SSO. The agent must refuse to scaffold enterprise-tier projects pointing at Railway/Vercel runtimes.
 
 ### 11.3 Promotion checklist (the agent runs this)
 
@@ -498,7 +498,7 @@ infra/terraform/
 
 ---
 
-## 13. POPIA Operating Model (enterprise tier — Zororo / KGA)
+## 13. POPIA Operating Model (enterprise tier)
 
 The architecture provides controls. Compliance also requires *processes*. The agent must scaffold these documents on first run of an enterprise-tier project:
 
@@ -572,7 +572,7 @@ When you (the agent) operate on this OS:
 3. **Tests are not optional.** If a module has no test, the module is not done. Generate tests in the same pass.
 4. **Refuse silent downgrades.** If you cannot implement a tier-A control on the current target, say so and propose alternatives.
 5. **Cite the spec section.** When you make a non-obvious decision, link it to the section of this spec that justifies it (e.g. "Per §9.1, capability token TTL = 60s").
-6. **Never invent a recognizer.** If a regulation, format, or API isn't documented, ask. Do not guess KGA's policy number format.
+6. **Never invent a recognizer.** If a regulation, format, or API isn't documented, ask. Do not guess the underwriter's policy number format.
 7. **Ask before broadening scope.** If a request implies changes beyond the stated task (e.g. "fix this bug" but the fix would touch the SOC pipeline), surface that and wait.
 8. **Preserve audit-chain integrity in code edits.** Refactors of the audit module require regenerating chain-verification tests in the same change.
 
@@ -580,7 +580,7 @@ When you (the agent) operate on this OS:
 
 ## Appendix A — Threat Model (STRIDE, abbreviated)
 
-Trust boundaries: (1) public internet → API edge, (2) API → SOC pipeline, (3) SOC → MCP Gateway → tools, (4) Tools → external systems (KGA, LLM providers).
+Trust boundaries: (1) public internet → API edge, (2) API → SOC pipeline, (3) SOC → MCP Gateway → tools, (4) Tools → external systems (underwriter APIs, LLM providers).
 
 | Threat | Boundary | Control |
 |---|---|---|
@@ -619,8 +619,8 @@ If a request asks for these, the agent must answer: "This is in the v3.x roadmap
 - **Special personal information** — POPIA s.26 categories: religion, race, health, sex life, biometric, criminal behaviour, children's data.
 - **Lawful basis** — POPIA s.11: consent, contract, legal obligation, vital interest, public body function, legitimate interest.
 - **DPIA** — Data Protection Impact Assessment, recommended by the Information Regulator for high-risk processing.
-- **Information Officer** — POPIA s.55-56; for Zororo this is a designated role with statutory duties.
-- **TCF** — Treating Customers Fairly, FSCA framework; relevant to KGA Life as an authorised FSP.
+- **Information Officer** — POPIA s.55-56; for enterprise-tier clients this is a designated role with statutory duties.
+- **TCF** — Treating Customers Fairly, FSCA framework; relevant to the underwriter as an authorised FSP.
 
 ---
 

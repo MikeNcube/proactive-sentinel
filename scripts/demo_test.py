@@ -49,7 +49,7 @@ def _request(method: str, url: str, payload: dict | None = None, token: str | No
 
 def run(base_url: str) -> bool:
     ts = int(time.time())
-    email = f"demo-{ts}@zororo-sentinel-test.local"
+    email = f"demo-{ts}@sentinel-test.local"
     password = f"Demo{ts}!Xz"          # 12+ chars, upper + digit + special
     tenant_slug = f"demo-tenant-{ts}"
     results: list[tuple[str, bool, str]] = []

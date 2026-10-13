@@ -191,7 +191,7 @@ def unban_ip():
 @limiter.limit(RATE_LIMITS["systems_health"], key_func=get_user_rate_limit_key)
 async def systems_health_check():
     """
-    Returns health status of all integrated Zororo systems.
+    Returns health status of all integrated systems.
     Requires authentication. Management level and above only.
     """
     from src.monitoring.health_checker import check_all_systems

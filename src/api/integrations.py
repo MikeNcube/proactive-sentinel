@@ -16,7 +16,7 @@ from src.api.rate_limits import RATE_LIMITS, limiter, get_user_rate_limit_key
 from src.api.validators import validate_string
 from src.auth.decorators import require_auth, require_role, require_tenant
 from src.extensions import db
-from src.integrations.zororo_systems import ZORORO_SYSTEMS, get_all_systems
+from src.integrations.system_registry import BUILTIN_SYSTEMS, get_all_systems
 from src.models.integration import Integration
 from src.services.audit_service import write_audit_event
 
@@ -71,7 +71,7 @@ def register_integration():
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
 
-    if key in ZORORO_SYSTEMS:
+    if key in BUILTIN_SYSTEMS:
         return jsonify({"error": f"'{key}' is a built-in system and cannot be overwritten"}), 409
 
     existing = Integration.query.get(key)

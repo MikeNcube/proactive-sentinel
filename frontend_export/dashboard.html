@@ -247,7 +247,7 @@
       <header class="top">
         <div>
           <div class="title" id="pageTitle">Overview</div>
-          <div class="org">Zororo Phumulani Funeral Logistics SOC</div>
+          <div class="org">Proactive Sentinel SOC</div>
         </div>
         <div class="top-right">
           <span id="utcClock"></span>
@@ -297,7 +297,7 @@
           </div>
 
           <div class="threat-title-section card">
-            <h2>Zororo Phumulani Funeral Logistics SOC</h2>
+            <h2>Proactive Sentinel SOC</h2>
             <p>Cross-channel security for Claims, WhatsApp, Member Portals, Lead Management, Finance, Repatriation</p>
           </div>
 
@@ -608,7 +608,7 @@
       const flagged=alerts.filter(a=>["critical","high"].includes(String(a.severity).toLowerCase()));
       document.getElementById("anomBig").textContent=flagged.length;
       document.getElementById("anomFeed").innerHTML=flagged.slice(0,6).map(a=>`<div class="mini" style="padding:6px 0;border-bottom:1px solid var(--border)">${a.title||"-"} (${String(a.severity||"").toUpperCase()})</div>`).join("") || `<div class="mini">No active anomalies</div>`;
-      document.getElementById("riskyUsers").innerHTML=[["demo@example.com",82],["ops@zororo.co.za",67],["claims@zororo.co.za",54]].map(u=>`<div class="mini" style="padding:6px 0;border-bottom:1px solid var(--border)">${u[0]} - risk ${u[1]}</div>`).join("");
+      document.getElementById("riskyUsers").innerHTML=[["demo@example.com",82],["ops@example.com",67],["claims@example.com",54]].map(u=>`<div class="mini" style="padding:6px 0;border-bottom:1px solid var(--border)">${u[0]} - risk ${u[1]}</div>`).join("");
     }
 
     function destroyChart(name){

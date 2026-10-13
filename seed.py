@@ -13,8 +13,8 @@ app = create_app()
 with app.app_context():
     if Tenant.query.count() == 0:
         tenant = Tenant(
-            name="Zororo Phumulani",
-            slug="zororo",
+            name="Demo Insurance Co",
+            slug="demo",
             plan="enterprise",
             status="active",
         )
@@ -31,11 +31,11 @@ with app.app_context():
         db.session.commit()
         print("Seed complete: demo@example.com / YOUR_PASSWORD_HERE")
     else:
-        zororo = Tenant.query.filter_by(slug="zororo").first()
-        if zororo and zororo.status != "active":
-            zororo.status = "active"
+        demo_tenant = Tenant.query.filter_by(slug="demo").first()
+        if demo_tenant and demo_tenant.status != "active":
+            demo_tenant.status = "active"
             db.session.commit()
-            print("Updated zororo tenant -> active")
+            print("Updated demo tenant -> active")
         else:
             print("Already seeded - skipping")
 

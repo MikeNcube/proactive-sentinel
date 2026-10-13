@@ -77,7 +77,7 @@ Security and Compliance:
 - Any change to authentication, encryption, or PII handling
 - Any change to rate limiting or auto-ban logic
 - Any change to audit trail structure
-- For Zororo: any change that could affect FSP48558 licence compliance
+- Any change that could affect a regulated client's licence compliance
 - For Sentinel: any change to tenant isolation or MITRE ATT&CK mappings
 
 AI and Agents:

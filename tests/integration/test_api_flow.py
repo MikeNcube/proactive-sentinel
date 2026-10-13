@@ -54,12 +54,12 @@ def test_user(app, test_tenant):
     from src.extensions import db
     with app.app_context():
         user = User.query.filter_by(
-            email='integration@zororo.co.za'
+            email='integration@example.com'
         ).first()
         if not user:
             user = User(
                 id=str(uuid.uuid4()),
-                email='integration@zororo.co.za',
+                email='integration@example.com',
                 password_hash=generate_password_hash('YOUR_PASSWORD_HERE'),
                 tenant_id=test_tenant.id,
                 role='admin'
@@ -72,7 +72,7 @@ def test_user(app, test_tenant):
 @pytest.fixture(scope="module")
 def auth_headers(client, test_tenant, test_user):
     resp = client.post('/api/auth/login', json={
-        'email': 'integration@zororo.co.za',
+        'email': 'integration@example.com',
         'password': 'YOUR_PASSWORD_HERE'
     })
     data = resp.get_json()

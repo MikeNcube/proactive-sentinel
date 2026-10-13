@@ -32,7 +32,7 @@ production:
 
 1. Implement the canonical spec section 6 from scratch
    (``presidio-analyzer`` + SA-specific recognisers: SA ID with Luhn,
-   ZW National ID, SA asylum/refugee permits, SARS tax ref, KGA
+   ZW National ID, SA asylum/refugee permits, SARS tax ref, underwriter
    policy number, medical aid, phone, email).
 2. Adopt an alternative engine and update canonical spec section 6
    to match.
