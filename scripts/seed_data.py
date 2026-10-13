@@ -27,8 +27,8 @@ def seed():
                 "status": "active",
             },
             {
-                "name": "Zororo Phumulani",
-                "subdomain": "zororo",
+                "name": "Demo Insurance Co",
+                "subdomain": "demo",
                 "status": "active",
             },
         ]
@@ -57,9 +57,9 @@ def seed():
             {"tenant": "acme", "email": "admin@acme.com", "password": "password123", "role": "admin"},
             {"tenant": "acme", "email": "analyst@acme.com", "password": "password123", "role": "analyst"},
             {"tenant": "acme", "email": "viewer@acme.com", "password": "password123", "role": "viewer"},
-            # Zororo Phumulani users
-            {"tenant": "zororo", "email": "demo@example.com", "password": "YOUR_PASSWORD_HERE", "role": "admin"},
-            {"tenant": "zororo", "email": "analyst@zororo.co.za", "password": "YOUR_PASSWORD_HERE", "role": "analyst"},
+            # Demo tenant users
+            {"tenant": "demo", "email": "demo@example.com", "password": "YOUR_PASSWORD_HERE", "role": "admin"},
+            {"tenant": "demo", "email": "analyst@example.com", "password": "YOUR_PASSWORD_HERE", "role": "analyst"},
         ]
 
         for u_data in users_data:

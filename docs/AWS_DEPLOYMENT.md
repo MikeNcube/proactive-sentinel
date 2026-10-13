@@ -23,12 +23,12 @@ The IAM identity used must have permissions for: ECR (push), Secrets Manager (cr
 
 ```bash
 aws s3api create-bucket \
-  --bucket zororo-terraform-state \
+  --bucket proactive-sentinel-tfstate \
   --region af-south-1 \
   --create-bucket-configuration LocationConstraint=af-south-1
 
 aws s3api put-bucket-versioning \
-  --bucket zororo-terraform-state \
+  --bucket proactive-sentinel-tfstate \
   --versioning-configuration Status=Enabled
 ```
 

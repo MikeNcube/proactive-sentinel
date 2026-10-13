@@ -146,4 +146,4 @@ Proactive Sentinel is designed for South African financial services providers re
 
 ## Status
 
-**v1.0.0 · Production-ready** — deployed on Railway with PostgreSQL 15 and Redis 7. CI test suite: 44 passing, 1 skipped (Redis dedup test, requires live Redis).
+**v1.0.0** — runs on PostgreSQL 15 and Redis 7. Test suite: 543 passing, 1 skipped (Redis dedup test, requires live Redis). CI runs a dependency policy check and a `pip-audit` CVE scan on every push.

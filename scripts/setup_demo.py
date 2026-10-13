@@ -2,8 +2,8 @@
 Seeds the live Proactive Sentinel demo environment via the REST API.
 
 Creates two tenants and one admin user each:
-  - Zororo Claims   / admin@zororo.test
-  - Zororo Digital  / analyst@zororo.test
+  - Demo Claims     / admin@demo.test
+  - Demo Digital    / analyst@demo.test
 
 Safe to run multiple times: if a tenant already exists (409) the script
 skips registration and proceeds straight to login verification.
@@ -24,14 +24,14 @@ PASSWORD = "Demo@1234567890"
 
 DEMO_ACCOUNTS = [
     {
-        "email": "admin@zororo.test",
-        "tenant_name": "Zororo Claims",
-        "tenant_slug": "zororo-claims",
+        "email": "admin@demo.test",
+        "tenant_name": "Demo Claims",
+        "tenant_slug": "demo-claims",
     },
     {
-        "email": "analyst@zororo.test",
-        "tenant_name": "Zororo Digital",
-        "tenant_slug": "zororo-digital",
+        "email": "analyst@demo.test",
+        "tenant_name": "Demo Digital",
+        "tenant_slug": "demo-digital",
     },
 ]
 

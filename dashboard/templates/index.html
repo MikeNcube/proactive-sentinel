@@ -992,7 +992,7 @@
       <header class="top">
         <div>
           <div class="title" id="pageTitle">Overview</div>
-          <div class="org">Zororo Phumulani Funeral Logistics SOC</div>
+          <div class="org">Proactive Sentinel SOC</div>
         </div>
         <div class="top-right">
           <span id="utcClock" style="font-family: 'JetBrains Mono', monospace;"></span>
@@ -1042,7 +1042,7 @@
           </div>
 
           <div class="threat-title-section card">
-            <h2>Zororo Phumulani Funeral Logistics SOC</h2>
+            <h2>Proactive Sentinel SOC</h2>
             <p>Cross-channel security for Claims, WhatsApp, Member Portals, Lead Management, Finance, Repatriation</p>
           </div>
 
@@ -1376,7 +1376,7 @@
       const flagged=alerts.filter(a=>["critical","high"].includes(String(a.severity).toLowerCase()));
       document.getElementById("anomBig").textContent=flagged.length;
       document.getElementById("anomFeed").innerHTML=flagged.slice(0,6).map(a=>`<div class="mini" style="padding:12px 0;border-bottom:1px solid var(--border-subtle);transition:all 0.2s;cursor:pointer;" onmouseover="this.style.paddingLeft='8px'" onmouseout="this.style.paddingLeft='0'"><span class="sev ${sevClass(a.severity)}">${String(a.severity||"").toUpperCase()}</span> <span style="margin-left:8px;">${a.title||"-"}</span></div>`).join("") || `<div class="mini" style="text-align:center;padding:24px;color:var(--text-tertiary);">No active anomalies detected</div>`;
-      document.getElementById("riskyUsers").innerHTML=[["demo@example.com",82],["ops@zororo.co.za",67],["claims@zororo.co.za",54]].map(u=>`<div class="mini" style="padding:12px 0;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;"><span>${u[0]}</span><span style="color:${u[1]>75?'var(--status-high)':'var(--status-medium)'};font-weight:600;">Risk: ${u[1]}</span></div>`).join("");
+      document.getElementById("riskyUsers").innerHTML=[["demo@example.com",82],["ops@example.com",67],["claims@example.com",54]].map(u=>`<div class="mini" style="padding:12px 0;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;"><span>${u[0]}</span><span style="color:${u[1]>75?'var(--status-high)':'var(--status-medium)'};font-weight:600;">Risk: ${u[1]}</span></div>`).join("");
     }
 
     function destroyChart(name){

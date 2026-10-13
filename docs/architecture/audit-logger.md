@@ -218,7 +218,7 @@ as a high-severity audit record (canonical spec section 5.3 A3).
 - Prod: S3 storage ≈ R0.50 per GB / month; Object Lock has no
   additional charge
 - Daily verifier Lambda: ≈ R0.10 per day at modest record volumes
-- Estimated monthly audit cost at Zororo target scale: ≤ R20
+- Estimated monthly audit cost at target scale: ≤ R20
 
 ## 15. Future work
 

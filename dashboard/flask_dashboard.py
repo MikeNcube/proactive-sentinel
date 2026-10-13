@@ -591,7 +591,7 @@ DASHBOARD_TEMPLATE = """
                         <span class="threat-map-title">Threat Posture</span>
                         <span id="threat-posture-label" class="elevated-badge">{{ posture }}</span>
                     </div>
-                    <div class="company-name">Zororo Phumulani Funeral Logistics SOC</div>
+                    <div class="company-name">Proactive Sentinel SOC</div>
                     <div class="company-desc">Cross-channel security posture for Claims, WhatsApp, Member Portals, Lead Management, Finance and Repatriation.</div>
                     <div class="gov-ticker">
                         <div id="ticker-fraud" class="ticker-item {{ governance_ticker.fraud }}">$FRAUD {{ governance_metrics.fraud_events }}</div>

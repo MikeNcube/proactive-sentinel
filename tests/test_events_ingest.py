@@ -18,7 +18,7 @@ def events_auth_headers(client):
     client.post(
         "/api/auth/register",
         json={
-            "email": "ingest-test@zororo.co.za",
+            "email": "ingest-test@example.com",
             "password": "Ingest1234!X",
             "tenant_name": "Ingest Test Tenant",
             "tenant_slug": "ingest-test-tenant",
@@ -26,7 +26,7 @@ def events_auth_headers(client):
     )
     resp = client.post(
         "/api/auth/login",
-        json={"email": "ingest-test@zororo.co.za", "password": "Ingest1234!X"},
+        json={"email": "ingest-test@example.com", "password": "Ingest1234!X"},
     )
     data = resp.get_json()
     assert data is not None, f"Login failed: {resp.status_code} {resp.data}"

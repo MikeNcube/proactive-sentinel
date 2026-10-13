@@ -11,7 +11,7 @@ terraform {
   }
 
   backend "s3" {
-    bucket = "zororo-terraform-state"
+    bucket = "proactive-sentinel-tfstate"
     key    = "proactive-sentinel/terraform.tfstate"
     region = "af-south-1"
   }

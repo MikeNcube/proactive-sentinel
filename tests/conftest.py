@@ -39,14 +39,14 @@ def auth_headers_unit(client):
     client.post(
         "/api/auth/register",
         json={
-            "email": "test@zororo.co.za",
+            "email": "test@example.com",
             "password": "YOUR_PASSWORD_HERE",
-            "tenant_slug": "test-zororo",
+            "tenant_slug": "test-tenant",
         },
     )
     resp = client.post(
         "/api/auth/login",
-        json={"email": "test@zororo.co.za", "password": "YOUR_PASSWORD_HERE"},
+        json={"email": "test@example.com", "password": "YOUR_PASSWORD_HERE"},
     )
     data = resp.get_json()
     token = data.get("access_token", "")

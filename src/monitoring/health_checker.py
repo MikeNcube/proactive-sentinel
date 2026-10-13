@@ -1,9 +1,9 @@
 ﻿"""
-Health checker for all Zororo integrated systems.
+Health checker for all integrated systems.
 
 Probes each enabled system's health endpoint on a configurable interval.
 Failures are persisted as Alert records with severity derived from the
-system's event_severities config in zororo_systems.py.
+system's event_severities config in system_registry.py.
 
 Run via run_health_loop() in a daemon thread started by the app factory.
 report_failure() requires an active Flask app context.
@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 
 import httpx
 
-from src.integrations.zororo_systems import get_all_systems
+from src.integrations.system_registry import get_all_systems
 
 logger = logging.getLogger("sentinel.health")
 

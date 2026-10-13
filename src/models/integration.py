@@ -7,7 +7,7 @@ from src.models.types import CrossJSON, ArrayOfStrings
 
 
 class Integration(db.Model):
-    """Runtime-registered integration. Built-in systems live in zororo_systems.py."""
+    """Runtime-registered integration. Built-in systems live in system_registry.py."""
 
     __tablename__ = "integrations"
 
